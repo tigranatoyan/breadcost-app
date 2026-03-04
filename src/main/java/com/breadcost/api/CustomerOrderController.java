@@ -1,6 +1,7 @@
 package com.breadcost.api;
 
 import com.breadcost.masterdata.OrderEntity;
+import com.breadcost.masterdata.OrderRepository;
 import com.breadcost.masterdata.OrderService;
 import com.breadcost.masterdata.ProductEntity;
 import com.breadcost.masterdata.ProductRepository;
@@ -34,6 +35,7 @@ import java.util.Map;
 public class CustomerOrderController {
 
     private final OrderService orderService;
+    private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
 
     // ── DTOs ─────────────────────────────────────────────────────────────────
@@ -110,5 +112,40 @@ public class CustomerOrderController {
                 "status",      order.getStatus(),
                 "totalAmount", order.getTotalAmount() != null ? order.getTotalAmount() : 0
         ));
+    }
+
+    // ── BC-1105: Order status & history ───────────────────────────────────────
+
+    /**
+     * BC-1105: Get status of a specific customer order.
+     * GET /v2/orders/{id}?tenantId=...&customerId=...
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<OrderEntity> getOrderStatus(
+            @PathVariable("id") String orderId,
+            @RequestParam String tenantId,
+            @RequestParam String customerId) {
+
+        OrderEntity order = orderRepository
+                .findByTenantIdAndCustomerId(tenantId, customerId)
+                .stream()
+                .filter(o -> o.getOrderId().equals(orderId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
+
+        return ResponseEntity.ok(order);
+    }
+
+    /**
+     * BC-1105: Get order history for a customer.
+     * GET /v2/orders?tenantId=...&customerId=...
+     */
+    @GetMapping
+    public ResponseEntity<List<OrderEntity>> getOrderHistory(
+            @RequestParam String tenantId,
+            @RequestParam String customerId) {
+
+        List<OrderEntity> orders = orderRepository.findByTenantIdAndCustomerId(tenantId, customerId);
+        return ResponseEntity.ok(orders);
     }
 }
