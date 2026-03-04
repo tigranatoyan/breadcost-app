@@ -51,3 +51,6 @@ data/
 
 # ─── temp ─────────────────────────────────────────────────────────────────────
 *.bak
+
+#  Integration scripts  credentials (NEVER COMMIT) 
+work/120-task/scripts/config.py

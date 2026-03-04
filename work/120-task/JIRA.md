@@ -66,6 +66,111 @@
 
 ---
 
+### Epic: BC-E00 — User Journeys & End-to-End Flows
+**Goal:** Document every named user flow across all domains. This epic is the overarching reference that cross-cuts all domain epics. Each flow is a traceable unit of user value that maps to one or more FRs and one or more implementation epics. No code lives here — it is a traceability and alignment artifact.  
+**Requirements:** All FRs across all domains | **Release:** Spans R1–R3
+
+#### Flow Index
+
+| Flow ID | User Journey | Actors | Release | FRs | Epic(s) |
+|---------|-------------|--------|---------|-----|---------|
+| **F1.1** | Operator manually creates a B2B order: selects customer, adds products/quantities/delivery date, saves as DRAFT, confirms | Operator | R1 | FR-1.1, FR-1.17 | BC-E02 |
+| **F1.2** | WhatsApp message received → AI parses intent → draft order presented to operator for review and confirmation | Operator, AI | R2 (draft), R3 (full) | FR-1.2 | BC-E02, BC-E18 |
+| **F1.3** | AI bot conducts two-way WhatsApp conversation: confirms details, presents upsell, handles modifications | Customer, AI | R3 | FR-1.3, FR-1.4 | BC-E18 |
+| **F1.4** | Customer requests human during AI conversation → system alerts operator with call task | Customer, Operator, AI | R3 | FR-1.5 | BC-E18 |
+| **F1.5** | Order creation attempted after daily cutoff → system blocks standard order, shows cutoff message | Operator | R1 | FR-1.6 | BC-E02 |
+| **F1.6** | Rush order created after cutoff → premium % applied automatically → operator can override premium | Operator, Manager | R1 | FR-1.7, FR-1.8 | BC-E02 |
+| **F1.7** | Product from a department with lead time cannot meet delivery time → customer notified of earliest available → accepts or drops line item | Operator, Customer | R1 | FR-1.9, FR-1.10 | BC-E02 |
+| **F1.8** | Multi-department order with different lead times → customer chooses: split delivery (courier charge calculated) or consolidated late delivery | Operator, Customer | R1 | FR-1.11, FR-1.12, FR-1.13 | BC-E02 |
+| **F1.9** | Manager waives courier charge on an order → recorded in audit trail | Manager | R1 | FR-1.14 | BC-E02 |
+| **F1.10** | Operator modifies or cancels an order within the allowed window; post-production cancellation requires management approval | Operator, Manager | R1 | FR-1.15, FR-1.16 | BC-E02 |
+| **F1.11** | Operator or customer tracks real-time order status through all states: Draft → Confirmed → In Production → Ready → Out for Delivery → Delivered / Cancelled | Operator, Customer | R1 | FR-1.17 | BC-E02 |
+| **F2.1** | Customer registers on the web portal, logs in, and manages their profile | Customer | R2 | FR-2.1, FR-2.2, FR-2.3 | BC-E11 |
+| **F2.2** | Customer browses the product catalog with their applicable prices | Customer | R2 | FR-2.4 | BC-E11 |
+| **F2.3** | Customer places an order via the portal subject to cutoff and lead time rules | Customer | R2 | FR-2.5 | BC-E11 |
+| **F2.4** | Loyalty points awarded to customer upon completed purchase | Customer, System | R2 | FR-2.6 | BC-E12 |
+| **F2.5** | Customer advances through loyalty tiers (Bronze → Silver → Gold) based on configurable thresholds | Customer, System | R2 | FR-2.7, FR-2.8 | BC-E12 |
+| **F2.6** | Customer redeems loyalty points at checkout against an eligible order | Customer | R2 | FR-2.9 | BC-E12 |
+| **F2.7** | Customer views loyalty point balance, tier status, points history, and full order history | Customer | R2 | FR-2.10, FR-2.11 | BC-E12 |
+| **F2.8** | Customer tracks real-time status of active orders on the portal | Customer | R2 | FR-2.12 | BC-E11 |
+| **F3.1** | System nightly auto-generates production plan from confirmed orders: aggregates quantities, calculates material requirements, flags shortfalls | System, Manager | R1 | FR-3.1, FR-3.2, FR-3.3 | BC-E03 |
+| **F3.2** | Manager reviews, adjusts quantities, and approves the production plan | Manager | R1 | FR-3.4 | BC-E03 |
+| **F3.3** | Upon approval, work orders released to each department with recipe steps and material issue instructions | Floor Worker, System | R1 | FR-3.5 | BC-E03 |
+| **F3.4** | Floor worker starts a batch and marks it in progress | Floor Worker | R1 | FR-3.6 | BC-E03 |
+| **F3.5** | Floor worker completes batch and records actual yield; system flags variance vs expected | Floor Worker, System | R1 | FR-3.7 | BC-E03 |
+| **F3.6** | Production delay or shortfall detected → in-app + WhatsApp alert sent to management | System, Manager | R1 | FR-3.8 | BC-E03 |
+| **F3.7** | Manager manually halts a production line; affected orders are flagged and customers notified | Manager | R1 | FR-3.9 | BC-E03 |
+| **F3.8** | After a halt or shortage, system recalculates and presents updated production plan for re-approval | Manager, System | R1 | FR-3.10 | BC-E03 |
+| **F4.1** | Technologist creates a recipe: defines product, department, ingredients with quantities/units/waste factors, yield, sale unit | Technologist | R1 | FR-4.1, FR-4.2, FR-4.8, FR-4.9 | BC-E04 |
+| **F4.2** | Technologist edits a recipe → new version created; previous version retained; active version can be switched | Technologist | R1 | FR-4.6 | BC-E04 |
+| **F4.3** | Technologist sets the active recipe version for a product | Technologist | R1 | FR-4.7 | BC-E04 |
+| **F4.4** | Technologist configures ingredient unit conversion (purchasing unit vs recipe unit with ratio) | Technologist | R1 | FR-4.3 | BC-E04 |
+| **F4.5** | System calculates total ingredient consumption for a batch: quantity × batch size × waste factor → converted to purchasing units | System | R1 | FR-4.4 | BC-E04 |
+| **F4.6** | System uses recipe yield definition to calculate production unit outputs for planning | System | R1 | FR-4.5 | BC-E04 |
+| **F5.1** | Warehouse receives raw material lot from supplier: records item, qty, cost, currency, exchange rate, lot ID | Warehouse | R1 | FR-5.1, FR-5.2, FR-5.11 | BC-E05 |
+| **F5.2** | System issues materials to a production batch using FIFO; partial lot consumption supported | System, Floor Worker | R1 | FR-5.3, FR-5.6, FR-5.11 | BC-E05 |
+| **F5.3** | Warehouse transfers inventory between departments (shared warehouse mode) | Warehouse, Manager | R1 | FR-5.4, FR-5.11 | BC-E05 |
+| **F5.4** | Warehouse records inventory adjustment (waste, spoilage, count correction) with mandatory reason code | Warehouse | R1 | FR-5.5, FR-5.11 | BC-E05 |
+| **F5.5** | System maintains FIFO cost layers per item per lot for accurate COGS and inventory valuation | System | R1 | FR-5.6 | BC-E05 |
+| **F5.6** | Stock falls below minimum threshold → in-app + WhatsApp alert triggered for configured recipients | System, Warehouse, Manager | R1 | FR-5.7, FR-5.8 | BC-E05 |
+| **F5.7** | AI module surfaces weekly/monthly replenishment hints based on historical consumption | Manager, Warehouse, AI | R3 | FR-12.3 | BC-E19 |
+| **F5.8** | Manager manually allocates or blocks inventory to a specific department | Manager | R1 | FR-5.10 | BC-E05 |
+| **F5.9** | WhatsApp notification sent to configured recipients on stock alert | System | R1 | FR-5.8 | BC-E05 |
+| **F5.10** | Admin configures warehouse mode (shared vs isolated per department) | Admin | R1 | FR-5.9 | BC-E08 |
+| **F5.11** | All inventory movements recorded as immutable ledger entries with full traceability | System | R1 | FR-5.11 | BC-E05, BC-E09 |
+| **F6.1** | Admin maintains supplier catalog: name, contacts, items supplied, price, lead time | Admin, Manager | R2 | FR-6.1 | BC-E13 |
+| **F6.2** | System generates PO suggestion when stock falls below threshold, based on consumption rate and lead time | System | R2 | FR-6.2 | BC-E13 |
+| **F6.3** | Manager reviews, adjusts quantities, and approves a PO suggestion | Manager | R2 | FR-6.3 | BC-E13 |
+| **F6.4** | Approved PO exported to Excel (R2); sent via supplier API (R3) | Manager, System | R2/R3 | FR-6.4 | BC-E13, BC-E22 |
+| **F6.5** | Supplier delivery received and matched against open PO; discrepancies flagged | Warehouse | R2 | FR-6.5 | BC-E13 |
+| **F6.6** | Foreign currency receipt recorded with exchange rate at time of receipt; converted to main currency | Warehouse, Finance | R2 | FR-6.6 | BC-E13 |
+| **F6.7** | Exchange rate entered manually per transaction (R1/R2); pulled from external API (R3) | Finance, System | R1/R3 | FR-6.7, FR-9.7 | BC-E13, BC-E22 |
+| **F7.1** | Confirmed orders assigned to delivery runs based on time windows and driver availability | Operator, Manager | R2 | FR-7.1 | BC-E14 |
+| **F7.2** | Delivery manifest generated per driver/run listing orders, customers, addresses, items, quantities | System | R2 | FR-7.2 | BC-E14 |
+| **F7.3** | Driver (via operator in R2, mobile app in R3) marks each delivery as completed | Driver, Operator, System | R2/R3 | FR-7.3 | BC-E14, BC-E21 |
+| **F7.4** | Failed delivery recorded with reason; return or re-delivery workflow triggered | Driver, Operator | R2 | FR-7.4 | BC-E14 |
+| **F7.5** | Split delivery courier charge calculated and applied to secondary delivery | System | R2 | FR-7.5 | BC-E14 |
+| **F7.6** | Manager waives courier charge on a delivery; logged in audit trail | Manager | R2 | FR-7.6 | BC-E14 |
+| **F7.7** | Driver mobile app integration: real-time tracking, packaging confirmation, on-spot payment | Driver, System | R3 | FR-7.7 | BC-E21 |
+| **F8.1** | Cashier processes walk-in sale: selects products, enters qty, sale deducts from finished goods inventory | Cashier | R1 | FR-8.1, FR-8.7 | BC-E06 |
+| **F8.2** | POS displays current price list and applies applicable discounts or loyalty redemptions | Cashier, System | R1 | FR-8.2 | BC-E06 |
+| **F8.3** | Cashier processes cash payment (change calculated) or card payment | Cashier | R1 | FR-8.3 | BC-E06 |
+| **F8.4** | Receipt generated and displayed upon sale completion; printable | Cashier, System | R1 | FR-8.4 | BC-E06 |
+| **F8.5** | Cashier processes refund or exchange with mandatory reason recording | Cashier | R1 | FR-8.5 | BC-E06 |
+| **F8.6** | End-of-day POS reconciliation: totals for cash, card, refunds, and net sales | Cashier, Manager | R1 | FR-8.6 | BC-E06 |
+| **F8.7** | Driver collects payment at delivery via POS extension (future) | Driver, System | R3 | FR-8.8 | BC-E21 |
+| **F9.1** | Every material receipt creates a bookkeeping entry: original currency + converted main currency cost | System, Finance | R1 | FR-9.1 | BC-E05 |
+| **F9.2** | Actual cost of production batch calculated as sum of FIFO-valued material issues | System | R1 | FR-9.2 | BC-E05 |
+| **F9.3** | COGS per unit derived from actual material cost + waste cost normalized per yield unit | System, Finance | R1 | FR-9.3 | BC-E07 |
+| **F9.4** | Finance views variance report: planned material consumption vs actual per batch and per period | Finance, Manager | R1 | FR-9.4 | BC-E07 |
+| **F9.5** | Finance views inventory valuation: FIFO cost of stock on hand at any point in time | Finance | R1 | FR-9.5 | BC-E07 |
+| **F9.6** | Finance closes an accounting period: all transactions locked, period-end reports generated, backdating blocked | Finance | R1 | FR-9.6 | BC-E07 |
+| **F9.7** | Finance manually enters exchange rate per currency per date; future: pulled from API | Finance, System | R1/R3 | FR-9.7 | BC-E22 |
+| **F9.8** | Invoice generated from confirmed + delivered B2B order with configurable payment terms; payment status tracked | Finance | R2 | FR-9.8, FR-9.9 | BC-E15 |
+| **F9.9** | Customer's outstanding balance exceeds credit limit or invoice overdue → new orders blocked; finance alerted | System, Finance | R2 | FR-9.10 | BC-E15 |
+| **F9.10** | Customer-specific pricing and discount rules stored and applied at order creation; price change history retained | Admin, Manager | R2 | FR-9.11 | BC-E15 |
+| **F10.1** | Manager opens dashboard: sees today's orders, production plan status, stock alert count, daily/weekly/monthly revenue, top products | Manager, Admin | R1 | FR-10.1 | BC-E07 |
+| **F10.2** | User builds a custom report by selecting and combining predefined KPI blocks in the report constructor | Manager, Finance | R2 | FR-10.2 | BC-E16 |
+| **F10.3** | User views standard reports: gross/net revenue, COGS, gross margin, profitability, inventory turnover, variance, customer balance, top customers | Finance, Manager | R1/R2 | FR-10.3, FR-10.7 | BC-E07, BC-E16 |
+| **F10.4** | User filters any report by date range, department, product, or customer | Finance, Manager | R1 | FR-10.4 | BC-E07 |
+| **F10.5** | User exports a report to Excel or PDF from the in-app view | Finance, Manager | R1 | FR-10.5, FR-10.6 | BC-E07 |
+| **F11.1** | Admin creates and configures departments: name, product types, lead time, warehouse mode, assigned recipes and staff | Admin | R1 | FR-11.1, FR-11.2 | BC-E08 |
+| **F11.2** | Admin manages roles with granular action-level permissions and data access layers | Admin | R1 | FR-11.3 | BC-E08 |
+| **F11.3** | Admin creates, edits, deactivates, or re-assigns roles for staff accounts | Admin | R1 | FR-11.4 | BC-E08 |
+| **F11.4** | Admin or Manager configures order cutoff time and rush order premium % | Admin, Manager | R1 | FR-11.5 | BC-E08 |
+| **F11.5** | Admin configures loyalty tier names, point thresholds, benefits, and earning rates | Admin | R2 | FR-11.6 | BC-E12, BC-E17 |
+| **F11.6** | Super-admin assigns subscription tier per tenant; feature access enforced accordingly | Super-Admin | R2 | FR-11.7 | BC-E17 |
+| **F11.7** | All significant actions (orders, approvals, config changes, financial entries, role changes) recorded in append-only audit trail | System | R1 | FR-11.8 | BC-E09 |
+| **F11.8** | Admin or Finance user reads the audit trail | Admin, Finance | R1 | FR-11.9 | BC-E08 |
+| **F12.1** | AI bot processes incoming WhatsApp message end-to-end: extracts intent, confirms details, presents upsell, collects acceptance, creates order | Customer, AI | R3 | FR-12.1, FR-12.2, FR-12.8, FR-12.9 | BC-E18 |
+| **F12.2** | AI displays weekly/monthly replenishment hints per item to warehouse/purchasing manager | Manager, Warehouse, AI | R3 | FR-12.3 | BC-E19 |
+| **F12.3** | AI suggests optimal batch sizes, sequencing, and resource allocation for production planning | Manager, AI | R3 | FR-12.4 | BC-E19 |
+| **F12.4** | AI suggests pricing adjustments or customer-specific discounts based on volume/frequency/margin | Manager, Finance, AI | R3 | FR-12.5 | BC-E20 |
+| **F12.5** | AI surfaces anomaly alerts in reports with brief explanations (cost spike, unusual variance, revenue drop) | Manager, Finance, AI | R3 | FR-12.6 | BC-E20 |
+| **F12.6** | AI provides demand forecast per product per period as a planning aid | Manager, AI | R3 | FR-12.7 | BC-E19 |
+
+---
+
 ### Epic: BC-E01 — Authentication & Authorization
 **Goal:** Secure login, JWT token management, and role enforcement across all endpoints.  
 **Sprint:** 1 | **Requirements:** FR-11.3, FR-11.4, NFR-G.4, NFR-G.5, NFR-G.6
