@@ -1,0 +1,53 @@
+package com.breadcost.api;
+
+import com.breadcost.masterdata.ItemEntity;
+import com.breadcost.masterdata.ItemService;
+import com.breadcost.masterdata.ItemService.CreateItemRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/v1/items")
+@RequiredArgsConstructor
+public class ItemController {
+
+    private final ItemService itemService;
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('Admin','ProductionUser','FinanceUser','Viewer')")
+    public ResponseEntity<List<ItemEntity>> getItems(
+            @RequestParam String tenantId,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false, defaultValue = "false") boolean activeOnly) {
+
+        if (type != null) {
+            return ResponseEntity.ok(itemService.listByType(tenantId, type));
+        }
+        if (activeOnly) {
+            return ResponseEntity.ok(itemService.listActive(tenantId));
+        }
+        return ResponseEntity.ok(itemService.listAll(tenantId));
+    }
+
+    @PostMapping
+    @PreAuthorize("hasAnyRole('Admin','ProductionUser')")
+    public ResponseEntity<ItemEntity> createItem(
+            @RequestParam String tenantId,
+            @RequestBody CreateItemRequest req) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(itemService.create(tenantId, req));
+    }
+
+    @PutMapping("/{itemId}")
+    @PreAuthorize("hasAnyRole('Admin','ProductionUser')")
+    public ResponseEntity<ItemEntity> updateItem(
+            @PathVariable String itemId,
+            @RequestParam String tenantId,
+            @RequestBody CreateItemRequest req) {
+        return ResponseEntity.ok(itemService.update(tenantId, itemId, req));
+    }
+}
