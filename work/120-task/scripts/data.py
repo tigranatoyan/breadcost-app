@@ -1051,7 +1051,7 @@ STORIES = [
             "FR-2.2 satisfied",
         ],
         "priority": "P0",
-        "status": "� In Progress",
+        "status": "✅ Done",
         "labels": ["customer-portal"],
     },
     {
