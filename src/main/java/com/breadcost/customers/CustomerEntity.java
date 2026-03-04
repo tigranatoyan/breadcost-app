@@ -37,6 +37,9 @@ public class CustomerEntity {
     @Column(nullable = false)
     private String email;
 
+    /** BCrypt-hashed password — BC-1102. Nullable for legacy/invited customers. */
+    private String passwordHash;
+
     private String phone;
 
     @Builder.Default

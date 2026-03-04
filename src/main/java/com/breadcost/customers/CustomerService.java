@@ -1,7 +1,9 @@
 package com.breadcost.customers;
 
+import com.breadcost.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,9 +14,7 @@ import java.util.UUID;
  * Customer management service — BC-E11 Customer Portal.
  *
  * BC-1101: Customer registration
- *   - POST /v2/customers/register
- *   - Unique email per tenant (409 on duplicate)
- *   - FR-2.2 satisfied
+ * BC-1102: Customer login and profile management
  */
 @Service
 @RequiredArgsConstructor
@@ -22,6 +22,10 @@ import java.util.UUID;
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+
+    // ── BC-1101: Registration ─────────────────────────────────────────────────
 
     /**
      * Registers a new customer.
@@ -34,29 +38,102 @@ public class CustomerService {
             String tenantId,
             String name,
             String email,
+            String rawPassword,
             String phone,
             List<CustomerAddress> addresses) {
 
+        String normalizedEmail = email.trim().toLowerCase();
+
         // Duplicate email guard (FR-2.2 — unique email per tenant)
-        customerRepository.findByTenantIdAndEmail(tenantId, email.trim().toLowerCase())
+        customerRepository.findByTenantIdAndEmail(tenantId, normalizedEmail)
                 .ifPresent(existing -> {
                     throw new IllegalStateException(
                             "A customer with email '" + email + "' already exists in this account.");
                 });
 
+        String hash = (rawPassword != null && !rawPassword.isBlank())
+                ? passwordEncoder.encode(rawPassword) : null;
+
         CustomerEntity customer = CustomerEntity.builder()
                 .customerId(UUID.randomUUID().toString())
                 .tenantId(tenantId)
                 .name(name.trim())
-                .email(email.trim().toLowerCase())
+                .email(normalizedEmail)
+                .passwordHash(hash)
                 .phone(phone)
                 .addresses(addresses != null ? addresses : List.of())
                 .active(true)
                 .build();
 
-        log.info("Registering customer: tenantId={} email={}", tenantId, customer.getEmail());
+        log.info("Registering customer: tenantId={} email={}", tenantId, normalizedEmail);
         return customerRepository.save(customer);
     }
+
+    // ── BC-1102: Login ────────────────────────────────────────────────────────
+
+    /**
+     * Authenticates a customer and returns a JWT token.
+     *
+     * @return JWT string scoped to the customer (role=Customer)
+     * @throws IllegalArgumentException on invalid credentials → 400/401
+     */
+    public String login(String tenantId, String email, String rawPassword) {
+        String normalizedEmail = email.trim().toLowerCase();
+        CustomerEntity customer = customerRepository
+                .findByTenantIdAndEmail(tenantId, normalizedEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid credentials."));
+
+        if (!customer.isActive()) {
+            throw new IllegalArgumentException("Account is inactive.");
+        }
+        if (customer.getPasswordHash() == null
+                || !passwordEncoder.matches(rawPassword, customer.getPasswordHash())) {
+            throw new IllegalArgumentException("Invalid credentials.");
+        }
+
+        log.info("Customer login ok: tenantId={} customerId={}", tenantId, customer.getCustomerId());
+        return jwtUtil.generate(customer.getCustomerId(), List.of("Customer"), tenantId);
+    }
+
+    // ── BC-1102: Profile ──────────────────────────────────────────────────────
+
+    /**
+     * Returns a customer profile.
+     *
+     * @throws IllegalArgumentException if the customer is not found
+     */
+    public CustomerEntity getProfile(String tenantId, String customerId) {
+        return customerRepository.findByTenantIdAndCustomerId(tenantId, customerId)
+                .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + customerId));
+    }
+
+    /**
+     * Updates mutable profile fields: name, phone, addresses.
+     *
+     * @throws IllegalArgumentException if the customer is not found
+     */
+    @Transactional
+    public CustomerEntity updateProfile(
+            String tenantId,
+            String customerId,
+            String name,
+            String phone,
+            List<CustomerAddress> addresses) {
+
+        CustomerEntity customer = getProfile(tenantId, customerId);
+
+        if (name != null && !name.isBlank())   customer.setName(name.trim());
+        if (phone != null)                     customer.setPhone(phone.trim());
+        if (addresses != null) {
+            customer.getAddresses().clear();
+            customer.getAddresses().addAll(addresses);
+        }
+
+        log.info("Profile updated: tenantId={} customerId={}", tenantId, customerId);
+        return customerRepository.save(customer);
+    }
+
+    // ── utilities ─────────────────────────────────────────────────────────────
 
     public List<CustomerEntity> listCustomers(String tenantId) {
         return customerRepository.findByTenantId(tenantId);

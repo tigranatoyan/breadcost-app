@@ -9,5 +9,7 @@ public interface CustomerRepository extends JpaRepository<CustomerEntity, String
 
     Optional<CustomerEntity> findByTenantIdAndEmail(String tenantId, String email);
 
+    Optional<CustomerEntity> findByTenantIdAndCustomerId(String tenantId, String customerId);
+
     List<CustomerEntity> findByTenantId(String tenantId);
 }

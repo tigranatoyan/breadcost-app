@@ -19,12 +19,13 @@ import java.util.Map;
 /**
  * Customer Portal API — /v2/customers
  *
- * BC-1101: Customer registration
- *   POST /v2/customers/register → 201 { customerId }
- *   Duplicate email → 409 (handled by GlobalExceptionHandler via IllegalStateException)
+ * BC-1101: POST /v2/customers/register → 201 { customerId }
+ * BC-1102: POST /v2/customers/login    → 200 { token, customerId, name }
+ *          GET  /v2/customers/{id}/profile
+ *          PUT  /v2/customers/{id}/profile
  *
- * Accessible without authentication (public, customer self-service).
- * FR-2.2 satisfied.
+ * Public endpoints — no staff authentication required.
+ * FR-2.2, FR-2.3 satisfied.
  */
 @RestController
 @RequestMapping("/v2/customers")
@@ -34,7 +35,7 @@ public class CustomerController {
 
     private final CustomerService customerService;
 
-    // ── Request / Response DTOs ──────────────────────────────────────────────
+    // ── DTOs ─────────────────────────────────────────────────────────────────
 
     @Data
     public static class AddressRequest {
@@ -51,54 +52,124 @@ public class CustomerController {
         @NotBlank private String tenantId;
         @NotBlank private String name;
         @Email @NotBlank private String email;
+        private String password;      // optional on registration
         private String phone;
         private List<AddressRequest> addresses;
     }
 
-    // ── Endpoints ────────────────────────────────────────────────────────────
+    @Data
+    public static class LoginRequest {
+        @NotBlank private String tenantId;
+        @Email @NotBlank private String email;
+        @NotBlank private String password;
+    }
+
+    @Data
+    public static class UpdateProfileRequest {
+        private String name;
+        private String phone;
+        private List<AddressRequest> addresses;
+    }
+
+    // ── Registration (BC-1101) ────────────────────────────────────────────────
 
     /**
-     * BC-1101: Register a new customer.
-     * POST /v2/customers/register
-     *
-     * @return 201 Created with { "customerId": "..." }
-     *         409 Conflict if email already registered for this tenant
+     * POST /v2/customers/register → 201 { customerId }
+     * 409 if email already registered for this tenant.
      */
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> register(
             @Valid @RequestBody RegisterCustomerRequest req) {
 
-        List<CustomerAddress> addresses = req.getAddresses() == null ? List.of() :
-                req.getAddresses().stream()
-                        .map(a -> CustomerAddress.builder()
-                                .label(a.getLabel())
-                                .line1(a.getLine1())
-                                .line2(a.getLine2())
-                                .city(a.getCity())
-                                .postalCode(a.getPostalCode())
-                                .countryCode(a.getCountryCode())
-                                .build())
-                        .toList();
-
         CustomerEntity created = customerService.registerCustomer(
                 req.getTenantId(),
                 req.getName(),
                 req.getEmail(),
+                req.getPassword(),
                 req.getPhone(),
-                addresses);
+                mapAddresses(req.getAddresses()));
 
         log.info("Customer registered: customerId={} tenantId={}", created.getCustomerId(), created.getTenantId());
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
+        return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Map.of("customerId", created.getCustomerId()));
     }
 
+    // ── Login (BC-1102) ───────────────────────────────────────────────────────
+
     /**
-     * List all customers for a tenant (admin use, authenticated endpoint).
-     * GET /v2/customers?tenantId=...
+     * POST /v2/customers/login → 200 { token, customerId, name }
+     * 400 on invalid credentials.
      */
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, String>> login(
+            @Valid @RequestBody LoginRequest req) {
+
+        String token = customerService.login(req.getTenantId(), req.getEmail(), req.getPassword());
+
+        CustomerEntity customer = customerService.listCustomers(req.getTenantId())
+                .stream()
+                .filter(c -> c.getEmail().equals(req.getEmail().trim().toLowerCase()))
+                .findFirst()
+                .orElseThrow();
+
+        return ResponseEntity.ok(Map.of(
+                "token",      token,
+                "customerId", customer.getCustomerId(),
+                "name",       customer.getName()
+        ));
+    }
+
+    // ── Profile (BC-1102) ─────────────────────────────────────────────────────
+
+    /**
+     * GET /v2/customers/{id}/profile?tenantId=...
+     */
+    @GetMapping("/{id}/profile")
+    public ResponseEntity<CustomerEntity> getProfile(
+            @PathVariable("id") String customerId,
+            @RequestParam String tenantId) {
+
+        return ResponseEntity.ok(customerService.getProfile(tenantId, customerId));
+    }
+
+    /**
+     * PUT /v2/customers/{id}/profile?tenantId=...
+     */
+    @PutMapping("/{id}/profile")
+    public ResponseEntity<CustomerEntity> updateProfile(
+            @PathVariable("id") String customerId,
+            @RequestParam String tenantId,
+            @RequestBody UpdateProfileRequest req) {
+
+        CustomerEntity updated = customerService.updateProfile(
+                tenantId, customerId,
+                req.getName(), req.getPhone(),
+                mapAddresses(req.getAddresses()));
+
+        return ResponseEntity.ok(updated);
+    }
+
+    // ── Admin list ────────────────────────────────────────────────────────────
+
+    /** GET /v2/customers?tenantId=... */
     @GetMapping
     public ResponseEntity<List<CustomerEntity>> listCustomers(@RequestParam String tenantId) {
         return ResponseEntity.ok(customerService.listCustomers(tenantId));
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private List<CustomerAddress> mapAddresses(List<AddressRequest> input) {
+        if (input == null) return List.of();
+        return input.stream()
+                .map(a -> CustomerAddress.builder()
+                        .label(a.getLabel())
+                        .line1(a.getLine1())
+                        .line2(a.getLine2())
+                        .city(a.getCity())
+                        .postalCode(a.getPostalCode())
+                        .countryCode(a.getCountryCode())
+                        .build())
+                .toList();
     }
 }
