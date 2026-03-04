@@ -296,11 +296,14 @@ def load_existing_epics() -> dict:
     """Returns {BC-E01: 'BC-2', ...} for all non-duplicate epics in JIRA."""
     print("  Fetching existing epics from JIRA...")
     issues = _search_all(
-        f'project = {JIRA_PROJECT} AND issuetype = Epic AND labels != duplicate ORDER BY created ASC',
-        ["summary", "key"]
+        f'project = {JIRA_PROJECT} AND issuetype = Epic ORDER BY created ASC',
+        ["summary", "key", "labels"]
     )
     mapping = {}
     for issue in issues:
+        labels = issue["fields"].get("labels", [])
+        if "duplicate" in labels:
+            continue
         summary = issue["fields"]["summary"]
         if summary.startswith("[BC-E"):
             bc_id = summary[1:summary.index("]")]
@@ -313,11 +316,14 @@ def load_existing_stories() -> set:
     """Returns a set of BC story IDs already present in JIRA (non-duplicate)."""
     print("  Fetching existing stories from JIRA...")
     issues = _search_all(
-        f'project = {JIRA_PROJECT} AND issuetype = Story AND labels != duplicate ORDER BY created ASC',
-        ["summary"]
+        f'project = {JIRA_PROJECT} AND issuetype = Story ORDER BY created ASC',
+        ["summary", "labels"]
     )
     existing = set()
     for issue in issues:
+        labels = issue["fields"].get("labels", [])
+        if "duplicate" in labels:
+            continue
         summary = issue["fields"]["summary"]
         if summary.startswith("["):
             try:
