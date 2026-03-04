@@ -71,18 +71,27 @@ def slug(title):
 
 
 def find_jira_issue(story_id):
-    """Find the JIRA issue key for a BC story ID like 'BC-201'."""
+    """Find the JIRA issue key for a BC story ID like 'BC-201'.
+
+    Note: JQL ~ operator treats [ ] as Lucene range syntax, so we search for
+    the plain ID and then verify the summary in Python.
+    """
     s, data = jira_req(
         "POST",
         "/rest/api/3/search/jql",
         {
-            "jql": f"project={JIRA_PROJECT} AND issuetype=Story AND summary ~ '[{story_id}]'",
-            "maxResults": 5,
-            "fields": ["summary", "status"],
+            "jql": f'project={JIRA_PROJECT} AND issuetype=Story AND summary ~ "{story_id}" ORDER BY created ASC',
+            "maxResults": 20,
+            "fields": ["summary", "status", "labels"],
         },
     )
-    if s == 200 and data.get("issues"):
-        return data["issues"][0]
+    if s == 200:
+        for issue in data.get("issues", []):
+            labels = issue["fields"].get("labels", [])
+            if "duplicate" in labels:
+                continue
+            if issue["fields"]["summary"].startswith(f"[{story_id}]"):
+                return issue
     return None
 
 
