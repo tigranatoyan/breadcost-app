@@ -5,6 +5,8 @@ import lombok.*;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "pos_sale_lines")
 @Getter
@@ -19,6 +21,7 @@ public class SaleLineEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "saleId")
+    @JsonIgnore
     private SaleEntity sale;
 
     private String productId;

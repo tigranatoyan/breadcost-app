@@ -2,6 +2,7 @@ package com.breadcost.api;
 
 import com.breadcost.commands.CommandResult;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -54,6 +55,30 @@ public class GlobalExceptionHandler {
                         .success(false)
                         .errorCode("ERR_FORBIDDEN")
                         .message("Access denied")
+                        .build());
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<CommandResult> handleIllegalState(IllegalStateException ex) {
+        log.warn("Illegal state: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(CommandResult.builder()
+                        .success(false)
+                        .errorCode("ERR_INVALID_STATE")
+                        .message(ex.getMessage())
+                        .build());
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<CommandResult> handleDataIntegrity(DataIntegrityViolationException ex) {
+        log.warn("Data integrity violation: {}", ex.getMostSpecificCause().getMessage());
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(CommandResult.builder()
+                        .success(false)
+                        .errorCode("ERR_CONFLICT")
+                        .message("A record with this identifier already exists")
                         .build());
     }
 
