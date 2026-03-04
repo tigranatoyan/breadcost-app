@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { setCredentials, isLoggedIn } from '@/lib/auth';
+import { setSession, isLoggedIn, UserInfo } from '@/lib/auth';
 import { API_BASE } from '@/lib/api';
 
 export default function LoginPage() {
@@ -20,23 +20,29 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      // Test credentials against a lightweight endpoint
-      const encoded = btoa(`${username}:${password}`);
-      const res = await fetch(`${API_BASE}/v1/departments?tenantId=tenant1`, {
-        headers: { Authorization: `Basic ${encoded}` },
+      const res = await fetch(`${API_BASE}/v1/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
       });
       if (res.status === 401 || res.status === 403) {
         setError('Invalid username or password.');
         return;
       }
-      if (!res.ok && res.status !== 200) {
-        // If endpoint itself errored but auth passed (non-4xx), still allow login
-        if (res.status >= 400 && res.status < 500) {
-          setError('Invalid username or password.');
-          return;
-        }
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.message ?? 'Login failed. Please try again.');
+        return;
       }
-      setCredentials(username, password);
+      const data = await res.json();
+      const userInfo: UserInfo = {
+        username: data.username,
+        displayName: data.displayName ?? data.username,
+        roles: data.roles ?? [],
+        tenantId: data.tenantId ?? 'tenant1',
+        primaryRole: data.primaryRole ?? (data.roles?.[0] ?? 'Viewer'),
+      };
+      setSession(data.token, userInfo);
       router.push('/dashboard');
     } catch {
       setError('Cannot reach the server. Make sure the backend is running on port 8080.');

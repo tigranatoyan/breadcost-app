@@ -225,6 +225,25 @@ public class RecipeService {
                 .build();
     }
 
+    /**
+     * Replace all ingredients on a DRAFT recipe with the provided list.
+     * Not allowed on ACTIVE or ARCHIVED recipes.
+     */
+    @Transactional
+    public RecipeEntity updateIngredients(String tenantId, String recipeId, List<IngredientRequest> ingredientRequests) {
+        RecipeEntity recipe = getById(tenantId, recipeId);
+        if (recipe.getStatus() != com.breadcost.domain.Recipe.RecipeStatus.DRAFT) {
+            throw new IllegalStateException("Ingredients can only be updated on DRAFT recipes");
+        }
+        recipe.getIngredients().clear();
+        List<RecipeIngredientEntity> newIngredients = ingredientRequests.stream()
+                .map(i -> buildIngredientEntity(i, recipeId))
+                .collect(Collectors.toList());
+        recipe.getIngredients().addAll(newIngredients);
+        recipe.setUpdatedAtUtc(java.time.Instant.now());
+        return recipeRepository.save(recipe);
+    }
+
     private void validateIngredientRequest(IngredientRequest req) {
         if (req.itemId() == null || req.itemId().isBlank()) {
             throw new IllegalArgumentException("Ingredient itemId is required");

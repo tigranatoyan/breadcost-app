@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,6 +29,8 @@ public class ProductService {
             String description,
             Product.SaleUnit saleUnit,
             String baseUom,
+            BigDecimal price,
+            double vatRatePct,
             String createdBy
     ) {}
 
@@ -36,6 +39,8 @@ public class ProductService {
             String description,
             Product.SaleUnit saleUnit,
             String baseUom,
+            BigDecimal price,
+            double vatRatePct,
             Product.ProductStatus status
     ) {}
 
@@ -65,6 +70,8 @@ public class ProductService {
                 .description(req.description())
                 .saleUnit(req.saleUnit())
                 .baseUom(req.baseUom())
+                .price(req.price())
+                .vatRatePct(req.vatRatePct())
                 .status(Product.ProductStatus.ACTIVE)
                 .createdBy(req.createdBy())
                 .build();
@@ -83,6 +90,8 @@ public class ProductService {
         entity.setDescription(req.description());
         entity.setSaleUnit(req.saleUnit());
         entity.setBaseUom(req.baseUom());
+        if (req.price() != null) entity.setPrice(req.price());
+        entity.setVatRatePct(req.vatRatePct());
         entity.setStatus(req.status());
 
         ProductEntity saved = productRepository.save(entity);

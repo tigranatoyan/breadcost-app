@@ -48,6 +48,15 @@ interface Order {
   lines: OrderLine[];
 }
 
+interface StockAlert {
+  itemId: string;
+  itemName: string;
+  onHandQty: number;
+  minThreshold: number;
+  uom: string;
+  severity: 'LOW' | 'CRITICAL';
+}
+
 interface StockPosition {
   id: string;
   itemId: string;
@@ -113,6 +122,7 @@ export default function DashboardPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [positions, setPositions] = useState<StockPosition[]>([]);
   const [stockItems, setStockItems] = useState<StockItem[]>([]);
+  const [serverAlerts, setServerAlerts] = useState<StockAlert[]>([]);
   const [tick, setTick] = useState(0);
   const today = new Date().toISOString().substring(0, 10);
 
@@ -124,6 +134,7 @@ export default function DashboardPage() {
       apiFetch<Plan[]>(`/v1/production-plans?tenantId=${TENANT_ID}`).then(setPlans),
       apiFetch<StockPosition[]>(`/v1/inventory/positions?tenantId=${TENANT_ID}`).then(setPositions).catch(() => {}),
       apiFetch<StockItem[]>(`/v1/items?tenantId=${TENANT_ID}`).then(setStockItems).catch(() => {}),
+      apiFetch<StockAlert[]>(`/v1/inventory/alerts?tenantId=${TENANT_ID}`).then(setServerAlerts).catch(() => {}),
     ])
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -199,7 +210,14 @@ export default function DashboardPage() {
   if (rushOrders.length > 0) issues.push({ level: 'warn', msg: `${rushOrders.length} rush order(s) in queue` });
   const draftPlansNoWO = todayPlans.filter((p) => p.status === 'DRAFT' && (p.workOrders?.length ?? 0) === 0);
   if (draftPlansNoWO.length > 0) issues.push({ level: 'warn', msg: `${draftPlansNoWO.length} of today's plans are DRAFT with no work orders` });
-  if (lowStockPositions.length > 0) issues.push({ level: 'warn', msg: `${lowStockPositions.length} stock position(s) below minimum threshold` });
+  if (serverAlerts.length > 0) {
+    const critical = serverAlerts.filter((a) => a.severity === 'CRITICAL');
+    const low = serverAlerts.filter((a) => a.severity === 'LOW');
+    if (critical.length > 0) issues.push({ level: 'error', msg: `${critical.length} item(s) with CRITICAL stock level (zero on-hand)` });
+    if (low.length > 0) issues.push({ level: 'warn', msg: `${low.length} item(s) below minimum stock threshold` });
+  } else if (lowStockPositions.length > 0) {
+    issues.push({ level: 'warn', msg: `${lowStockPositions.length} stock position(s) below minimum threshold` });
+  }
   const confirmedNoMatch = confirmedOrders.filter(
     (o) => !plans.some((p) => p.planDate === o.requestedDeliveryTime?.substring(0, 10))
   );
@@ -212,7 +230,7 @@ export default function DashboardPage() {
     { label: 'Running Revenue', value: fmtMoney(runningRevenue), sub: `${activeOrders.length} active orders`, href: '/orders', icon: '💰', color: 'bg-emerald-50 border-emerald-200' },
     { label: 'Open Orders', value: activeOrders.length, sub: criticalOrders.length > 0 ? `⚠️ ${criticalOrders.length} critical` : `${confirmedOrders.length} confirmed`, href: '/orders', icon: '📦', color: criticalOrders.length > 0 ? 'bg-red-50 border-red-300' : 'bg-green-50 border-green-200' },
     { label: "Today's Plans", value: todayPlans.length, sub: activePlan ? `Active: ${activePlan.shift}` : 'None active', href: '/production-plans', icon: '📅', color: 'bg-purple-50 border-purple-200' },
-    { label: 'Stock Value', value: fmtMoney(totalStockValue), sub: lowStockPositions.length > 0 ? `⚠️ ${lowStockPositions.length} below threshold` : `${positions.length} positions`, href: '/inventory', icon: '🏬', color: lowStockPositions.length > 0 ? 'bg-red-50 border-red-300' : 'bg-blue-50 border-blue-200' },
+    { label: 'Stock Value', value: fmtMoney(totalStockValue), sub: serverAlerts.length > 0 ? `⚠️ ${serverAlerts.length} stock alert(s)` : `${positions.length} positions`, href: '/inventory', icon: '🏦', color: serverAlerts.length > 0 ? 'bg-red-50 border-red-300' : 'bg-blue-50 border-blue-200' },
   ];
 
   // production floor progress

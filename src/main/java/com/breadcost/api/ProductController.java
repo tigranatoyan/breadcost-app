@@ -32,7 +32,9 @@ public class ProductController {
             @NotBlank String name,
             String description,
             @NotNull Product.SaleUnit saleUnit,
-            @NotBlank String baseUom
+            @NotBlank String baseUom,
+            java.math.BigDecimal price,
+            double vatRatePct
     ) {}
 
     public record UpdateProductRequest(
@@ -40,6 +42,8 @@ public class ProductController {
             String description,
             @NotNull Product.SaleUnit saleUnit,
             @NotBlank String baseUom,
+            java.math.BigDecimal price,
+            double vatRatePct,
             @NotNull Product.ProductStatus status
     ) {}
 
@@ -77,7 +81,8 @@ public class ProductController {
         ProductEntity created = productService.create(
                 new ProductService.CreateProductRequest(
                         req.tenantId(), req.departmentId(), req.name(),
-                        req.description(), req.saleUnit(), req.baseUom(), getPrincipalName()
+                        req.description(), req.saleUnit(), req.baseUom(),
+                        req.price(), req.vatRatePct(), getPrincipalName()
                 ));
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
@@ -93,7 +98,8 @@ public class ProductController {
             @Valid @RequestBody UpdateProductRequest req) {
         ProductEntity updated = productService.update(productId,
                 new ProductService.UpdateProductRequest(
-                        req.name(), req.description(), req.saleUnit(), req.baseUom(), req.status()
+                        req.name(), req.description(), req.saleUnit(), req.baseUom(),
+                        req.price(), req.vatRatePct(), req.status()
                 ));
         return ResponseEntity.ok(updated);
     }

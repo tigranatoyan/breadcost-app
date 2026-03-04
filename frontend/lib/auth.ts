@@ -1,46 +1,75 @@
-// Credential storage in localStorage
+// JWT-based auth storage in localStorage
 
-export const AUTH_KEY = 'bc_auth';   // stores "Basic base64..."
-export const USER_KEY = 'bc_user';
+export const TOKEN_KEY = 'bc_token';
+export const USER_KEY  = 'bc_user';
 
 export type Role = 'admin' | 'floor' | 'management' | 'viewer';
 
-export function getAuthHeader(): string {
-  if (typeof window === 'undefined') return 'Basic YWRtaW46YWRtaW4='; // SSR fallback
-  return localStorage.getItem(AUTH_KEY) ?? '';
+export interface UserInfo {
+  username: string;
+  displayName: string;
+  roles: string[];
+  tenantId: string;
+  primaryRole: string;
 }
 
-export function setCredentials(username: string, password: string) {
-  const encoded = btoa(`${username}:${password}`);
-  localStorage.setItem(AUTH_KEY, `Basic ${encoded}`);
-  localStorage.setItem(USER_KEY, username);
+// ── Token helpers ─────────────────────────────────────────────────────────────
+
+export function getToken(): string {
+  if (typeof window === 'undefined') return '';
+  return localStorage.getItem(TOKEN_KEY) ?? '';
+}
+
+export function getAuthHeader(): string {
+  const token = getToken();
+  return token ? `Bearer ${token}` : '';
+}
+
+export function getUserInfo(): UserInfo | null {
+  if (typeof window === 'undefined') return null;
+  const raw = localStorage.getItem(USER_KEY);
+  if (!raw) return null;
+  try { return JSON.parse(raw) as UserInfo; } catch { return null; }
+}
+
+export function setSession(token: string, user: UserInfo) {
+  localStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
+}
+
+// Keep legacy name so existing callers that pass (username, password) still compile.
+// New callers should use setSession() instead.
+export function setCredentials(_username: string, _password: string) {
+  // no-op — replaced by setSession() from login page
 }
 
 export function clearCredentials() {
-  localStorage.removeItem(AUTH_KEY);
+  localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
 }
 
 export function getUsername(): string {
-  if (typeof window === 'undefined') return '';
-  return localStorage.getItem(USER_KEY) ?? '';
+  return getUserInfo()?.username ?? '';
+}
+
+export function getTenantId(): string {
+  return getUserInfo()?.tenantId ?? 'tenant1';
 }
 
 export function isLoggedIn(): boolean {
   if (typeof window === 'undefined') return false;
-  return !!localStorage.getItem(AUTH_KEY);
+  return !!localStorage.getItem(TOKEN_KEY);
 }
 
-/** Maps username to a frontend display role.
- *  admin       → admin
- *  production  → floor (baker / floor staff)
- *  finance     → management
- *  anything else → viewer
- */
+export function hasRole(role: string): boolean {
+  return getUserInfo()?.roles.includes(role) ?? false;
+}
+
+/** Maps backend primary role to a simplified frontend Role enum. */
 export function getRole(): Role {
-  const u = getUsername().toLowerCase();
-  if (u === 'admin') return 'admin';
-  if (u === 'production') return 'floor';
-  if (u === 'finance') return 'management';
+  const primary = getUserInfo()?.primaryRole ?? '';
+  if (primary === 'Admin') return 'admin';
+  if (['ProductionUser', 'ProductionSupervisor', 'Technologist'].includes(primary)) return 'floor';
+  if (['FinanceUser', 'Manager'].includes(primary)) return 'management';
   return 'viewer';
 }

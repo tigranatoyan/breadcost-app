@@ -232,13 +232,15 @@ export default function ProductionPlansPage() {
         action: 'generate',
         cls: 'bg-indigo-600 text-white hover:bg-indigo-700',
       });
+    }
+    if (p.status === 'DRAFT' || p.status === 'GENERATED') {
       btns.push({
-        label: 'Publish',
-        action: 'publish',
+        label: '✓ Approve',
+        action: 'approve',
         cls: 'bg-purple-600 text-white hover:bg-purple-700',
       });
     }
-    if (p.status === 'PUBLISHED') {
+    if (p.status === 'GENERATED' || p.status === 'APPROVED' || p.status === 'PUBLISHED') {
       btns.push({
         label: '▶ Start',
         action: 'start',
@@ -290,7 +292,7 @@ export default function ProductionPlansPage() {
           onChange={(e) => setStatusFilter(e.target.value)}
         >
           <option value="ALL">All Statuses</option>
-          {['DRAFT', 'PUBLISHED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].map((s) => (
+          {['DRAFT', 'GENERATED', 'APPROVED', 'PUBLISHED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}
         </select>

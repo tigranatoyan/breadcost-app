@@ -85,7 +85,8 @@ public class ProductionPlanService {
                 .collect(Collectors.toList());
 
         if (allLines.isEmpty()) {
-            return plan; // no confirmed orders at all
+            plan.setStatus(ProductionPlan.Status.GENERATED);
+            return planRepository.save(plan); // no confirmed orders — still mark as generated
         }
 
         // Key: departmentId + "|" + productId → aggregated qty + line IDs
@@ -154,26 +155,35 @@ public class ProductionPlanService {
             plan.getWorkOrders().add(wo);
         }
 
+        // After generating, advance status from DRAFT → GENERATED
+        plan.setStatus(ProductionPlan.Status.GENERATED);
         return planRepository.save(plan);
     }
 
     // ─── PLAN STATUS TRANSITIONS ─────────────────────────────────────────────
 
     @Transactional
-    public ProductionPlanEntity publishPlan(String tenantId, String planId) {
+    public ProductionPlanEntity approvePlan(String tenantId, String planId) {
         ProductionPlanEntity plan = findPlan(tenantId, planId);
-        if (plan.getStatus() != ProductionPlan.Status.DRAFT) {
-            throw new IllegalStateException("Only DRAFT plans can be published.");
+        if (plan.getStatus() != ProductionPlan.Status.GENERATED) {
+            throw new IllegalStateException("Only GENERATED plans can be approved.");
         }
-        plan.setStatus(ProductionPlan.Status.PUBLISHED);
+        plan.setStatus(ProductionPlan.Status.APPROVED);
         return planRepository.save(plan);
+    }
+
+    @Transactional
+    public ProductionPlanEntity publishPlan(String tenantId, String planId) {
+        return approvePlan(tenantId, planId); // legacy alias
     }
 
     @Transactional
     public ProductionPlanEntity startPlan(String tenantId, String planId) {
         ProductionPlanEntity plan = findPlan(tenantId, planId);
-        if (plan.getStatus() != ProductionPlan.Status.PUBLISHED) {
-            throw new IllegalStateException("Only PUBLISHED plans can be started.");
+        boolean canStart = plan.getStatus() == ProductionPlan.Status.APPROVED
+                || plan.getStatus() == ProductionPlan.Status.PUBLISHED;
+        if (!canStart) {
+            throw new IllegalStateException("Only APPROVED plans can be started.");
         }
         plan.setStatus(ProductionPlan.Status.IN_PROGRESS);
         return planRepository.save(plan);

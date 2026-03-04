@@ -79,6 +79,52 @@ export default function RecipesPage() {
   const [stepForm, setStepForm] = useState(newStepForm('', 1));
   const stepsRef = useRef(steps);
   useEffect(() => { stepsRef.current = steps; }, [steps]);
+
+  // ── Ingredient inline editing state ──────────────────────────────────────────
+  const [editIngRecipeId, setEditIngRecipeId] = useState<string | null>(null);
+  const [editIngRows, setEditIngRows] = useState<ReturnType<typeof newIng>[]>([]);
+  const [savingIngredients, setSavingIngredients] = useState(false);
+
+  const startEditIngredients = (r: Recipe) => {
+    setEditIngRecipeId(r.recipeId);
+    setEditIngRows(
+      (r.ingredients ?? []).map((ing) => ({
+        itemId: ing.itemId,
+        itemName: ing.itemName ?? '',
+        unitMode: ing.unitMode ?? 'WEIGHT',
+        recipeQty: ing.recipeQty,
+        recipeUom: ing.recipeUom,
+        purchasingUnitSize: ing.purchasingUnitSize,
+        purchasingUom: ing.purchasingUom,
+        wasteFactor: ing.wasteFactor,
+      }))
+    );
+  };
+
+  const cancelEditIngredients = () => {
+    setEditIngRecipeId(null);
+    setEditIngRows([]);
+  };
+
+  const saveIngredients = async (recipeId: string) => {
+    try {
+      setSavingIngredients(true);
+      await apiFetch(`/v1/recipes/${recipeId}/ingredients?tenantId=${TENANT_ID}`, {
+        method: 'PUT',
+        body: JSON.stringify(editIngRows),
+      });
+      cancelEditIngredients();
+      // Reload recipes for current product
+      if (selectedPid) {
+        const updated = await apiFetch<Recipe[]>(`/v1/recipes?tenantId=${TENANT_ID}&productId=${selectedPid}`);
+        setRecipes(updated);
+      }
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setSavingIngredients(false);
+    }
+  };
   const [form, setForm] = useState({
     batchSize: 50,
     batchSizeUom: 'PCS',
@@ -378,34 +424,132 @@ export default function RecipesPage() {
                         {/* Ingredients tab */}
                         {tab === 'ingredients' && (
                           <div className="px-4 py-3">
-                            <table className="w-full text-xs">
-                              <thead>
-                                <tr className="text-gray-500">
-                                  <th className="text-left py-1 pr-4">Item</th>
-                                  <th className="text-left py-1 pr-4">Qty/batch</th>
-                                  <th className="text-left py-1 pr-4">UoM</th>
-                                  <th className="text-left py-1 pr-4">Waste</th>
-                                  <th className="text-left py-1 pr-4">Purchase size</th>
-                                  <th className="text-left py-1">Purchase UoM</th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-gray-100">
-                                {r.ingredients?.map((ing) => (
-                                  <tr key={ing.ingredientId}>
-                                    <td className="py-1 pr-4 font-medium">{ing.itemName || ing.itemId}</td>
-                                    <td className="py-1 pr-4">{ing.recipeQty}</td>
-                                    <td className="py-1 pr-4">{ing.recipeUom}</td>
-                                    <td className="py-1 pr-4">{(ing.wasteFactor * 100).toFixed(0)}%</td>
-                                    <td className="py-1 pr-4">{ing.purchasingUnitSize}</td>
-                                    <td className="py-1">{ing.purchasingUom}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                            {r.productionNotes && (
-                              <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-gray-700 whitespace-pre-wrap">
-                                <span className="font-semibold block mb-1 text-amber-700">Process Notes</span>
-                                {r.productionNotes}
+                            {editIngRecipeId === r.recipeId ? (
+                              /* ── EDIT MODE ── */
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-xs font-semibold text-gray-600">Editing ingredients</span>
+                                  <div className="flex gap-2">
+                                    <button
+                                      className="btn-xs bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                      onClick={cancelEditIngredients}
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      className="btn-xs bg-green-600 text-white hover:bg-green-700"
+                                      disabled={savingIngredients}
+                                      onClick={() => saveIngredients(r.recipeId)}
+                                    >
+                                      {savingIngredients ? 'Saving…' : 'Save'}
+                                    </button>
+                                  </div>
+                                </div>
+                                <table className="w-full text-xs mb-2">
+                                  <thead>
+                                    <tr className="text-gray-500">
+                                      <th className="text-left py-1 pr-2 w-32">Item ID</th>
+                                      <th className="text-left py-1 pr-2 w-28">Name</th>
+                                      <th className="text-left py-1 pr-2 w-20">Qty</th>
+                                      <th className="text-left py-1 pr-2 w-16">UoM</th>
+                                      <th className="text-left py-1 pr-2 w-20">Buy size</th>
+                                      <th className="text-left py-1 pr-2 w-16">Buy UoM</th>
+                                      <th className="text-left py-1 pr-2 w-16">Waste</th>
+                                      <th />
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-gray-100">
+                                    {editIngRows.map((row, idx) => (
+                                      <tr key={idx}>
+                                        <td className="py-1 pr-2">
+                                          <input className="input text-xs py-0.5" value={row.itemId}
+                                            onChange={(e) => setEditIngRows((rows) => rows.map((r2, i) => i === idx ? { ...r2, itemId: e.target.value } : r2))} />
+                                        </td>
+                                        <td className="py-1 pr-2">
+                                          <input className="input text-xs py-0.5" value={row.itemName}
+                                            onChange={(e) => setEditIngRows((rows) => rows.map((r2, i) => i === idx ? { ...r2, itemName: e.target.value } : r2))} />
+                                        </td>
+                                        <td className="py-1 pr-2">
+                                          <input className="input text-xs py-0.5" type="number" value={row.recipeQty}
+                                            onChange={(e) => setEditIngRows((rows) => rows.map((r2, i) => i === idx ? { ...r2, recipeQty: Number(e.target.value) } : r2))} />
+                                        </td>
+                                        <td className="py-1 pr-2">
+                                          <input className="input text-xs py-0.5" value={row.recipeUom}
+                                            onChange={(e) => setEditIngRows((rows) => rows.map((r2, i) => i === idx ? { ...r2, recipeUom: e.target.value } : r2))} />
+                                        </td>
+                                        <td className="py-1 pr-2">
+                                          <input className="input text-xs py-0.5" type="number" value={row.purchasingUnitSize}
+                                            onChange={(e) => setEditIngRows((rows) => rows.map((r2, i) => i === idx ? { ...r2, purchasingUnitSize: Number(e.target.value) } : r2))} />
+                                        </td>
+                                        <td className="py-1 pr-2">
+                                          <input className="input text-xs py-0.5" value={row.purchasingUom}
+                                            onChange={(e) => setEditIngRows((rows) => rows.map((r2, i) => i === idx ? { ...r2, purchasingUom: e.target.value } : r2))} />
+                                        </td>
+                                        <td className="py-1 pr-2">
+                                          <input className="input text-xs py-0.5" type="number" step="0.01" value={row.wasteFactor}
+                                            onChange={(e) => setEditIngRows((rows) => rows.map((r2, i) => i === idx ? { ...r2, wasteFactor: Number(e.target.value) } : r2))} />
+                                        </td>
+                                        <td className="py-1">
+                                          <button className="text-red-500 hover:text-red-700 text-xs"
+                                            onClick={() => setEditIngRows((rows) => rows.filter((_, i) => i !== idx))}>
+                                            ✕
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                                <button
+                                  className="btn-xs bg-blue-100 text-blue-700 hover:bg-blue-200"
+                                  onClick={() => setEditIngRows((rows) => [...rows, newIng()])}
+                                >
+                                  + Add Row
+                                </button>
+                              </div>
+                            ) : (
+                              /* ── READ MODE ── */
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <span />
+                                  {r.status === 'DRAFT' && (
+                                    <button
+                                      className="btn-xs bg-amber-500 text-white hover:bg-amber-600"
+                                      onClick={() => startEditIngredients(r)}
+                                    >
+                                      ✏ Edit Ingredients
+                                    </button>
+                                  )}
+                                </div>
+                                <table className="w-full text-xs">
+                                  <thead>
+                                    <tr className="text-gray-500">
+                                      <th className="text-left py-1 pr-4">Item</th>
+                                      <th className="text-left py-1 pr-4">Qty/batch</th>
+                                      <th className="text-left py-1 pr-4">UoM</th>
+                                      <th className="text-left py-1 pr-4">Waste</th>
+                                      <th className="text-left py-1 pr-4">Purchase size</th>
+                                      <th className="text-left py-1">Purchase UoM</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-gray-100">
+                                    {r.ingredients?.map((ing) => (
+                                      <tr key={ing.ingredientId}>
+                                        <td className="py-1 pr-4 font-medium">{ing.itemName || ing.itemId}</td>
+                                        <td className="py-1 pr-4">{ing.recipeQty}</td>
+                                        <td className="py-1 pr-4">{ing.recipeUom}</td>
+                                        <td className="py-1 pr-4">{(ing.wasteFactor * 100).toFixed(0)}%</td>
+                                        <td className="py-1 pr-4">{ing.purchasingUnitSize}</td>
+                                        <td className="py-1">{ing.purchasingUom}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                                {r.productionNotes && (
+                                  <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-gray-700 whitespace-pre-wrap">
+                                    <span className="font-semibold block mb-1 text-amber-700">Process Notes</span>
+                                    {r.productionNotes}
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>

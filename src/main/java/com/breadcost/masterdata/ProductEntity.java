@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 /**
@@ -42,6 +43,15 @@ public class ProductEntity {
 
     @Column(name = "base_uom", nullable = false)
     private String baseUom;
+
+    /** Base selling price per unit */
+    @Column(name = "price", precision = 18, scale = 4)
+    private BigDecimal price;
+
+    /** VAT rate percent (e.g. 12.0 for 12%) */
+    @Column(name = "vat_rate_pct")
+    @Builder.Default
+    private double vatRatePct = 0.0;
 
     // ID of the currently active Recipe for this product
     @Column(name = "active_recipe_id")

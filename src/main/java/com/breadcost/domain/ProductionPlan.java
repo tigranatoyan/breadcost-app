@@ -19,7 +19,9 @@ public class ProductionPlan {
 
     public enum Status {
         DRAFT,
-        PUBLISHED,
+        GENERATED,
+        APPROVED,
+        PUBLISHED,   // legacy alias for APPROVED
         IN_PROGRESS,
         COMPLETED
     }

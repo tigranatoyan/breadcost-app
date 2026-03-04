@@ -14,6 +14,8 @@ interface Product {
   departmentName: string;
   saleUnit: string;
   baseUom: string;
+  price: number | null;
+  vatRatePct: number;
   status: string;
 }
 
@@ -30,6 +32,8 @@ export default function ProductsPage() {
     description: '',
     saleUnit: 'PIECE',
     baseUom: 'PCS',
+    price: '',
+    vatRatePct: '0',
   };
   const [form, setForm] = useState(defaultForm);
   const deptsRef = useRef<Dept[]>([]);
@@ -97,7 +101,7 @@ export default function ProductsPage() {
         <Spinner />
       ) : (
         <Table
-          cols={['Name', 'Department', 'Sale Unit', 'Base UoM', 'Status', 'ID']}
+          cols={['Name', 'Department', 'Sale Unit', 'Base UoM', 'Price', 'VAT %', 'Status', 'ID']}
           rows={products.map((p) => [
             <span className="font-medium">{p.name}</span>,
             p.departmentName ??
@@ -105,6 +109,8 @@ export default function ProductsPage() {
               p.departmentId,
             p.saleUnit,
             p.baseUom,
+            p.price != null ? p.price.toLocaleString() : '—',
+            p.vatRatePct != null ? `${p.vatRatePct}%` : '—',
             <Badge status={p.status ?? 'ACTIVE'} />,
             <code className="text-xs text-gray-400">{p.productId}</code>,
           ])}
@@ -166,6 +172,31 @@ export default function ProductsPage() {
                   placeholder="PCS"
                   value={form.baseUom}
                   onChange={(e) => setForm((f) => ({ ...f, baseUom: e.target.value }))}
+                />
+              </Field>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Sale Price">
+                <input
+                  className="input"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={form.price}
+                  onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
+                />
+              </Field>
+              <Field label="VAT Rate %">
+                <input
+                  className="input"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  placeholder="0"
+                  value={form.vatRatePct}
+                  onChange={(e) => setForm((f) => ({ ...f, vatRatePct: e.target.value }))}
                 />
               </Field>
             </div>

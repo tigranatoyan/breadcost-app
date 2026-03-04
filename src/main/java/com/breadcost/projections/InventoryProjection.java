@@ -175,6 +175,34 @@ public class InventoryProjection {
     }
 
     /**
+     * Apply a manual adjustment (positive = add, negative = reduce).
+     * Used by /v1/inventory/adjust — FR-5.5
+     */
+    public void applyAdjustment(String tenantId, String siteId, String itemId,
+                                 BigDecimal qty, String reasonCode) {
+        // Find or create a synthetic position for adjustments
+        String key = buildKey(tenantId, siteId != null ? siteId : "DEFAULT", itemId, "ADJ", "ADJUSTMENT");
+        InventoryPosition position = positions.computeIfAbsent(key, k ->
+                InventoryPosition.builder()
+                        .id(UUID.randomUUID().toString())
+                        .tenantId(tenantId)
+                        .siteId(siteId != null ? siteId : "DEFAULT")
+                        .itemId(itemId)
+                        .lotId("ADJ")
+                        .locationId("ADJUSTMENT")
+                        .onHandQty(BigDecimal.ZERO)
+                        .valuationAmount(BigDecimal.ZERO)
+                        .avgUnitCost(BigDecimal.ZERO)
+                        .build()
+        );
+        position.onHandQty = position.onHandQty.add(qty);
+        if (position.onHandQty.compareTo(BigDecimal.ZERO) <= 0) {
+            positions.remove(key);
+        }
+        log.info("Inventory adjustment applied: item={}, qty={}, reason={}", itemId, qty, reasonCode);
+    }
+
+    /**
      * Get all inventory positions
      */
     public List<InventoryPosition> getAllPositions() {

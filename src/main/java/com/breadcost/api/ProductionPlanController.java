@@ -69,12 +69,20 @@ public class ProductionPlanController {
         );
     }
 
+    @PostMapping("/{planId}/approve")
+    @PreAuthorize("hasAnyRole('Admin','ProductionUser')")
+    public ResponseEntity<ProductionPlanEntity> approvePlan(
+            @PathVariable String planId,
+            @RequestParam String tenantId) {
+        return ResponseEntity.ok(planService.approvePlan(tenantId, planId));
+    }
+
     @PostMapping("/{planId}/publish")
     @PreAuthorize("hasAnyRole('Admin','ProductionUser')")
     public ResponseEntity<ProductionPlanEntity> publishPlan(
             @PathVariable String planId,
             @RequestParam String tenantId) {
-        return ResponseEntity.ok(planService.publishPlan(tenantId, planId));
+        return ResponseEntity.ok(planService.approvePlan(tenantId, planId)); // legacy alias
     }
 
     @PostMapping("/{planId}/start")

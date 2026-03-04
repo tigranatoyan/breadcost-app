@@ -1,0 +1,174 @@
+package com.breadcost.api;
+
+import com.breadcost.masterdata.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * POS Controller — FR-8.1 through FR-8.6
+ */
+@RestController
+@RequestMapping("/v1/pos")
+@RequiredArgsConstructor
+@Slf4j
+public class PosController {
+
+    private final SaleRepository saleRepository;
+
+    // ─── DTOs ────────────────────────────────────────────────────────────────
+
+    @Data
+    public static class SaleLineRequest {
+        @NotBlank private String productId;
+        @NotBlank private String productName;
+        @NotNull private BigDecimal quantity;
+        private String unit;
+        @NotNull private BigDecimal unitPrice;
+    }
+
+    @Data
+    public static class CreateSaleRequest {
+        @NotBlank private String tenantId;
+        private String siteId;
+        @NotEmpty private List<SaleLineRequest> lines;
+        @NotNull private SaleEntity.PaymentMethod paymentMethod;
+        /** Cash received — required when paymentMethod == CASH */
+        private BigDecimal cashReceived;
+        /** Card terminal reference — required when paymentMethod == CARD */
+        private String cardReference;
+    }
+
+    @Data
+    public static class ReconcileRequest {
+        @NotBlank private String tenantId;
+        private String siteId;
+        /** The date to reconcile (default: today) */
+        private LocalDate date;
+    }
+
+    // ─── ENDPOINTS ───────────────────────────────────────────────────────────
+
+    @GetMapping("/sales")
+    @PreAuthorize("hasAnyRole('Admin','Cashier','FinanceUser')")
+    public ResponseEntity<List<SaleEntity>> getSales(
+            @RequestParam String tenantId,
+            @RequestParam(required = false) String date) {
+        if (date != null) {
+            LocalDate d = LocalDate.parse(date);
+            Instant from = d.atStartOfDay().toInstant(ZoneOffset.UTC);
+            Instant to   = d.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC);
+            return ResponseEntity.ok(saleRepository.findByTenantIdAndDateRange(tenantId, from, to));
+        }
+        return ResponseEntity.ok(saleRepository.findByTenantIdOrderByCreatedAtDesc(tenantId));
+    }
+
+    @PostMapping("/sales")
+    @PreAuthorize("hasAnyRole('Admin','Cashier')")
+    public ResponseEntity<SaleEntity> createSale(
+            @Valid @RequestBody CreateSaleRequest req,
+            Authentication auth) {
+
+        // Build lines
+        List<SaleLineEntity> lines = req.getLines().stream().map(l -> {
+            BigDecimal total = l.getUnitPrice().multiply(l.getQuantity());
+            return SaleLineEntity.builder()
+                    .lineId(UUID.randomUUID().toString())
+                    .productId(l.getProductId())
+                    .productName(l.getProductName())
+                    .quantity(l.getQuantity())
+                    .unit(l.getUnit())
+                    .unitPrice(l.getUnitPrice())
+                    .lineTotal(total)
+                    .build();
+        }).toList();
+
+        BigDecimal subtotal = lines.stream()
+                .map(SaleLineEntity::getLineTotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal cashReceived = req.getCashReceived();
+        BigDecimal changeGiven = BigDecimal.ZERO;
+        if (req.getPaymentMethod() == SaleEntity.PaymentMethod.CASH && cashReceived != null) {
+            changeGiven = cashReceived.subtract(subtotal).max(BigDecimal.ZERO);
+        }
+
+        SaleEntity sale = SaleEntity.builder()
+                .saleId(UUID.randomUUID().toString())
+                .tenantId(req.getTenantId())
+                .siteId(req.getSiteId())
+                .cashierId(auth != null ? auth.getName() : "system")
+                .cashierName(auth != null ? auth.getName() : "system")
+                .status(SaleEntity.Status.COMPLETED)
+                .paymentMethod(req.getPaymentMethod())
+                .subtotal(subtotal)
+                .totalAmount(subtotal)
+                .cashReceived(cashReceived)
+                .changeGiven(changeGiven)
+                .cardReference(req.getCardReference())
+                .completedAt(Instant.now())
+                .build();
+
+        // Link lines to sale
+        lines.forEach(l -> l.setSale(sale));
+        sale.setLines(new java.util.ArrayList<>(lines));
+
+        SaleEntity saved = saleRepository.save(sale);
+        log.info("POS sale completed: {} - {} - total={}", saved.getSaleId(), saved.getPaymentMethod(), saved.getTotalAmount());
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    @PostMapping("/reconcile")
+    @PreAuthorize("hasAnyRole('Admin','Cashier','FinanceUser')")
+    public ResponseEntity<Map<String, Object>> reconcile(@Valid @RequestBody ReconcileRequest req) {
+        LocalDate date = req.getDate() != null ? req.getDate() : LocalDate.now(ZoneOffset.UTC);
+        Instant from = date.atStartOfDay().toInstant(ZoneOffset.UTC);
+        Instant to   = date.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC);
+
+        List<SaleEntity> sales = saleRepository.findByTenantIdAndDateRange(req.getTenantId(), from, to);
+
+        BigDecimal cashTotal = sales.stream()
+                .filter(s -> s.getPaymentMethod() == SaleEntity.PaymentMethod.CASH && s.getStatus() == SaleEntity.Status.COMPLETED)
+                .map(SaleEntity::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal cardTotal = sales.stream()
+                .filter(s -> s.getPaymentMethod() == SaleEntity.PaymentMethod.CARD && s.getStatus() == SaleEntity.Status.COMPLETED)
+                .map(SaleEntity::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal refunds = sales.stream()
+                .filter(s -> s.getStatus() == SaleEntity.Status.REFUNDED)
+                .map(SaleEntity::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal net = cashTotal.add(cardTotal).subtract(refunds);
+
+        return ResponseEntity.ok(Map.of(
+                "date", date.toString(),
+                "totalTransactions", sales.size(),
+                "cashTotal", cashTotal,
+                "cardTotal", cardTotal,
+                "refunds", refunds,
+                "netSales", net,
+                "expectedCashInDrawer", cashTotal
+        ));
+    }
+}

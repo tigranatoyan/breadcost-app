@@ -150,6 +150,27 @@ public class RecipeController {
     }
 
     /**
+     * PUT /v1/recipes/{recipeId}/ingredients?tenantId=xxx
+     * Replace the full ingredient list on a DRAFT recipe
+     */
+    @PutMapping("/{recipeId}/ingredients")
+    @PreAuthorize("hasAnyRole('Admin', 'Technologist')")
+    public ResponseEntity<RecipeEntity> updateIngredients(
+            @PathVariable String recipeId,
+            @RequestParam String tenantId,
+            @Valid @RequestBody List<IngredientRequest> body) {
+        List<RecipeService.IngredientRequest> ingredients = body.stream()
+                .map(i -> new RecipeService.IngredientRequest(
+                        i.itemId(), i.itemName(), i.unitMode(),
+                        i.recipeQty(), i.recipeUom(),
+                        i.pieceQty(), i.weightPerPiece(), i.pieceWeightUom(),
+                        i.purchasingUnitSize(), i.purchasingUom(),
+                        i.wasteFactor()
+                )).toList();
+        return ResponseEntity.ok(recipeService.updateIngredients(tenantId, recipeId, ingredients));
+    }
+
+    /**
      * GET /v1/recipes/{recipeId}/material-requirements?tenantId=xxx&batchMultiplier=3
      * Calculate purchasing units needed per ingredient for N batches (FR-4.4, FR-4.5)
      */
