@@ -3,7 +3,7 @@
 export const TOKEN_KEY = 'bc_token';
 export const USER_KEY  = 'bc_user';
 
-export type Role = 'admin' | 'floor' | 'management' | 'viewer';
+export type Role = 'admin' | 'floor' | 'management' | 'viewer' | 'finance' | 'warehouse' | 'cashier' | 'technologist';
 
 export interface UserInfo {
   username: string;
@@ -65,11 +65,15 @@ export function hasRole(role: string): boolean {
   return getUserInfo()?.roles.includes(role) ?? false;
 }
 
-/** Maps backend primary role to a simplified frontend Role enum. */
+/** Maps backend primary role to a frontend Role. */
 export function getRole(): Role {
   const primary = getUserInfo()?.primaryRole ?? '';
   if (primary === 'Admin') return 'admin';
-  if (['ProductionUser', 'ProductionSupervisor', 'Technologist'].includes(primary)) return 'floor';
-  if (['FinanceUser', 'Manager'].includes(primary)) return 'management';
+  if (['ProductionUser', 'ProductionSupervisor'].includes(primary)) return 'floor';
+  if (primary === 'Technologist') return 'technologist';
+  if (['FinanceUser'].includes(primary)) return 'finance';
+  if (primary === 'Manager') return 'management';
+  if (['Warehouse', 'WarehouseKeeper'].includes(primary)) return 'warehouse';
+  if (primary === 'Cashier') return 'cashier';
   return 'viewer';
 }

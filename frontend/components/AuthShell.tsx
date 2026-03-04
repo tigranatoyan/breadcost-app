@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { isLoggedIn, getUsername, getRole, clearCredentials, type Role } from '@/lib/auth';
+import { isLoggedIn, getUsername, getRole, getUserInfo, clearCredentials, type Role } from '@/lib/auth';
 
 // ─── nav definition ─────────────────────────────────────────────────────────
 
@@ -10,14 +10,10 @@ type NavItem = { href: string; label: string };
 type NavSection = { title?: string; items: NavItem[]; roles: Role[] };
 
 const SECTIONS: NavSection[] = [
+  // ── admin / management / viewer ──────────────────────────────────────────
   {
     items: [{ href: '/dashboard', label: '📊 Dashboard' }],
-    roles: ['admin', 'management', 'viewer'],
-  },
-  {
-    title: 'My Shift',
-    items: [{ href: '/floor', label: '🏭 Production Floor' }],
-    roles: ['floor'],
+    roles: ['admin', 'management', 'viewer', 'finance'],
   },
   {
     title: 'Operations',
@@ -30,23 +26,44 @@ const SECTIONS: NavSection[] = [
   {
     title: 'Warehouse',
     items: [{ href: '/inventory', label: '🏬 Inventory' }],
-    roles: ['admin', 'management'],
+    roles: ['admin', 'management', 'warehouse'],
   },
   {
     title: 'Sales',
     items: [{ href: '/pos', label: '🛒 Point of Sale' }],
-    roles: ['admin', 'management'],
+    roles: ['admin', 'management', 'cashier'],
   },
   {
     title: 'Reports',
     items: [{ href: '/reports', label: '📈 Reports' }],
-    roles: ['admin', 'management', 'viewer'],
+    roles: ['admin', 'management', 'viewer', 'finance'],
+  },
+  // ── floor ─────────────────────────────────────────────────────────────────
+  {
+    title: 'My Shift',
+    items: [{ href: '/floor', label: '🏭 Production Floor' }],
+    roles: ['floor'],
   },
   {
     title: 'Operations',
     items: [{ href: '/production-plans', label: '📅 Production Plans' }],
     roles: ['floor'],
   },
+  // ── technologist ─────────────────────────────────────────────────────────
+  {
+    title: 'Workshop',
+    items: [
+      { href: '/recipes', label: '📋 Recipes & Steps' },
+      { href: '/products', label: '🍞 Products' },
+    ],
+    roles: ['technologist'],
+  },
+  {
+    title: 'Analysis',
+    items: [{ href: '/technologist', label: '🔬 Technologist View' }],
+    roles: ['technologist'],
+  },
+  // ── admin only ────────────────────────────────────────────────────────────
   {
     title: 'Floor',
     items: [{ href: '/floor', label: '🏭 Production Floor' }],
@@ -74,6 +91,19 @@ const ROLE_LABELS: Record<Role, string> = {
   floor: 'Floor Staff',
   management: 'Management',
   viewer: 'Viewer',
+  finance: 'Finance',
+  warehouse: 'Warehouse',
+  cashier: 'Cashier',
+  technologist: 'Technologist',
+};
+
+/** Default landing route per role */
+const ROLE_DEFAULT: Partial<Record<Role, string>> = {
+  floor: '/floor',
+  cashier: '/pos',
+  warehouse: '/inventory',
+  technologist: '/recipes',
+  finance: '/reports',
 };
 
 export default function AuthShell({ children }: { children: React.ReactNode }) {
@@ -92,9 +122,10 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
       setUser(u);
       setRole(r);
       setChecked(true);
-      // Floor workers land on /floor by default, not /dashboard
-      if (r === 'floor' && pathname === '/dashboard') {
-        router.replace('/floor');
+      // Role-based default redirect — only fires when landing on root or dashboard
+      const defaultRoute = ROLE_DEFAULT[r];
+      if (defaultRoute && (pathname === '/' || pathname === '/dashboard')) {
+        router.replace(defaultRoute);
       }
     }
   }, [pathname, router]);
@@ -156,7 +187,7 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
         <div className="px-4 py-3 border-t border-slate-700 flex items-center justify-between">
           <div className="min-w-0">
             <div className="text-xs text-white font-medium truncate">{user}</div>
-            <div className="text-xs text-slate-400">tenant1</div>
+            <div className="text-xs text-slate-400">{getUserInfo()?.tenantId ?? 'tenant1'}</div>
           </div>
           <button
             onClick={logout}

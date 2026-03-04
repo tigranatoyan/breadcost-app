@@ -47,6 +47,22 @@ interface WorkOrderSummary {
   status: string;
 }
 
+interface RevenueSummary {
+  today: number;
+  week: number;
+  month: number;
+  allTime: number;
+  currency: string;
+}
+
+interface TopProduct {
+  productId: string;
+  productName: string;
+  totalQty: number;
+  totalRevenue: number;
+  orderCount: number;
+}
+
 interface Plan {
   planId: string;
   planDate: string;
@@ -527,7 +543,7 @@ function ProductionReport({ plans }: { plans: Plan[] }) {
 
 // ─── page ─────────────────────────────────────────────────────────────────────
 
-type ReportTab = 'orders' | 'inventory' | 'production';
+type ReportTab = 'orders' | 'inventory' | 'production' | 'revenue';
 
 export default function ReportsPage() {
   const [tab, setTab] = useState<ReportTab>('orders');
@@ -535,6 +551,8 @@ export default function ReportsPage() {
   const [positions, setPositions] = useState<StockPosition[]>([]);
   const [stockItems, setStockItems] = useState<StockItem[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
+  const [revenue, setRevenue] = useState<RevenueSummary | null>(null);
+  const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
@@ -543,16 +561,20 @@ export default function ReportsPage() {
     try {
       setLoading(true);
       setError('');
-      const [o, pos, itms, p] = await Promise.all([
+      const [o, pos, itms, p, rev, top] = await Promise.all([
         apiFetch<Order[]>(`/v1/orders?tenantId=${TENANT_ID}`),
         apiFetch<StockPosition[]>(`/v1/inventory/positions?tenantId=${TENANT_ID}`).catch(() => [] as StockPosition[]),
         apiFetch<StockItem[]>(`/v1/items?tenantId=${TENANT_ID}`).catch(() => [] as StockItem[]),
         apiFetch<Plan[]>(`/v1/production-plans?tenantId=${TENANT_ID}`),
+        apiFetch<RevenueSummary>(`/v1/reports/revenue-summary?tenantId=${TENANT_ID}`).catch(() => null),
+        apiFetch<TopProduct[]>(`/v1/reports/top-products?tenantId=${TENANT_ID}&limit=8`).catch(() => [] as TopProduct[]),
       ]);
       setOrders(o);
       setPositions(pos);
       setStockItems(itms);
       setPlans(p);
+      setRevenue(rev);
+      setTopProducts(top);
       setLastRefresh(new Date());
     } catch (e) {
       setError(String(e));
@@ -563,10 +585,56 @@ export default function ReportsPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  // ── Revenue summary banner (always visible) ──────────────────────────────
+  const revBanner = revenue ? (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+      {[
+        { label: 'Today', value: revenue.today },
+        { label: 'Last 7 days', value: revenue.week },
+        { label: 'Last 30 days', value: revenue.month },
+        { label: 'All-time', value: revenue.allTime },
+      ].map(({ label, value }) => (
+        <div key={label} className="bg-white border rounded-xl p-4 shadow-sm">
+          <div className="text-xs text-gray-400 mb-1">{label}</div>
+          <div className="text-xl font-bold text-gray-800">{fmtMoney(value)}</div>
+          <div className="text-xs text-gray-400">{revenue.currency}</div>
+        </div>
+      ))}
+    </div>
+  ) : null;
+
+  // ── Top products sidebar ──────────────────────────────────────────────────
+  const topProductsPanel = topProducts.length > 0 ? (
+    <div className="mt-6 bg-white border rounded-xl shadow-sm p-5">
+      <div className="text-sm font-semibold text-gray-700 mb-3">Top Products — last 7 days</div>
+      <table className="w-full text-xs">
+        <thead>
+          <tr className="text-gray-400 border-b">
+            <th className="text-left py-1 pr-4">#</th>
+            <th className="text-left py-1 pr-4">Product</th>
+            <th className="text-right py-1 pr-4">Qty</th>
+            <th className="text-right py-1">Revenue</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-50">
+          {topProducts.map((tp, i) => (
+            <tr key={tp.productId}>
+              <td className="py-1.5 pr-4 text-gray-400">{i + 1}</td>
+              <td className="py-1.5 pr-4 font-medium">{tp.productName}</td>
+              <td className="py-1.5 pr-4 text-right">{tp.totalQty.toFixed(1)}</td>
+              <td className="py-1.5 text-right text-green-700 font-semibold">{fmtMoney(tp.totalRevenue)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  ) : null;
+
   const tabs: { id: ReportTab; label: string; count?: number }[] = [
     { id: 'orders', label: '📦 Orders', count: orders.length },
     { id: 'inventory', label: '🏬 Inventory', count: positions.length },
     { id: 'production', label: '📅 Production', count: plans.length },
+    { id: 'revenue', label: '💰 Revenue' },
   ];
 
   return (
@@ -588,6 +656,8 @@ export default function ReportsPage() {
           {error}
         </div>
       )}
+
+      {revBanner}
 
       {/* Tab bar */}
       <div className="flex gap-1 mb-6 bg-gray-100 rounded-xl p-1 w-fit">
@@ -614,6 +684,13 @@ export default function ReportsPage() {
           {tab === 'orders' && <OrdersReport orders={orders} />}
           {tab === 'inventory' && <InventoryReport positions={positions} items={stockItems} />}
           {tab === 'production' && <ProductionReport plans={plans} />}
+          {tab === 'revenue' && (
+            <div>
+              {topProductsPanel ?? (
+                <div className="text-sm text-gray-400 py-8 text-center">No sales data available yet.</div>
+              )}
+            </div>
+          )}
         </>
       )}
     </div>

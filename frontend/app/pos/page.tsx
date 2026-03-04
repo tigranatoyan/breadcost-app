@@ -129,10 +129,8 @@ export default function POSPage() {
 
   // checkout form
   const [customerName, setCustomerName] = useState('Walk-In');
-  const [deliveryTime, setDeliveryTime] = useState(() => {
-    const d = new Date(Date.now() + 60 * 60_000); // +1 hour
-    return d.toISOString().slice(0, 16);
-  });
+  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CARD'>('CASH');
+  const [cashReceived, setCashReceived] = useState('');
   const [notes, setNotes] = useState('');
   const [checkingOut, setCheckingOut] = useState(false);
 
@@ -204,47 +202,46 @@ export default function POSPage() {
 
   // ─── checkout ─────────────────────────────────────────────────────────────
 
+  const changeAmount = (() => {
+    if (paymentMethod !== 'CASH') return null;
+    const received = parseFloat(cashReceived || '0');
+    if (!received || received < cartTotal) return null;
+    return received - cartTotal;
+  })();
+
   const completeSale = async () => {
     if (cart.length === 0) return;
     try {
       setCheckingOut(true);
       setError('');
 
-      // 1. Create DRAFT order
-      const created = await apiFetch<{ orderId: string }>('/v1/orders', {
+      const body: Record<string, unknown> = {
+        tenantId: TENANT_ID,
+        siteId: 'MAIN',
+        paymentMethod,
+        lines: cart.map((l) => ({
+          productId: l.productId,
+          productName: l.productName,
+          quantity: l.qty,
+          unit: l.uom,
+          unitPrice: l.unitPrice,
+        })),
+      };
+      if (paymentMethod === 'CASH' && cashReceived) {
+        body.cashReceived = parseFloat(cashReceived);
+      }
+
+      const sale = await apiFetch<{ saleId: string }>('/v1/pos/sales', {
         method: 'POST',
-        body: JSON.stringify({
-          tenantId: TENANT_ID,
-          siteId: 'MAIN',
-          customerName: customerName.trim() || 'Walk-In',
-          forceRush: false,
-          notes: notes || 'POS sale',
-          requestedDeliveryTime: new Date(deliveryTime).toISOString(),
-          idempotencyKey: crypto.randomUUID(),
-          lines: cart.map((l) => ({
-            productId: l.productId,
-            productName: l.productName,
-            departmentId: l.departmentId,
-            departmentName: l.departmentName,
-            qty: l.qty,
-            uom: l.uom,
-            unitPrice: l.unitPrice,
-          })),
-        }),
+        body: JSON.stringify(body),
       });
 
-      // 2. Immediately confirm it
-      await apiFetch(`/v1/orders/${created.orderId}/confirm?tenantId=${TENANT_ID}`, {
-        method: 'POST',
-      });
-
-      // 3. Reset
-      setSuccess(`✅ Sale recorded — Order #${created.orderId.slice(0, 8).toUpperCase()}`);
+      const change = changeAmount !== null ? `  Change: ${fmt(changeAmount)}` : '';
+      setSuccess(`✅ Sale complete — #${sale.saleId.slice(0, 8).toUpperCase()}${change}`);
       setCart([]);
       setCustomerName('Walk-In');
+      setCashReceived('');
       setNotes('');
-      const next = new Date(Date.now() + 60 * 60_000);
-      setDeliveryTime(next.toISOString().slice(0, 16));
     } catch (e) {
       setError(String(e));
     } finally {
@@ -426,14 +423,44 @@ export default function POSPage() {
             </div>
 
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Delivery / Pickup Time</label>
-              <input
-                className="input w-full"
-                type="datetime-local"
-                value={deliveryTime}
-                onChange={(e) => setDeliveryTime(e.target.value)}
-              />
+              <label className="text-xs text-gray-500 mb-1 block">Payment Method</label>
+              <div className="flex gap-2">
+                {(['CASH', 'CARD'] as const).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                      paymentMethod === m
+                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        : 'bg-white text-gray-600 border-gray-300 hover:border-indigo-400'
+                    }`}
+                    onClick={() => setPaymentMethod(m)}
+                  >
+                    {m === 'CASH' ? '💵 Cash' : '💳 Card'}
+                  </button>
+                ))}
+              </div>
             </div>
+
+            {paymentMethod === 'CASH' && (
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Cash Received</label>
+                <input
+                  className="input w-full"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  placeholder={fmt(cartTotal)}
+                  value={cashReceived}
+                  onChange={(e) => setCashReceived(e.target.value)}
+                />
+                {changeAmount !== null && (
+                  <div className="mt-1 text-right text-sm font-semibold text-green-600">
+                    Change: {fmt(changeAmount)}
+                  </div>
+                )}
+              </div>
+            )}
 
             <div>
               <label className="text-xs text-gray-500 mb-1 block">Notes (optional)</label>
