@@ -204,10 +204,13 @@ def sync_epics(issue_type_ids: dict, dry_run: bool) -> dict:
         print("WARNING: 'Epic' issue type not found. Using 'Story' as fallback.")
         epic_type_id = issue_type_ids.get("story") or list(issue_type_ids.values())[0]
 
-    created = {}
-    print(f"\n{'[DRY RUN] ' if dry_run else ''}Creating {len(EPICS)} epics...")
+    existing = load_existing_epics() if not dry_run else {}
+    created = dict(existing)  # pre-seed with already-known epics
 
-    for epic in EPICS:
+    to_create = [e for e in EPICS if e["id"] not in existing]
+    print(f"\n{'[DRY RUN] ' if dry_run else ''}Creating {len(to_create)} new epics (skipping {len(existing)} existing)...")
+
+    for epic in to_create:
         body = build_epic_body(epic, epic_type_id)
         summary = body["fields"]["summary"]
 
@@ -218,11 +221,11 @@ def sync_epics(issue_type_ids: dict, dry_run: bool) -> dict:
             try:
                 result = _request("POST", "/issue", body)
                 jira_key = result["key"]
-                print(f"  Created  epic: {jira_key}  ← {summary}")
+                print(f"  Created  epic: {jira_key}  <- {summary}")
                 created[epic["id"]] = jira_key
                 time.sleep(0.3)  # be gentle with the API
             except Exception as e:
-                print(f"  FAILED   epic: {summary} — {e}")
+                print(f"  FAILED   epic: {summary} -- {e}")
 
     return created
 
@@ -240,8 +243,11 @@ def sync_stories(
         print("WARNING: 'Story' issue type not found. Using first available type.")
         story_type_id = list(issue_type_ids.values())[0]
 
-    stories = STORIES if not only_epic else [s for s in STORIES if s["epic_id"] == only_epic]
-    print(f"\n{'[DRY RUN] ' if dry_run else ''}Creating {len(stories)} stories...")
+    existing_stories = load_existing_stories() if not dry_run else set()
+    all_stories = STORIES if not only_epic else [s for s in STORIES if s["epic_id"] == only_epic]
+    stories = [s for s in all_stories if s["id"] not in existing_stories]
+    skipped = len(all_stories) - len(stories)
+    print(f"\n{'[DRY RUN] ' if dry_run else ''}Creating {len(stories)} new stories (skipping {skipped} existing)...")
 
     for story in stories:
         epic_jira_key = epic_key_map.get(story["epic_id"])
@@ -257,26 +263,71 @@ def sync_stories(
             try:
                 result = _request("POST", "/issue", body)
                 jira_key = result["key"]
-                print(f"  Created  story: {jira_key}  ← {summary}")
+                print(f"  Created  story: {jira_key}  <- {summary}")
                 time.sleep(0.3)
             except Exception as e:
-                print(f"  FAILED   story: {summary} — {e}")
+                print(f"  FAILED   story: {summary} -- {e}")
+
+
+def _search_all(jql: str, fields: list[str]) -> list[dict]:
+    """Paginate through all JIRA search results using nextPageToken."""
+    import urllib.parse
+    all_issues = []
+    body: dict = {
+        "jql": jql,
+        "maxResults": 100,
+        "fields": fields,
+        "nextPageToken": None,
+    }
+    while True:
+        if body["nextPageToken"] is None:
+            del body["nextPageToken"]
+        result = _request("POST", "/search/jql", body)
+        issues = result.get("issues", [])
+        all_issues.extend(issues)
+        token = result.get("nextPageToken")
+        if not token or not issues:
+            break
+        body["nextPageToken"] = token
+    return all_issues
 
 
 def load_existing_epics() -> dict:
-    """Fetches existing JIRA issues to find already-created epics by summary prefix."""
-    print("Fetching existing epics from JIRA...")
-    jql = f'project = {JIRA_PROJECT} AND issuetype = Epic ORDER BY created ASC'
-    result = _request("GET", f"/search?jql={urllib.parse.quote(jql)}&maxResults=100&fields=summary,key")
+    """Returns {BC-E01: 'BC-2', ...} for all non-duplicate epics in JIRA."""
+    print("  Fetching existing epics from JIRA...")
+    issues = _search_all(
+        f'project = {JIRA_PROJECT} AND issuetype = Epic AND labels != duplicate ORDER BY created ASC',
+        ["summary", "key"]
+    )
     mapping = {}
-    for issue in result.get("issues", []):
+    for issue in issues:
         summary = issue["fields"]["summary"]
-        # Match format: "[BC-E01] ..."
         if summary.startswith("[BC-E"):
             bc_id = summary[1:summary.index("]")]
             mapping[bc_id] = issue["key"]
-            print(f"  Found existing epic: {issue['key']} ← {summary}")
+    print(f"  Found {len(mapping)} existing epics.")
     return mapping
+
+
+def load_existing_stories() -> set:
+    """Returns a set of BC story IDs already present in JIRA (non-duplicate)."""
+    print("  Fetching existing stories from JIRA...")
+    issues = _search_all(
+        f'project = {JIRA_PROJECT} AND issuetype = Story AND labels != duplicate ORDER BY created ASC',
+        ["summary"]
+    )
+    existing = set()
+    for issue in issues:
+        summary = issue["fields"]["summary"]
+        if summary.startswith("["):
+            try:
+                bc_id = summary[1:summary.index("]")]
+                if bc_id.startswith("BC-"):
+                    existing.add(bc_id)
+            except ValueError:
+                pass
+    print(f"  Found {len(existing)} existing stories.")
+    return existing
 
 
 # ── Entry point ───────────────────────────────────────────────
@@ -317,11 +368,10 @@ def main():
     only_stories = args.stories and not args.epics
     only_epics   = args.epics   and not args.stories
 
-    # ── Create epics
+    # ── Create epics (or load existing ones for stories-only mode)
     if not only_stories:
         epic_key_map = sync_epics(issue_type_ids, dry_run)
     else:
-        # Stories-only mode: load existing epics from JIRA
         epic_key_map = load_existing_epics() if not dry_run else {}
 
     # ── Create stories
