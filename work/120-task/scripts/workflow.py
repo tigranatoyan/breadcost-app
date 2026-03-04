@@ -197,9 +197,10 @@ def cmd_list(filter_arg):
     filt = filter_arg.lower()
 
     if filt in ("r1", "r2", "r3"):
+        release_upper = filt.upper()
         subset = [s for s in STORIES if s.get("epic_id", "") in
-                  [e["id"] for e in EPICS if e.get("release", "").lower() == filt.upper()]]
-        print(f"\nStories in Release {filt.upper()} ({len(subset)}):\n")
+                  {e["id"] for e in EPICS if release_upper in e.get("release", "")}]
+        print(f"\nStories in Release {release_upper} ({len(subset)}):\n")
     else:
         epic_id = filter_arg.upper()
         subset = [s for s in STORIES if s.get("epic_id") == epic_id]
