@@ -198,8 +198,11 @@ def cmd_list(filter_arg):
 
     if filt in ("r1", "r2", "r3"):
         release_upper = filt.upper()
-        subset = [s for s in STORIES if s.get("epic_id", "") in
-                  {e["id"] for e in EPICS if release_upper in e.get("release", "")}]
+        epic_release = {e["id"]: e.get("release", "R1").split(",")[0].strip() for e in EPICS}
+        subset = [
+            s for s in STORIES
+            if (s.get("release") or epic_release.get(s.get("epic_id", ""), "R1")) == release_upper
+        ]
         print(f"\nStories in Release {release_upper} ({len(subset)}):\n")
     else:
         epic_id = filter_arg.upper()
@@ -217,13 +220,19 @@ def cmd_list(filter_arg):
 
 def cmd_status():
     """Show R1/R2/R3 overall progress."""
-    print("\n  BreadCost — Release Progress\n")
+    # Build a release map: story_id → effective release (story.release overrides epic.release)
+    epic_release = {e["id"]: e.get("release", "R1").split(",")[0].strip() for e in EPICS}
+    print("\n  BreadCost -- Release Progress\n")
     for release in ("R1", "R2", "R3"):
-        epic_ids = {e["id"] for e in EPICS if release in e.get("release", "")}
-        stories = [s for s in STORIES if s.get("epic_id") in epic_ids]
+        stories = [
+            s for s in STORIES
+            if (s.get("release") or epic_release.get(s.get("epic_id", ""), "R1")) == release
+        ]
         done = sum(1 for s in stories if s.get("status") == "✅ Done")
         total = len(stories)
-        bar = "█" * done + "░" * (total - done)
+        bar_done = int(done / total * 40) if total else 0
+        bar_todo = 40 - bar_done
+        bar = chr(9608) * bar_done + chr(9617) * bar_todo
         pct = int(done / total * 100) if total else 0
         print(f"  {release}  [{bar}] {done}/{total} ({pct}%)")
     print()
