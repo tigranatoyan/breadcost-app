@@ -1,0 +1,6 @@
+# No third-party packages required — scripts use Python stdlib only.
+# Python 3.10+ required (uses union type hints: dict | None).
+#
+# If you want to add retries / progress bars in future:
+#   requests>=2.31.0
+#   tqdm>=4.66.0

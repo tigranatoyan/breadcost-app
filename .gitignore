@@ -54,3 +54,5 @@ data/
 
 #  Integration scripts  credentials (NEVER COMMIT) 
 work/120-task/scripts/config.py
+**/__pycache__/
+*.pyc
