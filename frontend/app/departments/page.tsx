@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
+import { useT } from '@/lib/i18n';
 import { Modal, Table, Spinner, Alert, Badge, Field } from '@/components/ui';
 
 interface Dept {
@@ -12,6 +13,7 @@ interface Dept {
 }
 
 export default function DepartmentsPage() {
+  const t = useT();
   const [depts, setDepts] = useState<Dept[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -61,9 +63,9 @@ export default function DepartmentsPage() {
   return (
     <div className="max-w-4xl">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Departments</h1>
+        <h1 className="text-2xl font-semibold">{t('departments.title')}</h1>
         <button className="btn-primary" onClick={() => setOpen(true)}>
-          + New Department
+          {t('departments.newDepartment')}
         </button>
       </div>
 
@@ -73,7 +75,7 @@ export default function DepartmentsPage() {
         <Spinner />
       ) : (
         <Table
-          cols={['Name', 'Lead Time', 'Warehouse Mode', 'Status', 'ID']}
+          cols={[t('departments.cols.name'), t('departments.cols.leadTime'), t('departments.cols.warehouseMode'), t('departments.cols.status'), t('departments.cols.id')]}
           rows={depts.map((d) => [
             <span className="font-medium">{d.name}</span>,
             `${d.leadTimeHours} hrs`,
@@ -81,25 +83,25 @@ export default function DepartmentsPage() {
             <Badge status={d.status ?? 'ACTIVE'} />,
             <code className="text-xs text-gray-400">{d.departmentId}</code>,
           ])}
-          empty="No departments yet. Create one to get started."
+          empty={t('departments.noDepartments')}
         />
       )}
 
       {open && (
-        <Modal title="New Department" onClose={() => setOpen(false)}>
+        <Modal title={t('departments.newDepartmentTitle')} onClose={() => setOpen(false)}>
           <form onSubmit={submit} className="space-y-4">
-            <Field label="Name">
+            <Field label={t('common.name')}>
               <input
                 className="input"
                 required
-                placeholder="e.g. Bakery"
+                placeholder={t('departments.namePlaceholder')}
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               />
             </Field>
             <Field
-              label="Fallback Lead Time (hours)"
-              hint="Optional. Lead times are now set per recipe. This is only used as a fallback if no active recipe exists."
+              label={t('departments.leadTime')}
+              hint={t('departments.leadTimeHint')}
             >
               <input
                 className="input"
@@ -111,7 +113,7 @@ export default function DepartmentsPage() {
                 }
               />
             </Field>
-            <Field label="Warehouse Mode">
+            <Field label={t('departments.warehouseMode')}>
               <select
                 className="input"
                 value={form.warehouseMode}
@@ -119,8 +121,8 @@ export default function DepartmentsPage() {
                   setForm((f) => ({ ...f, warehouseMode: e.target.value }))
                 }
               >
-                <option value="ISOLATED">ISOLATED – own warehouse per department</option>
-                <option value="SHARED">SHARED – uses central warehouse</option>
+                <option value="ISOLATED">{t('departments.isolated')}</option>
+                <option value="SHARED">{t('departments.shared')}</option>
               </select>
             </Field>
             <div className="flex justify-end gap-2 pt-2 border-t">
@@ -129,10 +131,10 @@ export default function DepartmentsPage() {
                 className="btn-secondary"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button type="submit" className="btn-primary" disabled={saving}>
-                {saving ? 'Saving…' : 'Create'}
+                {saving ? t('common.saving') : t('common.create')}
               </button>
             </div>
           </form>

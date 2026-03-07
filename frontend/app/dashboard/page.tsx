@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Badge } from '@/components/ui';
 import Link from 'next/link';
+import { useT } from '@/lib/i18n';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 function msUntil(iso: string): number {
@@ -115,6 +116,7 @@ function Card({ children, className = '' }: { children: React.ReactNode; classNa
 
 // ─── main component ───────────────────────────────────────────────────────────
 export default function DashboardPage() {
+  const t = useT();
   const [loading, setLoading] = useState(true);
   const [deptCount, setDeptCount] = useState(0);
   const [productCount, setProductCount] = useState(0);
@@ -184,14 +186,14 @@ export default function DashboardPage() {
     if (nextDelivery) {
       const { label, overdue } = fmtDuration(msUntil(nextDelivery.requestedDeliveryTime));
       return {
-        label: `Next delivery — ${nextDelivery.customerName}`,
+        label: t('dashboard.nextDelivery', { customer: nextDelivery.customerName }),
         detail: `${label} · ${fmtMoney(nextDelivery.totalAmount ?? 0)}`,
         accent: overdue ? 'bg-red-700' : 'bg-slate-800',
       };
     }
     const nextPlan = plans.find((p) => p.status === 'DRAFT' || p.status === 'PUBLISHED');
     if (nextPlan) return {
-      label: `Next production run — ${nextPlan.planDate}`,
+      label: t('dashboard.nextProductionRun', { date: nextPlan.planDate }),
       detail: `${nextPlan.shift} · ${nextPlan.status}`,
       accent: 'bg-slate-800',
     };
@@ -203,34 +205,34 @@ export default function DashboardPage() {
   const issues: Issue[] = [];
   for (const o of activeOrders) {
     const ms = msUntil(o.requestedDeliveryTime);
-    if (ms < 0) issues.push({ level: 'error', msg: `Overdue: order for ${o.customerName} (${fmtDuration(ms).label})` });
+    if (ms < 0) issues.push({ level: 'error', msg: t('dashboard.overdue', { customer: o.customerName, duration: fmtDuration(ms).label }) });
   }
   const conflictCount = orders.flatMap((o) => o.lines ?? []).filter((l) => l.leadTimeConflict).length;
-  if (conflictCount > 0) issues.push({ level: 'warn', msg: `${conflictCount} order line(s) have lead-time conflicts` });
-  if (rushOrders.length > 0) issues.push({ level: 'warn', msg: `${rushOrders.length} rush order(s) in queue` });
+  if (conflictCount > 0) issues.push({ level: 'warn', msg: t('dashboard.leadTimeConflicts', { count: conflictCount }) });
+  if (rushOrders.length > 0) issues.push({ level: 'warn', msg: t('dashboard.rushOrders', { count: rushOrders.length }) });
   const draftPlansNoWO = todayPlans.filter((p) => p.status === 'DRAFT' && (p.workOrders?.length ?? 0) === 0);
-  if (draftPlansNoWO.length > 0) issues.push({ level: 'warn', msg: `${draftPlansNoWO.length} of today's plans are DRAFT with no work orders` });
+  if (draftPlansNoWO.length > 0) issues.push({ level: 'warn', msg: t('dashboard.draftPlansNoWo', { count: draftPlansNoWO.length }) });
   if (serverAlerts.length > 0) {
     const critical = serverAlerts.filter((a) => a.severity === 'CRITICAL');
     const low = serverAlerts.filter((a) => a.severity === 'LOW');
-    if (critical.length > 0) issues.push({ level: 'error', msg: `${critical.length} item(s) with CRITICAL stock level (zero on-hand)` });
-    if (low.length > 0) issues.push({ level: 'warn', msg: `${low.length} item(s) below minimum stock threshold` });
+    if (critical.length > 0) issues.push({ level: 'error', msg: t('dashboard.criticalStock', { count: critical.length }) });
+    if (low.length > 0) issues.push({ level: 'warn', msg: t('dashboard.lowStock', { count: low.length }) });
   } else if (lowStockPositions.length > 0) {
-    issues.push({ level: 'warn', msg: `${lowStockPositions.length} stock position(s) below minimum threshold` });
+    issues.push({ level: 'warn', msg: t('dashboard.belowStockThreshold', { count: lowStockPositions.length }) });
   }
   const confirmedNoMatch = confirmedOrders.filter(
     (o) => !plans.some((p) => p.planDate === o.requestedDeliveryTime?.substring(0, 10))
   );
-  if (confirmedNoMatch.length > 0) issues.push({ level: 'info', msg: `${confirmedNoMatch.length} confirmed order(s) have no matching production plan date` });
+  if (confirmedNoMatch.length > 0) issues.push({ level: 'info', msg: t('dashboard.confirmedNoMatchPlan', { count: confirmedNoMatch.length }) });
   const cancelledCount = orders.filter((o) => o.status === 'CANCELLED').length;
-  if (cancelledCount > 0) issues.push({ level: 'info', msg: `${cancelledCount} cancelled order(s) on record` });
+  if (cancelledCount > 0) issues.push({ level: 'info', msg: t('dashboard.cancelledOnRecord', { count: cancelledCount }) });
 
   // kpi stats
   const stats: StatCard[] = [
-    { label: 'Running Revenue', value: fmtMoney(runningRevenue), sub: `${activeOrders.length} active orders`, href: '/orders', icon: '💰', color: 'bg-emerald-50 border-emerald-200' },
-    { label: 'Open Orders', value: activeOrders.length, sub: criticalOrders.length > 0 ? `⚠️ ${criticalOrders.length} critical` : `${confirmedOrders.length} confirmed`, href: '/orders', icon: '📦', color: criticalOrders.length > 0 ? 'bg-red-50 border-red-300' : 'bg-green-50 border-green-200' },
-    { label: "Today's Plans", value: todayPlans.length, sub: activePlan ? `Active: ${activePlan.shift}` : 'None active', href: '/production-plans', icon: '📅', color: 'bg-purple-50 border-purple-200' },
-    { label: 'Stock Value', value: fmtMoney(totalStockValue), sub: serverAlerts.length > 0 ? `⚠️ ${serverAlerts.length} stock alert(s)` : `${positions.length} positions`, href: '/inventory', icon: '🏦', color: serverAlerts.length > 0 ? 'bg-red-50 border-red-300' : 'bg-blue-50 border-blue-200' },
+    { label: t('dashboard.runningRevenue'), value: fmtMoney(runningRevenue), sub: t('dashboard.activeOrders', { count: activeOrders.length }), href: '/orders', icon: '💰', color: 'bg-emerald-50 border-emerald-200' },
+    { label: t('dashboard.openOrders'), value: activeOrders.length, sub: criticalOrders.length > 0 ? t('dashboard.critical', { count: criticalOrders.length }) : t('dashboard.confirmed', { count: confirmedOrders.length }), href: '/orders', icon: '📦', color: criticalOrders.length > 0 ? 'bg-red-50 border-red-300' : 'bg-green-50 border-green-200' },
+    { label: t('dashboard.todayPlans'), value: todayPlans.length, sub: activePlan ? t('dashboard.activeShift', { shift: activePlan.shift }) : t('dashboard.noneActive'), href: '/production-plans', icon: '📅', color: 'bg-purple-50 border-purple-200' },
+    { label: t('dashboard.stockValue'), value: fmtMoney(totalStockValue), sub: serverAlerts.length > 0 ? t('dashboard.stockAlerts', { count: serverAlerts.length }) : t('dashboard.positions', { count: positions.length }), href: '/inventory', icon: '🏦', color: serverAlerts.length > 0 ? 'bg-red-50 border-red-300' : 'bg-blue-50 border-blue-200' },
   ];
 
   // production floor progress
@@ -248,7 +250,7 @@ export default function DashboardPage() {
     <div className="max-w-6xl space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold">Operations Dashboard</h1>
+        <h1 className="text-2xl font-semibold">{t('dashboard.title')}</h1>
         <p className="text-sm text-gray-400 mt-0.5">
           {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
         </p>
@@ -263,21 +265,21 @@ export default function DashboardPage() {
       {nextEvent && (
         <div className={`${nextEvent.accent} text-white rounded-xl px-6 py-4 flex items-center justify-between`}>
           <div>
-            <div className="text-xs font-semibold uppercase tracking-wide opacity-70 mb-0.5">Next Event</div>
+            <div className="text-xs font-semibold uppercase tracking-wide opacity-70 mb-0.5">{t('dashboard.nextEvent')}</div>
             <div className="text-lg font-bold">{nextEvent.label}</div>
             <div className="text-sm opacity-80 mt-0.5">{nextEvent.detail}</div>
           </div>
-          <Link href="/orders" className="text-white underline text-sm opacity-80 hover:opacity-100 whitespace-nowrap ml-4">View →</Link>
+          <Link href="/orders" className="text-white underline text-sm opacity-80 hover:opacity-100 whitespace-nowrap ml-4">{t('dashboard.view')}</Link>
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Delivery Timeline (spans 2 cols) */}
         <div className="lg:col-span-2 space-y-4">
-          <SectionTitle>Delivery Timeline</SectionTitle>
+          <SectionTitle>{t('dashboard.deliveryTimeline')}</SectionTitle>
           <Card>
             {deliveryTimeline.length === 0 ? (
-              <div className="py-10 text-center text-sm text-gray-400">No upcoming deliveries. <Link href="/orders" className="text-blue-600 hover:underline">Create an order</Link></div>
+              <div className="py-10 text-center text-sm text-gray-400">{t('dashboard.noDeliveries')} <Link href="/orders" className="text-blue-600 hover:underline">{t('dashboard.createAnOrder')}</Link></div>
             ) : (
               <div className="divide-y">
                 {deliveryTimeline.map((o) => {
@@ -314,10 +316,10 @@ export default function DashboardPage() {
 
         {/* Issues panel */}
         <div className="space-y-4">
-          <SectionTitle>Issues Detected</SectionTitle>
+          <SectionTitle>{t('dashboard.issuesDetected')}</SectionTitle>
           <Card>
             {issues.length === 0 ? (
-              <div className="px-5 py-10 text-center text-sm text-gray-400">✅ No issues detected</div>
+              <div className="px-5 py-10 text-center text-sm text-gray-400">{t('dashboard.noIssues')}</div>
             ) : (
               <div className="divide-y">
                 {issues.map((iss, i) => {
@@ -338,12 +340,12 @@ export default function DashboardPage() {
       {/* Production Floor */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <SectionTitle>Production Floor</SectionTitle>
-          <Link href="/production-plans" className="text-xs text-blue-600 hover:underline">View all →</Link>
+          <SectionTitle>{t('dashboard.productionFloor')}</SectionTitle>
+          <Link href="/production-plans" className="text-xs text-blue-600 hover:underline">{t('common.viewAll')}</Link>
         </div>
         {floorPlans.length === 0 ? (
           <Card>
-            <div className="py-10 text-center text-sm text-gray-400">No active production plans. <Link href="/production-plans" className="text-blue-600 hover:underline">Create one</Link></div>
+            <div className="py-10 text-center text-sm text-gray-400">{t('dashboard.noActivePlans')} <Link href="/production-plans" className="text-blue-600 hover:underline">{t('dashboard.createOne')}</Link></div>
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -358,7 +360,7 @@ export default function DashboardPage() {
                     <span className="text-sm font-semibold">{p.planDate}</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${shiftColor[p.shift] ?? 'bg-gray-100 text-gray-700'}`}>{p.shift}</span>
                   </div>
-                  <div className="text-xs text-gray-500 mb-3">{done}/{total} work orders complete · {inProg} in progress</div>
+                  <div className="text-xs text-gray-500 mb-3">{t('dashboard.workOrdersComplete', { done: String(done), total: String(total), inProgress: String(inProg) })}</div>
                   <div className="w-full bg-gray-100 rounded-full h-2 mb-3">
                     <div
                       className={`h-2 rounded-full transition-all ${p.status === 'IN_PROGRESS' ? 'bg-blue-500' : p.status === 'COMPLETED' ? 'bg-green-500' : 'bg-gray-300'}`}
@@ -376,13 +378,13 @@ export default function DashboardPage() {
       {/* Quick-start guide if empty */}
       {deptCount === 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
-          <h3 className="font-semibold text-blue-800 mb-2">🚀 Getting started</h3>
+          <h3 className="font-semibold text-blue-800 mb-2">{t('dashboard.gettingStarted')}</h3>
           <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
-            <li><Link href="/departments" className="underline hover:text-blue-900">Create a Department</Link> (e.g. Bakery, Confectionery)</li>
-            <li><Link href="/products" className="underline hover:text-blue-900">Add Products</Link> (e.g. White Bread 500g)</li>
-            <li><Link href="/recipes" className="underline hover:text-blue-900">Create a Recipe</Link> and activate it</li>
-            <li><Link href="/orders" className="underline hover:text-blue-900">Place and confirm an Order</Link></li>
-            <li><Link href="/production-plans" className="underline hover:text-blue-900">Create a Production Plan</Link>, generate work orders, and run the production workflow</li>
+            <li><Link href="/departments" className="underline hover:text-blue-900">{t('dashboard.step1')}</Link> {t('dashboard.step1Example')}</li>
+            <li><Link href="/products" className="underline hover:text-blue-900">{t('dashboard.step2')}</Link> {t('dashboard.step2Example')}</li>
+            <li><Link href="/recipes" className="underline hover:text-blue-900">{t('dashboard.step3')}</Link>{t('dashboard.step3Extra')}</li>
+            <li><Link href="/orders" className="underline hover:text-blue-900">{t('dashboard.step4')}</Link></li>
+            <li><Link href="/production-plans" className="underline hover:text-blue-900">{t('dashboard.step5')}</Link>{t('dashboard.step5Extra')}</li>
           </ol>
         </div>
       )}

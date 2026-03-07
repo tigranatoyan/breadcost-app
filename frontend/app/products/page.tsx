@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Modal, Table, Spinner, Alert, Badge, Field } from '@/components/ui';
+import { useT } from '@/lib/i18n';
 
 interface Dept {
   departmentId: string;
@@ -20,6 +21,7 @@ interface Product {
 }
 
 export default function ProductsPage() {
+  const t = useT();
   const [products, setProducts] = useState<Product[]>([]);
   const [depts, setDepts] = useState<Dept[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,9 +91,9 @@ export default function ProductsPage() {
   return (
     <div className="max-w-4xl">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Products</h1>
+        <h1 className="text-2xl font-semibold">{t('products.title')}</h1>
         <button className="btn-primary" onClick={openForm}>
-          + New Product
+          {t('products.newProduct')}
         </button>
       </div>
 
@@ -101,7 +103,7 @@ export default function ProductsPage() {
         <Spinner />
       ) : (
         <Table
-          cols={['Name', 'Department', 'Sale Unit', 'Base UoM', 'Price', 'VAT %', 'Status', 'ID']}
+          cols={[t('products.cols.name'), t('products.cols.department'), t('products.cols.saleUnit'), t('products.cols.baseUom'), t('products.cols.price'), t('products.cols.vat'), t('products.cols.status'), t('products.cols.id')]}
           rows={products.map((p) => [
             <span className="font-medium">{p.name}</span>,
             p.departmentName ??
@@ -114,21 +116,21 @@ export default function ProductsPage() {
             <Badge status={p.status ?? 'ACTIVE'} />,
             <code className="text-xs text-gray-400">{p.productId}</code>,
           ])}
-          empty="No products yet."
+          empty={t('products.noProducts')}
         />
       )}
 
       {open && (
-        <Modal title="New Product" onClose={() => setOpen(false)}>
+        <Modal title={t('products.newProductTitle')} onClose={() => setOpen(false)}>
           <form onSubmit={submit} className="space-y-4">
-            <Field label="Department">
+            <Field label={t('products.department')}>
               <select
                 className="input"
                 required
                 value={form.departmentId}
                 onChange={(e) => setForm((f) => ({ ...f, departmentId: e.target.value }))}
               >
-                <option value="">-- select a department --</option>
+                <option value="">{t('products.selectDepartment')}</option>
                 {depts.map((d) => (
                   <option key={d.departmentId} value={d.departmentId}>
                     {d.name}
@@ -136,25 +138,25 @@ export default function ProductsPage() {
                 ))}
               </select>
             </Field>
-            <Field label="Product Name">
+            <Field label={t('products.productName')}>
               <input
                 className="input"
                 required
-                placeholder="e.g. White Bread 500g"
+                placeholder={t('products.productPlaceholder')}
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               />
             </Field>
-            <Field label="Description">
+            <Field label={t('common.description')}>
               <input
                 className="input"
-                placeholder="Optional"
+                placeholder={t('products.descriptionPlaceholder')}
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               />
             </Field>
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Sale Unit">
+              <Field label={t('products.saleUnit')}>
                 <select
                   className="input"
                   value={form.saleUnit}
@@ -165,7 +167,7 @@ export default function ProductsPage() {
                   <option value="VOLUME">VOLUME</option>
                 </select>
               </Field>
-              <Field label="Base UoM" hint="e.g. PCS, KG, L">
+              <Field label={t('products.baseUom')} hint={t('products.baseUomHint')}>
                 <input
                   className="input"
                   required
@@ -176,7 +178,7 @@ export default function ProductsPage() {
               </Field>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Sale Price">
+              <Field label={t('products.salePrice')}>
                 <input
                   className="input"
                   type="number"
@@ -187,7 +189,7 @@ export default function ProductsPage() {
                   onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
                 />
               </Field>
-              <Field label="VAT Rate %">
+              <Field label={t('products.vatRate')}>
                 <input
                   className="input"
                   type="number"
@@ -202,14 +204,14 @@ export default function ProductsPage() {
             </div>
             <div className="flex justify-end gap-2 pt-2 border-t">
               <button type="button" className="btn-secondary" onClick={() => setOpen(false)}>
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
                 className="btn-primary"
                 disabled={saving || !form.departmentId}
               >
-                {saving ? 'Saving…' : 'Create'}
+                {saving ? t('common.saving') : t('common.create')}
               </button>
             </div>
           </form>

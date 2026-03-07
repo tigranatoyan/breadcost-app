@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Modal, Spinner, Alert, Badge, Field } from '@/components/ui';
+import { useT } from '@/lib/i18n';
 
 const SITE_ID = 'MAIN';
 
@@ -59,6 +60,7 @@ function fmt(n: number | null | undefined, decimals = 2) {
 // ─── main component ───────────────────────────────────────────────────────────
 
 export default function InventoryPage() {
+  const t = useT();
   const [tab, setTab] = useState<'stock' | 'items'>('stock');
 
   const [positions, setPositions] = useState<StockPosition[]>([]);
@@ -310,10 +312,10 @@ export default function InventoryPage() {
       {/* header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-semibold">Inventory</h1>
+          <h1 className="text-2xl font-semibold">{t('inventory.title')}</h1>
           {alertCount > 0 && (
             <span className="bg-red-100 text-red-700 text-xs font-semibold px-2.5 py-1 rounded-full">
-              ⚠ {alertCount} alert{alertCount !== 1 ? 's' : ''}
+              {t('inventory.alerts', { count: alertCount })}
             </span>
           )}
         </div>
@@ -321,16 +323,16 @@ export default function InventoryPage() {
           {tab === 'stock' && (
             <>
               <button className="btn-secondary" onClick={() => openTransfer()}>
-                ↔ Transfer
+                {t('inventory.transfer')}
               </button>
               <button className="btn-primary" onClick={openReceive}>
-                + Receive Stock
+                {t('inventory.receiveStock')}
               </button>
             </>
           )}
           {tab === 'items' && (
             <button className="btn-primary" onClick={openCreateItem}>
-              + New Item
+              {t('inventory.newItem')}
             </button>
           )}
         </div>
@@ -340,15 +342,15 @@ export default function InventoryPage() {
 
       {/* tabs */}
       <div className="flex gap-1 mb-4 bg-gray-100 rounded-xl p-1 w-fit">
-        {(['stock', 'items'] as const).map((t) => (
+        {(['stock', 'items'] as const).map((tb) => (
           <button
-            key={t}
+            key={tb}
             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              tab === t ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'
+              tab === tb ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'
             }`}
-            onClick={() => setTab(t)}
+            onClick={() => setTab(tb)}
           >
-            {t === 'stock' ? `Stock Levels (${positions.length})` : `Items (${items.length})`}
+            {tb === 'stock' ? t('inventory.stockLevels', { count: positions.length }) : t('inventory.items', { count: items.length })}
           </button>
         ))}
       </div>
@@ -360,12 +362,12 @@ export default function InventoryPage() {
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
         >
-          <option value="ALL">All Types</option>
-          {ITEM_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+          <option value="ALL">{t('inventory.allTypes')}</option>
+          {ITEM_TYPES.map((tp) => <option key={tp} value={tp}>{tp}</option>)}
         </select>
         <input
           className="input w-52"
-          placeholder="Search item…"
+          placeholder={t('inventory.searchItem')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -377,7 +379,7 @@ export default function InventoryPage() {
               checked={alertsOnly}
               onChange={(e) => setAlertsOnly(e.target.checked)}
             />
-            Below threshold only
+            {t('inventory.belowThresholdOnly')}
           </label>
         )}
       </div>
@@ -390,15 +392,15 @@ export default function InventoryPage() {
         filteredPositions.length === 0 ? (
           <div className="text-center py-16 text-sm text-gray-400 border rounded-xl bg-white">
             {positions.length === 0
-              ? 'No stock on hand. Receive some stock to get started.'
-              : 'No positions match the current filters.'}
+              ? t('inventory.noStockOnHand')
+              : t('inventory.noPositionsMatch')}
           </div>
         ) : (
           <div className="overflow-x-auto rounded-xl border bg-white shadow-sm">
             <table className="min-w-full text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  {['Item', 'Type', 'Location', 'Lot', 'On Hand', 'Avg Cost', 'Total Value', ''].map((h) => (
+                  {[t('inventory.cols.item'), t('inventory.cols.type'), t('inventory.cols.location'), t('inventory.cols.lot'), t('inventory.cols.onHand'), t('inventory.cols.avgCost'), t('inventory.cols.totalValue'), ''].map((h) => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
                       {h}
                     </th>
@@ -414,7 +416,7 @@ export default function InventoryPage() {
                     <tr key={p.id} className={`hover:bg-gray-50 ${isAlert ? 'bg-red-50' : ''}`}>
                       <td className="px-4 py-3 font-medium">
                         {item?.name ?? p.itemId}
-                        {isAlert && <span className="ml-2 text-red-500 text-xs">⚠ Low</span>}
+                        {isAlert && <span className="ml-2 text-red-500 text-xs">{t('inventory.low')}</span>}
                       </td>
                       <td className="px-4 py-3">{item ? typeBadge(item.type) : '—'}</td>
                       <td className="px-4 py-3 text-gray-600">{p.locationId}</td>
@@ -431,7 +433,7 @@ export default function InventoryPage() {
                           className="text-xs text-indigo-600 hover:underline"
                           onClick={() => openTransfer(p)}
                         >
-                          Transfer
+                          {t('inventory.transferBtn')}
                         </button>
                       </td>
                     </tr>
@@ -441,7 +443,7 @@ export default function InventoryPage() {
               <tfoot className="border-t bg-gray-50">
                 <tr>
                   <td colSpan={6} className="px-4 py-2 text-xs text-right text-gray-500 font-medium">
-                    Total Valuation
+                    {t('inventory.totalValuation')}
                   </td>
                   <td className="px-4 py-2 font-bold text-sm">
                     {fmt(filteredPositions.reduce((s, p) => s + (p.valuationAmount ?? 0), 0))}
@@ -457,15 +459,15 @@ export default function InventoryPage() {
         filteredItems.length === 0 ? (
           <div className="text-center py-16 text-sm text-gray-400 border rounded-xl bg-white">
             {items.length === 0
-              ? 'No items defined yet. Add raw materials and ingredients to get started.'
-              : 'No items match the current filters.'}
+              ? t('inventory.noItemsDefined')
+              : t('inventory.noItemsMatch')}
           </div>
         ) : (
           <div className="overflow-x-auto rounded-xl border bg-white shadow-sm">
             <table className="min-w-full text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  {['Name', 'Type', 'UoM', 'Min Stock', 'Status', 'Description', ''].map((h) => (
+                  {[t('inventory.cols.name'), t('inventory.cols.type'), t('inventory.cols.uom'), t('inventory.cols.minStockCol'), t('inventory.cols.statusCol'), t('inventory.cols.descriptionCol'), ''].map((h) => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
                       {h}
                     </th>
@@ -492,7 +494,7 @@ export default function InventoryPage() {
                         className="text-xs text-blue-600 hover:underline"
                         onClick={() => openEditItem(item)}
                       >
-                        Edit
+                        {t('common.edit')}
                       </button>
                     </td>
                   </tr>
@@ -505,9 +507,9 @@ export default function InventoryPage() {
 
       {/* ─── Receive Stock Modal ────────────────────────────────────────────── */}
       {receiveOpen && (
-        <Modal title="Receive Stock" onClose={() => setReceiveOpen(false)}>
+        <Modal title={t('inventory.receiveTitle')} onClose={() => setReceiveOpen(false)}>
           <form onSubmit={submitReceive} className="space-y-4">
-            <Field label="Item">
+            <Field label={t('inventory.cols.item')}>
               <select
                 className="input"
                 required
@@ -523,7 +525,7 @@ export default function InventoryPage() {
             </Field>
 
             <div className="grid grid-cols-2 gap-4">
-              <Field label={`Quantity (${itemMap[receiveForm.itemId]?.baseUom ?? ''})`}>
+              <Field label={t('inventory.quantityLabel', { uom: itemMap[receiveForm.itemId]?.baseUom ?? '' })}>
                 <input
                   className="input"
                   type="number"
@@ -535,7 +537,7 @@ export default function InventoryPage() {
                   onChange={(e) => setReceiveForm((f) => ({ ...f, qty: e.target.value }))}
                 />
               </Field>
-              <Field label="Cost per Unit (main currency)">
+              <Field label={t('inventory.costPerUnit')}>
                 <input
                   className="input"
                   type="number"
@@ -549,25 +551,25 @@ export default function InventoryPage() {
               </Field>
             </div>
 
-            <Field label="Supplier Reference (optional)">
+            <Field label={t('inventory.supplierRef')}>
               <input
                 className="input"
-                placeholder="e.g. PO-2026-001 or delivery note #"
+                placeholder={t('inventory.supplierRefPlaceholder')}
                 value={receiveForm.supplierRef}
                 onChange={(e) => setReceiveForm((f) => ({ ...f, supplierRef: e.target.value }))}
               />
             </Field>
 
             <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-2 text-xs text-blue-700">
-              A new lot will be created automatically. Site: <strong>{SITE_ID}</strong> · Location: <strong>RECEIVING</strong>
+              {t('inventory.newLotNote', { site: SITE_ID })}
             </div>
 
             <div className="flex justify-end gap-2 pt-2 border-t">
               <button type="button" className="btn-secondary" onClick={() => setReceiveOpen(false)}>
-                Cancel
+                {t('common.cancel')}
               </button>
               <button type="submit" className="btn-primary" disabled={receiveSaving || items.length === 0}>
-                {receiveSaving ? 'Recording…' : 'Record Receipt'}
+                {receiveSaving ? t('inventory.recording') : t('inventory.recordReceipt')}
               </button>
             </div>
           </form>
@@ -576,9 +578,9 @@ export default function InventoryPage() {
 
       {/* ─── Transfer Modal ─────────────────────────────────────────────────── */}
       {transferOpen && (
-        <Modal title="Transfer Inventory" onClose={() => setTransferOpen(false)}>
+        <Modal title={t('inventory.transferTitle')} onClose={() => setTransferOpen(false)}>
           <form onSubmit={submitTransfer} className="space-y-4">
-            <Field label="Item">
+            <Field label={t('inventory.cols.item')}>
               <select
                 className="input"
                 required
@@ -591,17 +593,17 @@ export default function InventoryPage() {
               </select>
             </Field>
 
-            <Field label="Lot ID (optional — leave blank for any lot)">
+            <Field label={t('inventory.lotIdLabel')}>
               <input
                 className="input"
-                placeholder="Lot ID or leave blank"
+                placeholder={t('inventory.lotIdPlaceholder')}
                 value={transferForm.lotId}
                 onChange={(e) => setTransferForm((f) => ({ ...f, lotId: e.target.value }))}
               />
             </Field>
 
             <div className="grid grid-cols-2 gap-4">
-              <Field label="From Location">
+              <Field label={t('inventory.fromLocation')}>
                 <input
                   className="input"
                   required
@@ -610,7 +612,7 @@ export default function InventoryPage() {
                   onChange={(e) => setTransferForm((f) => ({ ...f, fromLocationId: e.target.value }))}
                 />
               </Field>
-              <Field label="To Location">
+              <Field label={t('inventory.toLocation')}>
                 <input
                   className="input"
                   required
@@ -621,7 +623,7 @@ export default function InventoryPage() {
               </Field>
             </div>
 
-            <Field label="Quantity">
+            <Field label={t('inventory.quantityLabel', { uom: itemMap[transferForm.itemId]?.baseUom ?? '' })}>
               <input
                 className="input"
                 type="number"
@@ -635,10 +637,10 @@ export default function InventoryPage() {
 
             <div className="flex justify-end gap-2 pt-2 border-t">
               <button type="button" className="btn-secondary" onClick={() => setTransferOpen(false)}>
-                Cancel
+                {t('common.cancel')}
               </button>
               <button type="submit" className="btn-primary" disabled={transferSaving}>
-                {transferSaving ? 'Transferring…' : 'Transfer'}
+                {transferSaving ? t('inventory.transferring') : t('inventory.transferBtn')}
               </button>
             </div>
           </form>
@@ -648,11 +650,11 @@ export default function InventoryPage() {
       {/* ─── Item Create / Edit Modal ───────────────────────────────────────── */}
       {itemOpen && (
         <Modal
-          title={editItemId ? 'Edit Item' : 'New Item'}
+          title={editItemId ? t('inventory.editItemTitle') : t('inventory.createItemTitle')}
           onClose={() => setItemOpen(false)}
         >
           <form onSubmit={submitItem} className="space-y-4">
-            <Field label="Name">
+            <Field label={t('common.name')}>
               <input
                 className="input"
                 required
@@ -663,16 +665,16 @@ export default function InventoryPage() {
             </Field>
 
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Type">
+              <Field label={t('inventory.itemType')}>
                 <select
                   className="input"
                   value={itemForm.type}
                   onChange={(e) => setItemForm((f) => ({ ...f, type: e.target.value }))}
                 >
-                  {ITEM_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                  {ITEM_TYPES.map((tp) => <option key={tp} value={tp}>{tp}</option>)}
                 </select>
               </Field>
-              <Field label="Base Unit of Measure">
+              <Field label={t('inventory.cols.uom')}>
                 <input
                   className="input"
                   required
@@ -683,7 +685,7 @@ export default function InventoryPage() {
               </Field>
             </div>
 
-            <Field label="Min Stock Threshold" hint="Alert when on-hand qty falls below this. Set 0 to disable.">
+            <Field label={t('inventory.minStock')}>
               <input
                 className="input"
                 type="number"
@@ -694,10 +696,10 @@ export default function InventoryPage() {
               />
             </Field>
 
-            <Field label="Description (optional)">
+            <Field label={`${t('common.description')} (${t('common.optional')})`}>
               <textarea
                 className="input h-16 resize-none"
-                placeholder="Brief description"
+                placeholder={t('common.description')}
                 value={itemForm.description}
                 onChange={(e) => setItemForm((f) => ({ ...f, description: e.target.value }))}
               />
@@ -705,10 +707,10 @@ export default function InventoryPage() {
 
             <div className="flex justify-end gap-2 pt-2 border-t">
               <button type="button" className="btn-secondary" onClick={() => setItemOpen(false)}>
-                Cancel
+                {t('common.cancel')}
               </button>
               <button type="submit" className="btn-primary" disabled={itemSaving}>
-                {itemSaving ? 'Saving…' : editItemId ? 'Save Changes' : 'Create Item'}
+                {itemSaving ? t('common.saving') : editItemId ? t('common.save') : t('common.create')}
               </button>
             </div>
           </form>

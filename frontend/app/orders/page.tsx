@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Modal, Spinner, Alert, Badge, Field } from '@/components/ui';
+import { useT } from '@/lib/i18n';
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -58,11 +59,11 @@ const STATUS_NEXT: Record<string, string | null> = {
   OUT_FOR_DELIVERY: 'DELIVERED',
 };
 
-const STATUS_NEXT_LABEL: Record<string, string> = {
-  CONFIRMED: '▶ Start Production',
-  IN_PRODUCTION: '✓ Mark Ready',
-  READY: '🚚 Out for Delivery',
-  OUT_FOR_DELIVERY: '✅ Mark Delivered',
+const STATUS_NEXT_KEY: Record<string, string> = {
+  CONFIRMED: 'orders.startProduction',
+  IN_PRODUCTION: 'orders.markReady',
+  READY: 'orders.outForDelivery',
+  OUT_FOR_DELIVERY: 'orders.markDelivered',
 };
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -94,6 +95,7 @@ function fmtDateTime(iso: string | null | undefined) {
 // ─── component ────────────────────────────────────────────────────────────────
 
 export default function OrdersPage() {
+  const t = useT();
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -295,9 +297,9 @@ export default function OrdersPage() {
     <div className="max-w-5xl">
       {/* header */}
       <div className="flex items-center justify-between mb-5">
-        <h1 className="text-2xl font-semibold">Orders</h1>
+        <h1 className="text-2xl font-semibold">{t('orders.title')}</h1>
         <button className="btn-primary" onClick={openForm}>
-          + New Order
+          {t('orders.newOrder')}
         </button>
       </div>
 
@@ -310,19 +312,19 @@ export default function OrdersPage() {
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
-          <option value="ALL">All Statuses</option>
+          <option value="ALL">{t('common.allStatuses')}</option>
           {ALL_STATUSES.map((s) => (
             <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
           ))}
         </select>
         <input
           className="input w-56"
-          placeholder="Search customer…"
+          placeholder={t('orders.searchCustomer')}
           value={customerSearch}
           onChange={(e) => setCustomerSearch(e.target.value)}
         />
         <span className="text-sm text-gray-400 self-center ml-auto">
-          {filtered.length} order{filtered.length !== 1 ? 's' : ''}
+          {t('orders.orderCount', { count: filtered.length })}
         </span>
       </div>
 
@@ -331,7 +333,7 @@ export default function OrdersPage() {
         <Spinner />
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 text-sm text-gray-400 border rounded-xl bg-white">
-          {orders.length === 0 ? 'No orders yet. Create the first one.' : 'No orders match the current filters.'}
+          {orders.length === 0 ? t('orders.noOrders') : t('orders.noMatch')}
         </div>
       ) : (
         <div className="space-y-2">
@@ -352,7 +354,7 @@ export default function OrdersPage() {
                 </span>
                 {/* line count */}
                 <span className="text-xs text-gray-400 shrink-0">
-                  {o.lines?.length ?? 0} line{(o.lines?.length ?? 0) !== 1 ? 's' : ''}
+                  {t('orders.lines', { count: o.lines?.length ?? 0 })}
                 </span>
                 {/* total */}
                 <span className="text-sm font-semibold shrink-0">
@@ -361,7 +363,7 @@ export default function OrdersPage() {
                 {/* rush badge */}
                 {o.rushOrder && (
                   <span className="bg-orange-100 text-orange-700 text-xs font-medium px-2 py-0.5 rounded-full shrink-0">
-                    ⚡ RUSH
+                    {t('orders.rush')}
                     {o.rushPremiumPct ? ` +${o.rushPremiumPct}%` : ''}
                   </span>
                 )}
@@ -379,7 +381,7 @@ export default function OrdersPage() {
                       disabled={actionId === o.orderId}
                       onClick={() => doConfirm(o.orderId)}
                     >
-                      Confirm
+                      {t('orders.confirmBtn')}
                     </button>
                   )}
                   {/* Status advance */}
@@ -389,7 +391,7 @@ export default function OrdersPage() {
                       disabled={actionId === o.orderId}
                       onClick={() => doAdvanceStatus(o.orderId, STATUS_NEXT[o.status]!)}
                     >
-                      {STATUS_NEXT_LABEL[o.status]}
+                      {t(STATUS_NEXT_KEY[o.status])}
                     </button>
                   )}
                   {/* Cancel */}
@@ -399,7 +401,7 @@ export default function OrdersPage() {
                       disabled={actionId === o.orderId}
                       onClick={() => openCancelDialog(o.orderId)}
                     >
-                      Cancel
+                      {t('orders.cancelBtn')}
                     </button>
                   )}
                 </div>
@@ -413,21 +415,21 @@ export default function OrdersPage() {
                 <div className="border-t px-4 py-3 space-y-3">
                   {/* meta row */}
                   <div className="flex flex-wrap gap-4 text-xs text-gray-500">
-                    <span><span className="font-medium text-gray-700">Order ID:</span> {o.orderId.slice(0, 8)}…</span>
-                    <span><span className="font-medium text-gray-700">Placed:</span> {fmtDateTime(o.orderPlacedAt)}</span>
-                    <span><span className="font-medium text-gray-700">Delivery:</span> {fmtDateTime(o.requestedDeliveryTime)}</span>
-                    {o.notes && <span><span className="font-medium text-gray-700">Notes:</span> {o.notes}</span>}
+                    <span><span className="font-medium text-gray-700">{t('orders.orderId')}:</span> {o.orderId.slice(0, 8)}…</span>
+                    <span><span className="font-medium text-gray-700">{t('orders.placed')}:</span> {fmtDateTime(o.orderPlacedAt)}</span>
+                    <span><span className="font-medium text-gray-700">{t('orders.delivery')}:</span> {fmtDateTime(o.requestedDeliveryTime)}</span>
+                    {o.notes && <span><span className="font-medium text-gray-700">{t('common.notes')}:</span> {o.notes}</span>}
                   </div>
                   {/* lines table */}
                   {o.lines && o.lines.length > 0 && (
                     <table className="w-full text-xs">
                       <thead>
                         <tr className="text-gray-500 bg-gray-50">
-                          <th className="text-left px-2 py-1.5 rounded-l">Product</th>
-                          <th className="text-right px-2 py-1.5">Qty</th>
-                          <th className="text-right px-2 py-1.5">Unit Price</th>
-                          <th className="text-right px-2 py-1.5">Line Total</th>
-                          <th className="text-center px-2 py-1.5 rounded-r">Lead Time</th>
+                          <th className="text-left px-2 py-1.5 rounded-l">{t('orders.product')}</th>
+                          <th className="text-right px-2 py-1.5">{t('orders.qty')}</th>
+                          <th className="text-right px-2 py-1.5">{t('orders.unitPrice')}</th>
+                          <th className="text-right px-2 py-1.5">{t('orders.lineTotal')}</th>
+                          <th className="text-center px-2 py-1.5 rounded-r">{t('orders.leadTime')}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
@@ -443,15 +445,15 @@ export default function OrdersPage() {
                             </td>
                             <td className="px-2 py-1.5 text-center">
                               {ln.leadTimeConflict
-                                ? <span className="text-orange-600 font-medium">⚠ Conflict</span>
-                                : <span className="text-green-600">✓ OK</span>}
+                                ? <span className="text-orange-600 font-medium">{t('orders.conflict')}</span>
+                                : <span className="text-green-600">{t('orders.ltOk')}</span>}
                             </td>
                           </tr>
                         ))}
                       </tbody>
                       <tfoot>
                         <tr className="border-t">
-                          <td colSpan={3} className="px-2 py-1.5 text-right text-gray-500 font-medium">Total</td>
+                          <td colSpan={3} className="px-2 py-1.5 text-right text-gray-500 font-medium">{t('common.total')}</td>
                           <td className="px-2 py-1.5 text-right font-bold">
                             {(o.totalAmount ?? 0).toFixed(2)}
                           </td>
@@ -469,19 +471,19 @@ export default function OrdersPage() {
 
       {/* ─── Create Order Modal ─────────────────────────────────────────────── */}
       {open && (
-        <Modal title="New Order" onClose={() => setOpen(false)} wide>
+        <Modal title={t('orders.newOrderTitle')} onClose={() => setOpen(false)} wide>
           <form onSubmit={submit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Customer Name">
+              <Field label={t('orders.customerName')}>
                 <input
                   className="input"
                   required
-                  placeholder="e.g. Supermarket A"
+                  placeholder={t('orders.customerPlaceholder')}
                   value={form.customerName}
                   onChange={(e) => setForm((f) => ({ ...f, customerName: e.target.value }))}
                 />
               </Field>
-              <Field label="Requested Delivery">
+              <Field label={t('orders.requestedDelivery')}>
                 <input
                   className="input"
                   type="datetime-local"
@@ -492,10 +494,10 @@ export default function OrdersPage() {
               </Field>
             </div>
 
-            <Field label="Notes">
+            <Field label={t('common.notes')}>
               <input
                 className="input"
-                placeholder="Optional internal notes"
+                placeholder={t('orders.notesPlaceholder')}
                 value={form.notes}
                 onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               />
@@ -510,11 +512,11 @@ export default function OrdersPage() {
                   checked={form.forceRush}
                   onChange={(e) => setForm((f) => ({ ...f, forceRush: e.target.checked }))}
                 />
-                <span className="text-sm font-medium text-orange-800">⚡ Rush Order</span>
+                <span className="text-sm font-medium text-orange-800">⚡ {t('orders.rushOrder')}</span>
               </label>
               {form.forceRush && (
                 <div className="flex items-center gap-2">
-                  <label className="text-xs text-orange-700">Custom premium %</label>
+                  <label className="text-xs text-orange-700">{t('orders.rushPremium')}</label>
                   <input
                     className="input w-24 text-sm"
                     type="number"
@@ -524,7 +526,7 @@ export default function OrdersPage() {
                     value={form.customRushPremiumPct}
                     onChange={(e) => setForm((f) => ({ ...f, customRushPremiumPct: e.target.value }))}
                   />
-                  <span className="text-xs text-orange-600">Leave blank to use system default</span>
+                  <span className="text-xs text-orange-600">{t('orders.rushPremiumHint')}</span>
                 </div>
               )}
             </div>
@@ -532,14 +534,14 @@ export default function OrdersPage() {
             {/* lines */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">Order Lines</span>
+                <span className="text-sm font-medium text-gray-700">{t('orders.orderLines')}</span>
                 <button type="button" className="text-xs text-blue-600 hover:underline" onClick={addLine}>
-                  + Add line
+                  {t('orders.addLine')}
                 </button>
               </div>
               {form.lines.length === 0 && (
                 <p className="text-xs text-gray-400 py-2">
-                  No products available. Add products first.
+                  {t('orders.noProducts')}
                 </p>
               )}
               <div className="space-y-2">
@@ -547,7 +549,7 @@ export default function OrdersPage() {
                   <div key={i} className="border rounded-lg p-3 bg-gray-50">
                     <div className="grid grid-cols-4 gap-2 items-end">
                       <div className="col-span-2">
-                        <label className="text-xs text-gray-500">Product</label>
+                        <label className="text-xs text-gray-500">{t('orders.product')}</label>
                         <select
                           className="input"
                           value={line.productId}
@@ -559,7 +561,7 @@ export default function OrdersPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500">Qty ({line.uom})</label>
+                        <label className="text-xs text-gray-500">{t('orders.qty')} ({line.uom})</label>
                         <input
                           className="input"
                           type="number"
@@ -569,7 +571,7 @@ export default function OrdersPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500">Unit Price</label>
+                        <label className="text-xs text-gray-500">{t('orders.unitPrice')}</label>
                         <input
                           className="input"
                           type="number"
@@ -586,7 +588,7 @@ export default function OrdersPage() {
                         className="mt-1 text-xs text-red-500 hover:underline"
                         onClick={() => removeLine(i)}
                       >
-                        Remove line
+                        {t('orders.removeLine')}
                       </button>
                     )}
                   </div>
@@ -596,14 +598,14 @@ export default function OrdersPage() {
 
             <div className="flex justify-end gap-2 pt-2 border-t">
               <button type="button" className="btn-secondary" onClick={() => setOpen(false)}>
-                Discard
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
                 className="btn-primary"
                 disabled={saving || form.lines.length === 0}
               >
-                {saving ? 'Saving…' : 'Create Order'}
+                {saving ? t('common.saving') : t('orders.newOrder')}
               </button>
             </div>
           </form>
@@ -612,29 +614,29 @@ export default function OrdersPage() {
 
       {/* ─── Cancel Reason Dialog ───────────────────────────────────────────── */}
       {cancelTarget && (
-        <Modal title="Cancel Order" onClose={() => setCancelTarget(null)}>
+        <Modal title={t('orders.cancelOrder')} onClose={() => setCancelTarget(null)}>
           <div className="space-y-4">
             <p className="text-sm text-gray-600">
-              Cancelling this order cannot be undone. Optionally provide a reason.
+              {t('orders.cancelWarning')}
             </p>
-            <Field label="Reason (optional)">
+            <Field label={t('orders.cancelReason')}>
               <textarea
                 className="input h-20 resize-none"
-                placeholder="e.g. Customer withdrew the order"
+                placeholder={t('orders.cancelReasonPlaceholder')}
                 value={cancelReason}
                 onChange={(e) => setCancelReason(e.target.value)}
               />
             </Field>
             <div className="flex justify-end gap-2 pt-2 border-t">
               <button className="btn-secondary" onClick={() => setCancelTarget(null)}>
-                Go Back
+                {t('common.cancel')}
               </button>
               <button
                 className="bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-4 py-1.5 rounded-lg disabled:opacity-50"
                 disabled={!!actionId}
                 onClick={doCancel}
               >
-                {actionId ? 'Cancelling…' : 'Yes, Cancel Order'}
+                {actionId ? t('common.saving') : t('orders.confirmCancel')}
               </button>
             </div>
           </div>

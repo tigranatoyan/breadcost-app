@@ -116,6 +116,40 @@ EPICS = [
         "release": "R1",
         "labels": ["items", "catalog", "r1"],
     },
+    # ── Release 1.5 — Frontend E2E Completion ────────────
+    {
+        "id": "BC-E25",
+        "title": "R1.5 — Inventory & Warehouse FE (Sprint 4)",
+        "goal": "Complete the /inventory frontend screen: adjustment modal, lot detail expand with FIFO cost layers, department filter, exchange rate in receive. Dashboard stock alert widget with 60s auto-refresh. E2E testable: warehouse user can receive, adjust, transfer, view cost layers; manager sees alerts on dashboard.",
+        "requirements": "FE-INV-2, FE-INV-3, FE-INV-4, FE-INV-5, FE-INV-6, FE-DASH-2, FE-DASH-3",
+        "release": "R1.5",
+        "labels": ["inventory", "dashboard", "frontend", "r1.5", "sprint-4"],
+    },
+    {
+        "id": "BC-E26",
+        "title": "R1.5 — POS & Sales FE (Sprint 5)",
+        "goal": "Complete the /pos frontend screen: receipt modal with print, card terminal reference, end-of-day reconciliation. Dashboard revenue widget. E2E testable: cashier processes sale → receipt → EoD; manager sees revenue on dashboard.",
+        "requirements": "FE-POS-4, FE-POS-5, FE-POS-6, FE-DASH-2",
+        "release": "R1.5",
+        "labels": ["pos", "dashboard", "frontend", "r1.5", "sprint-5"],
+    },
+    {
+        "id": "BC-E27",
+        "title": "R1.5 — Admin, Config & Catalog FE (Sprint 6)",
+        "goal": "Complete /admin (user edit, password reset, config editing, tab layout), /departments (edit + counts), /products (edit + recipe link + filters), /recipes (department, activate confirm, unit mode). E2E testable: admin creates & manages users, configures tenant, manages catalog end-to-end.",
+        "requirements": "FE-ADMIN-2, FE-ADMIN-3, FE-ADMIN-4, FE-DEPT-3, FE-PROD-3, FE-PROD-4, FE-REC-5, FE-REC-6",
+        "release": "R1.5",
+        "labels": ["admin", "products", "recipes", "departments", "frontend", "r1.5", "sprint-6"],
+    },
+    {
+        "id": "BC-E28",
+        "title": "R1.5 — Reports, Dashboard & Production Polish FE (Sprint 7)",
+        "goal": "Complete /reports (date range, dept filter, CSV export, material consumption, cost per batch), /technologist view, /dashboard spec-exact widgets, /production-plans approve dialog + yield input. E2E testable: full production cycle from plan → approve → execute → report; manager and finance see real reports with export.",
+        "requirements": "FE-RPT-2, FE-RPT-3, FE-DASH-2, FE-PP-4, FE-PP-6",
+        "release": "R1.5",
+        "labels": ["reports", "dashboard", "production", "frontend", "r1.5", "sprint-7"],
+    },
+
     # ── Release 2 (planned) ───────────────────────────────
     {
         "id": "BC-E11",
@@ -987,6 +1021,402 @@ STORIES = [
         "status": "✅ Done",
         "labels": ["items"],
     },
+
+    # ══════════════════════════════════════════════════════
+    #  RELEASE 1.5 — Frontend E2E Completion
+    #  Vertical slices: each sprint finishes BE+FE for a user journey
+    #  BE for R1 is done; these are FE stories to close the gaps
+    # ══════════════════════════════════════════════════════
+
+    # ── Sprint 4: Inventory & Warehouse E2E ──────────────
+    {
+        "id": "BC-1501",
+        "epic_id": "BC-E05",
+        "release": "R1.5",
+        "sprint": "Sprint 4",
+        "title": "FE /inventory — Adjustment modal (waste/spoilage/correction)",
+        "acceptance_criteria": [
+            "Adjustment button opens modal with: Item (searchable select), Qty (+/-), Reason Code (WASTE/SPOILAGE/COUNT_CORRECTION/OTHER), Notes textarea",
+            "Calls POST /v1/inventory/adjust?tenantId=",
+            "Stock table updates after adjustment without full page reload",
+            "Only Admin, Warehouse roles can see button",
+        ],
+        "priority": "P0",
+        "status": "📋 Planned",
+        "labels": ["inventory", "frontend", "r1.5"],
+    },
+    {
+        "id": "BC-1502",
+        "epic_id": "BC-E05",
+        "release": "R1.5",
+        "sprint": "Sprint 4",
+        "title": "FE /inventory — Lot detail expand with FIFO cost layers",
+        "acceptance_criteria": [
+            "Clicking a stock row expands to show FIFO lots: lotId, received date, original qty, remaining qty, unit cost",
+            "Data sourced from existing inventory positions or new lot endpoint",
+            "Cost layers ordered by receipt date (oldest first)",
+        ],
+        "priority": "P1",
+        "status": "📋 Planned",
+        "labels": ["inventory", "frontend", "r1.5"],
+    },
+    {
+        "id": "BC-1503",
+        "epic_id": "BC-E05",
+        "release": "R1.5",
+        "sprint": "Sprint 4",
+        "title": "FE /inventory — Department/site filter + last receipt date",
+        "acceptance_criteria": [
+            "Department dropdown filter on stock level table (spec FE-INV-2)",
+            "Last Receipt Date column shown in stock table",
+            "Filters applied client-side from existing data",
+        ],
+        "priority": "P1",
+        "status": "📋 Planned",
+        "labels": ["inventory", "frontend", "r1.5"],
+    },
+    {
+        "id": "BC-1504",
+        "epic_id": "BC-E05",
+        "release": "R1.5",
+        "sprint": "Sprint 4",
+        "title": "FE /inventory — Receive Lot: currency + exchange rate fields",
+        "acceptance_criteria": [
+            "Receive Stock modal includes Currency select + Exchange Rate to Main Currency field",
+            "Exchange rate field shown only when currency ≠ main currency",
+            "Cost stored in original + converted currency",
+        ],
+        "priority": "P2",
+        "status": "📋 Planned",
+        "labels": ["inventory", "frontend", "r1.5"],
+    },
+    {
+        "id": "BC-1505",
+        "epic_id": "BC-E07",
+        "release": "R1.5",
+        "sprint": "Sprint 4",
+        "title": "FE /dashboard — Stock alert widget + 60s auto-refresh",
+        "acceptance_criteria": [
+            "Dashboard shows dedicated 'Stock Alerts' count widget with severity breakdown",
+            "All dashboard widgets auto-refresh every 60 seconds (spec FE-DASH-3)",
+            "Manual Refresh button also available",
+            "Top 5 Products widget shows quantity ordered this week",
+        ],
+        "priority": "P1",
+        "status": "📋 Planned",
+        "labels": ["dashboard", "frontend", "r1.5"],
+    },
+
+    # E2E test for Sprint 4:
+    # Login as warehouse → receive lot → verify stock position → adjust (WASTE reason)
+    # → transfer to another dept → verify alert on dashboard (login as manager)
+
+    # ── Sprint 5: POS & Sales E2E ────────────────────────
+    {
+        "id": "BC-1601",
+        "epic_id": "BC-E06",
+        "release": "R1.5",
+        "sprint": "Sprint 5",
+        "title": "FE /pos — Receipt modal after sale with print",
+        "acceptance_criteria": [
+            "After POST /v1/pos/sales success, show receipt modal with: line items, qty, unit price, total per line, grand total, payment method, cashier name, timestamp",
+            "Print button triggers browser print dialog for the receipt",
+            "'New Sale' button resets transaction panel and closes receipt",
+        ],
+        "priority": "P0",
+        "status": "📋 Planned",
+        "labels": ["pos", "frontend", "r1.5"],
+    },
+    {
+        "id": "BC-1602",
+        "epic_id": "BC-E06",
+        "release": "R1.5",
+        "sprint": "Sprint 5",
+        "title": "FE /pos — Card payment terminal reference field",
+        "acceptance_criteria": [
+            "When payment method is CARD, a 'Terminal Reference' text input appears (required)",
+            "Reference sent as cardReference to POST /v1/pos/sales",
+            "CASH mode hides the terminal field, shows received amount + change calculation",
+        ],
+        "priority": "P1",
+        "status": "📋 Planned",
+        "labels": ["pos", "frontend", "r1.5"],
+    },
+    {
+        "id": "BC-1603",
+        "epic_id": "BC-E06",
+        "release": "R1.5",
+        "sprint": "Sprint 5",
+        "title": "FE /pos — End-of-day reconciliation view",
+        "acceptance_criteria": [
+            "'End of Day' button visible on POS screen",
+            "Calls POST /v1/pos/reconcile?tenantId= on click",
+            "Shows summary panel: total cash sales, total card sales, total refunds, net sales, expected cash in drawer",
+            "Summary is printable",
+        ],
+        "priority": "P0",
+        "status": "📋 Planned",
+        "labels": ["pos", "frontend", "r1.5"],
+    },
+    {
+        "id": "BC-1604",
+        "epic_id": "BC-E07",
+        "release": "R1.5",
+        "sprint": "Sprint 5",
+        "title": "FE /dashboard — Revenue widget (Today/Week/Month)",
+        "acceptance_criteria": [
+            "Dashboard Revenue widget shows Today, This Week, This Month values",
+            "Data sourced from GET /v1/reports/revenue-summary?tenantId=",
+            "Currency displayed alongside values",
+            "Widget uses same auto-refresh as other dashboard widgets (60s)",
+        ],
+        "priority": "P1",
+        "status": "📋 Planned",
+        "labels": ["dashboard", "frontend", "r1.5"],
+    },
+
+    # E2E test for Sprint 5:
+    # Login as cashier → search product → add to cart → pay CASH → receipt shown → print
+    # → pay CARD with terminal ref → receipt shown
+    # → End of Day → verify cash/card totals match
+    # → Login as manager → verify revenue widget on dashboard
+
+    # ── Sprint 6: Admin, Config & Catalog E2E ────────────
+    {
+        "id": "BC-1701",
+        "epic_id": "BC-E08",
+        "release": "R1.5",
+        "sprint": "Sprint 6",
+        "title": "FE /admin — User edit (roles, department, display name)",
+        "acceptance_criteria": [
+            "Click Edit on a user row opens edit modal with: display name, role(s) multi-select, department select",
+            "Calls PUT /v1/users/{id}?tenantId= on save",
+            "Changes reflected in user table without page reload",
+            "Only Admin role can see edit controls",
+        ],
+        "priority": "P0",
+        "status": "📋 Planned",
+        "labels": ["admin", "users", "frontend", "r1.5"],
+    },
+    {
+        "id": "BC-1702",
+        "epic_id": "BC-E08",
+        "release": "R1.5",
+        "sprint": "Sprint 6",
+        "title": "FE /admin — Password reset UI",
+        "acceptance_criteria": [
+            "'Reset Password' button on each user row",
+            "Opens modal with new password + confirm fields",
+            "Calls POST /v1/users/{id}/reset-password?tenantId=",
+            "Success message shown; user's next login requires new password",
+        ],
+        "priority": "P1",
+        "status": "📋 Planned",
+        "labels": ["admin", "users", "frontend", "r1.5"],
+    },
+    {
+        "id": "BC-1703",
+        "epic_id": "BC-E08",
+        "release": "R1.5",
+        "sprint": "Sprint 6",
+        "title": "FE /admin — System config editing (PUT /config)",
+        "acceptance_criteria": [
+            "Config section shows editable fields: Order Cutoff Time, Rush Premium %, Main Currency, Tenant Name",
+            "Save button calls PUT /v1/config?tenantId=",
+            "Success notification after save",
+            "Config values reflect new values immediately",
+        ],
+        "priority": "P0",
+        "status": "📋 Planned",
+        "labels": ["admin", "config", "frontend", "r1.5"],
+    },
+    {
+        "id": "BC-1704",
+        "epic_id": "BC-E08",
+        "release": "R1.5",
+        "sprint": "Sprint 6",
+        "title": "FE /admin — Tab layout (Users | Roles | System Config)",
+        "acceptance_criteria": [
+            "Admin page uses tab structure: Users | Roles & Permissions | System Config",
+            "Users tab: user table + create/edit/deactivate/reset pwd",
+            "Roles tab: read-only display of role definitions from backend (edit in R2)",
+            "System Config tab: editable tenant settings",
+        ],
+        "priority": "P1",
+        "status": "📋 Planned",
+        "labels": ["admin", "frontend", "r1.5"],
+    },
+    {
+        "id": "BC-1705",
+        "epic_id": "BC-E08",
+        "release": "R1.5",
+        "sprint": "Sprint 6",
+        "title": "FE /departments — Edit department + product/staff counts",
+        "acceptance_criteria": [
+            "Edit button on department row opens edit modal (pre-filled)",
+            "Calls PUT /v1/departments/{id}?tenantId= on save",
+            "Table shows Product Types count and Staff Count columns",
+            "Description field added to create/edit modal",
+        ],
+        "priority": "P1",
+        "status": "📋 Planned",
+        "labels": ["departments", "frontend", "r1.5"],
+    },
+    {
+        "id": "BC-1706",
+        "epic_id": "BC-E04",
+        "release": "R1.5",
+        "sprint": "Sprint 6",
+        "title": "FE /products — Edit product + recipe link + filters",
+        "acceptance_criteria": [
+            "Edit button on product row opens pre-filled modal; calls PUT /v1/products/{id}?tenantId=",
+            "Active Recipe Version column shown; 'View Recipe' link navigates to /recipes filtered by product",
+            "Department and Status dropdown filters on product list",
+        ],
+        "priority": "P1",
+        "status": "📋 Planned",
+        "labels": ["products", "frontend", "r1.5"],
+    },
+    {
+        "id": "BC-1707",
+        "epic_id": "BC-E04",
+        "release": "R1.5",
+        "sprint": "Sprint 6",
+        "title": "FE /recipes — Department selector + activate confirmation + unit mode",
+        "acceptance_criteria": [
+            "Create Recipe modal includes Department selector (required)",
+            "Activate button shows confirmation dialog: 'Activating this version will archive the current active recipe'",
+            "Ingredient edit mode includes Unit Mode selector (PIECE/WEIGHT/COMBINATION)",
+            "Production Notes visible in expanded recipe view (not just create modal)",
+        ],
+        "priority": "P1",
+        "status": "📋 Planned",
+        "labels": ["recipes", "frontend", "r1.5"],
+    },
+
+    # E2E test for Sprint 6:
+    # Login as admin → create new user with warehouse role → verify user in list
+    # → edit role to management → reset password → verify new login works
+    # → configure cutoff time → edit department lead time
+    # → edit product pricing → activate recipe with confirmation
+    # → verify new user has correct nav items
+
+    # ── Sprint 7: Reports, Dashboard & Production Polish E2E ─
+    {
+        "id": "BC-1801",
+        "epic_id": "BC-E07",
+        "release": "R1.5",
+        "sprint": "Sprint 7",
+        "title": "FE /reports — Date range picker + department filter",
+        "acceptance_criteria": [
+            "All report tabs have date range picker (start date, end date) as common control",
+            "Department dropdown filter available on all report tabs",
+            "Filters affect data displayed in the active tab",
+            "Clear filters button resets to defaults",
+        ],
+        "priority": "P0",
+        "status": "📋 Planned",
+        "labels": ["reports", "frontend", "r1.5"],
+    },
+    {
+        "id": "BC-1802",
+        "epic_id": "BC-E07",
+        "release": "R1.5",
+        "sprint": "Sprint 7",
+        "title": "FE /reports — CSV export for all report tabs",
+        "acceptance_criteria": [
+            "Export CSV button on each report tab",
+            "CSV download includes all currently visible data (respecting filters)",
+            "Filename includes report name + date range",
+        ],
+        "priority": "P1",
+        "status": "📋 Planned",
+        "labels": ["reports", "frontend", "r1.5"],
+    },
+    {
+        "id": "BC-1803",
+        "epic_id": "BC-E07",
+        "release": "R1.5",
+        "sprint": "Sprint 7",
+        "title": "FE /reports — Material consumption report (planned vs actual)",
+        "acceptance_criteria": [
+            "New report tab: Material Consumption",
+            "Shows per-batch: planned ingredient qty (from recipe) vs actual issued qty",
+            "Variance column: actual - planned (highlighted if > 5%)",
+            "Covers FR-9.4",
+        ],
+        "priority": "P1",
+        "status": "📋 Planned",
+        "labels": ["reports", "frontend", "r1.5"],
+    },
+    {
+        "id": "BC-1804",
+        "epic_id": "BC-E07",
+        "release": "R1.5",
+        "sprint": "Sprint 7",
+        "title": "FE /reports — Cost per batch report",
+        "acceptance_criteria": [
+            "New report tab or section: Cost per Batch",
+            "Shows per-batch: FIFO material cost total, yield, cost per unit produced",
+            "Covers FR-9.2 and FR-9.3",
+        ],
+        "priority": "P1",
+        "status": "📋 Planned",
+        "labels": ["reports", "frontend", "r1.5"],
+    },
+    {
+        "id": "BC-1805",
+        "epic_id": "BC-E07",
+        "release": "R1.5",
+        "sprint": "Sprint 7",
+        "title": "FE /technologist — Complete technologist view page",
+        "acceptance_criteria": [
+            "Per-product display: active recipe version, ingredient list with costs from last received lots, yield, waste analysis",
+            "Planned vs actual variance panel per recent batches",
+            "Read-only — no edit actions (view-only for technologist role)",
+            "Covers FE-RPT-3",
+        ],
+        "priority": "P1",
+        "status": "📋 Planned",
+        "labels": ["reports", "technologist", "frontend", "r1.5"],
+    },
+    {
+        "id": "BC-1806",
+        "epic_id": "BC-E03",
+        "release": "R1.5",
+        "sprint": "Sprint 7",
+        "title": "FE /production-plans — Approve confirmation dialog + yield input",
+        "acceptance_criteria": [
+            "Approve button shows confirmation dialog: 'Are you sure you want to approve this plan?'",
+            "On WO Complete action: modal asks for actual yield value before completing",
+            "Yield variance displayed after completion (actual vs expected)",
+            "'No confirmed orders found' feedback message on empty generate (FE-PP-4)",
+        ],
+        "priority": "P0",
+        "status": "📋 Planned",
+        "labels": ["production", "frontend", "r1.5"],
+    },
+    {
+        "id": "BC-1807",
+        "epic_id": "BC-E07",
+        "release": "R1.5",
+        "sprint": "Sprint 7",
+        "title": "FE /dashboard — Today's Orders + Active Plans widgets (spec-exact)",
+        "acceptance_criteria": [
+            "Today's Orders widget: count + total value (separate from 'Open Orders')",
+            "Active Plans widget: count + status breakdown (DRAFT/GENERATED/APPROVED/IN_PROGRESS)",
+            "All widgets match FE-DASH-2 spec exactly",
+        ],
+        "priority": "P1",
+        "status": "📋 Planned",
+        "labels": ["dashboard", "frontend", "r1.5"],
+    },
+
+    # E2E test for Sprint 7:
+    # Login as manager → dashboard shows real data → drill into Revenue report with date range
+    # → export CSV → go to Production Plans → approve pending plan (confirmation dialog shown)
+    # → floor worker completes WO with yield → verify variance in reports
+    # → login as technologist → view /technologist page with recipe costs + variance
 
     # ══════════════════════════════════════════════════════
     #  RELEASE 2 — Growth

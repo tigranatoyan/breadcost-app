@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Modal, Spinner, Alert, Badge, Field } from '@/components/ui';
+import { useT } from '@/lib/i18n';
 
 interface WorkOrder {
   workOrderId: string;
@@ -56,6 +57,7 @@ interface PlanSchedule {
 }
 
 export default function ProductionPlansPage() {
+  const t = useT();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [dateFilter, setDateFilter] = useState('');
@@ -228,28 +230,28 @@ export default function ProductionPlansPage() {
     const busy = actionId.startsWith(p.planId);
     if (p.status === 'DRAFT') {
       btns.push({
-        label: '⚡ Generate Work Orders',
+        label: t('productionPlans.generateWorkOrders'),
         action: 'generate',
         cls: 'bg-indigo-600 text-white hover:bg-indigo-700',
       });
     }
     if (p.status === 'DRAFT' || p.status === 'GENERATED') {
       btns.push({
-        label: '✓ Approve',
+        label: t('productionPlans.approve'),
         action: 'approve',
         cls: 'bg-purple-600 text-white hover:bg-purple-700',
       });
     }
     if (p.status === 'GENERATED' || p.status === 'APPROVED' || p.status === 'PUBLISHED') {
       btns.push({
-        label: '▶ Start',
+        label: t('productionPlans.start'),
         action: 'start',
         cls: 'bg-orange-600 text-white hover:bg-orange-700',
       });
     }
     if (p.status === 'IN_PROGRESS') {
       btns.push({
-        label: '✓ Complete',
+        label: t('productionPlans.complete'),
         action: 'complete',
         cls: 'bg-green-600 text-white hover:bg-green-700',
       });
@@ -278,9 +280,9 @@ export default function ProductionPlansPage() {
   return (
     <div className="max-w-5xl">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-semibold">Production Plans</h1>
+        <h1 className="text-2xl font-semibold">{t('productionPlans.title')}</h1>
         <button className="btn-primary" onClick={() => setOpen(true)}>
-          + New Plan
+          {t('productionPlans.newPlan')}
         </button>
       </div>
 
@@ -291,7 +293,7 @@ export default function ProductionPlansPage() {
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
-          <option value="ALL">All Statuses</option>
+          <option value="ALL">{t('common.allStatuses')}</option>
           {['DRAFT', 'GENERATED', 'APPROVED', 'PUBLISHED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}
@@ -308,11 +310,11 @@ export default function ProductionPlansPage() {
             className="text-xs text-gray-500 hover:text-gray-700 underline"
             onClick={() => { setStatusFilter('ALL'); setDateFilter(''); }}
           >
-            Clear filters
+            {t('common.clearFilters')}
           </button>
         )}
         <span className="ml-auto text-xs text-gray-400 self-center">
-          {filteredPlans.length} plan{filteredPlans.length !== 1 ? 's' : ''}
+          {t('productionPlans.planCount', {count: filteredPlans.length})}
         </span>
       </div>
 
@@ -324,7 +326,7 @@ export default function ProductionPlansPage() {
         <div className="space-y-2">
           {filteredPlans.length === 0 && (
             <div className="text-center py-16 text-sm text-gray-400 border rounded-xl bg-white">
-              {plans.length === 0 ? 'No production plans yet.' : 'No plans match the current filters.'}
+              {plans.length === 0 ? t('productionPlans.noPlans') : t('productionPlans.noPlansMatch')}
             </div>
           )}
           {filteredPlans.map((p) => (
@@ -364,23 +366,22 @@ export default function ProductionPlansPage() {
                   {/* Work orders */}
                   <div className="px-4 py-3">
                     <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">
-                      Work Orders
+                      {t('productionPlans.workOrders')}
                     </h3>
                     {!p.workOrders || p.workOrders.length === 0 ? (
                       <p className="text-xs text-gray-400">
-                        No work orders. Use &quot;Generate Work Orders&quot; to
-                        create them from confirmed orders.
+                        {t('productionPlans.noWorkOrders')}
                       </p>
                     ) : (
                       <table className="w-full text-xs">
                         <thead>
                           <tr className="text-gray-500">
-                            <th className="text-left py-1 pr-3">Product</th>
-                            <th className="text-left py-1 pr-3">Department</th>
-                            <th className="text-left py-1 pr-3">Qty</th>
-                            <th className="text-left py-1 pr-3">Batches</th>
-                            <th className="text-left py-1 pr-3">Status</th>
-                            <th className="text-left py-1">Actions</th>
+                            <th className="text-left py-1 pr-3">{t('productionPlans.cols.product')}</th>
+                            <th className="text-left py-1 pr-3">{t('productionPlans.cols.department')}</th>
+                            <th className="text-left py-1 pr-3">{t('productionPlans.cols.qty')}</th>
+                            <th className="text-left py-1 pr-3">{t('productionPlans.cols.batches')}</th>
+                            <th className="text-left py-1 pr-3">{t('productionPlans.cols.status')}</th>
+                            <th className="text-left py-1">{t('productionPlans.cols.actions')}</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
@@ -407,7 +408,7 @@ export default function ProductionPlansPage() {
                                         woAction(p.planId, wo.workOrderId, 'start')
                                       }
                                     >
-                                      Start
+                                      {t('productionPlans.start')}
                                     </button>
                                   )}
                                   {wo.status === 'STARTED' && (
@@ -422,7 +423,7 @@ export default function ProductionPlansPage() {
                                         )
                                       }
                                     >
-                                      Complete
+                                      {t('productionPlans.complete')}
                                     </button>
                                   )}
                                   {(wo.status === 'PENDING' ||
@@ -434,7 +435,7 @@ export default function ProductionPlansPage() {
                                         woAction(p.planId, wo.workOrderId, 'cancel')
                                       }
                                     >
-                                      Cancel
+                                      {t('common.cancel')}
                                     </button>
                                   )}
                                 </div>
@@ -458,13 +459,13 @@ export default function ProductionPlansPage() {
                       <div className="border-t px-4 py-3">
                         <div className="flex items-center justify-between mb-2">
                           <h3 className="text-xs font-semibold text-gray-500 uppercase">
-                            Schedule (Lead Time)
+                            {t('productionPlans.scheduleLeadTime')}
                           </h3>
                           {loadingSchedule === p.planId ? (
-                            <span className="text-xs text-gray-400">Loading…</span>
+                            <span className="text-xs text-gray-400">{t('common.loading')}</span>
                           ) : total > 0 ? (
                             <span className="text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
-                              Total: {total}h
+                              {t('common.total')}: {total}h
                             </span>
                           ) : null}
                         </div>
@@ -472,7 +473,7 @@ export default function ProductionPlansPage() {
                           <p className="text-xs text-gray-400">
                             {loadingSchedule === p.planId
                               ? ''
-                              : 'No scheduled work orders. Generate work orders with recipes that have lead times.'}
+                              : t('productionPlans.noSchedule')}
                           </p>
                         ) : (
                           <div className="space-y-2">
@@ -532,7 +533,7 @@ export default function ProductionPlansPage() {
                                         }
                                       }}
                                     />
-                                    <span className="text-xs text-gray-400">h offset</span>
+                                    <span className="text-xs text-gray-400">{t('productionPlans.hOffset')}</span>
                                   </div>
                                 </div>
                               );
@@ -540,13 +541,13 @@ export default function ProductionPlansPage() {
                             {/* Legend */}
                             <div className="flex gap-4 pt-1 text-xs text-gray-500">
                               <span className="flex items-center gap-1">
-                                <span className="inline-block w-3 h-3 rounded bg-blue-500" /> Critical path
+                                <span className="inline-block w-3 h-3 rounded bg-blue-500" /> {t('productionPlans.criticalPath')}
                               </span>
                               <span className="flex items-center gap-1">
-                                <span className="inline-block w-3 h-3 rounded bg-emerald-500" /> Parallel
+                                <span className="inline-block w-3 h-3 rounded bg-emerald-500" /> {t('productionPlans.parallel')}
                               </span>
                               <span className="flex items-center gap-1">
-                                <span className="inline-block w-3 h-3 rounded bg-gray-400" /> Sequential
+                                <span className="inline-block w-3 h-3 rounded bg-gray-400" /> {t('productionPlans.sequential')}
                               </span>
                             </div>
                           </div>
@@ -558,14 +559,14 @@ export default function ProductionPlansPage() {
                   {/* Material requirements */}
                   <div className="border-t px-4 py-3 bg-gray-50">
                     <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">
-                      Material Requirements
+                      {t('productionPlans.materialRequirements')}
                     </h3>
                     {loadingMats === p.planId ? (
-                      <p className="text-xs text-gray-400">Loading…</p>
+                      <p className="text-xs text-gray-400">{t('common.loading')}</p>
                     ) : mats[p.planId] ? (
                       mats[p.planId].length === 0 ? (
                         <p className="text-xs text-gray-400">
-                          No material requirements (no active work orders with recipes).
+                          {t('productionPlans.noMaterials')}
                         </p>
                       ) : (
                         <div className="flex flex-wrap gap-3">
@@ -585,7 +586,7 @@ export default function ProductionPlansPage() {
                       )
                     ) : (
                       <p className="text-xs text-gray-400">
-                        Expand to load material requirements.
+                        {t('productionPlans.expandToLoad')}
                       </p>
                     )}
                   </div>
@@ -597,9 +598,9 @@ export default function ProductionPlansPage() {
       )}
 
       {open && (
-        <Modal title="New Production Plan" onClose={() => setOpen(false)}>
+        <Modal title={t('productionPlans.newPlanTitle')} onClose={() => setOpen(false)}>
           <form onSubmit={submit} className="space-y-4">
-            <Field label="Plan Date">
+            <Field label={t('productionPlans.planDate')}>
               <input
                 className="input"
                 type="date"
@@ -610,7 +611,7 @@ export default function ProductionPlansPage() {
                 }
               />
             </Field>
-            <Field label="Shift">
+            <Field label={t('productionPlans.shift')}>
               <select
                 className="input"
                 value={form.shift}
@@ -623,7 +624,7 @@ export default function ProductionPlansPage() {
                 <option value="NIGHT">NIGHT</option>
               </select>
             </Field>
-            <Field label="Notes">
+            <Field label={t('common.notes')}>
               <input
                 className="input"
                 placeholder="Optional instructions for the production team"
@@ -637,10 +638,10 @@ export default function ProductionPlansPage() {
                 className="btn-secondary"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button type="submit" className="btn-primary" disabled={saving}>
-                {saving ? 'Saving…' : 'Create Plan'}
+                {saving ? t('common.saving') : t('common.create')}
               </button>
             </div>
           </form>

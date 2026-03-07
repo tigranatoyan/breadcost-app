@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Badge, Alert } from '@/components/ui';
 import Link from 'next/link';
+import { useT } from '@/lib/i18n';
 
 // ─── interfaces ───────────────────────────────────────────────────────────────
 interface Product {
@@ -43,12 +44,14 @@ interface ProductRecipe {
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 function RecipeHealthBadge({ recipe }: { recipe: RecipeSummary | null }) {
-  if (!recipe) return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">⚠ No Active Recipe</span>;
-  return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">✓ Active v{recipe.versionNumber}</span>;
+  const t = useT();
+  if (!recipe) return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">{t('technologist.noActiveRecipeLabel')}</span>;
+  return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">{t('technologist.activeVersion', { version: recipe.versionNumber })}</span>;
 }
 
 // ─── main component ───────────────────────────────────────────────────────────
 export default function TechnologistPage() {
+  const t = useT();
   const [productRecipes, setProductRecipes] = useState<ProductRecipe[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -120,8 +123,8 @@ export default function TechnologistPage() {
   return (
     <div className="max-w-5xl space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold">Technologist Analysis</h1>
-        <p className="text-sm text-gray-400 mt-0.5">Recipe health, lead times, and production statistics</p>
+        <h1 className="text-2xl font-semibold">{t('technologist.title')}</h1>
+        <p className="text-sm text-gray-400 mt-0.5">{t('technologist.subtitle')}</p>
       </div>
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
@@ -130,32 +133,32 @@ export default function TechnologistPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="border rounded-xl p-4 bg-green-50 border-green-200">
           <div className="text-2xl font-bold text-gray-800">{withRecipe}</div>
-          <div className="text-sm text-gray-600 mt-0.5">Products with active recipe</div>
+          <div className="text-sm text-gray-600 mt-0.5">{t('technologist.withActiveRecipe')}</div>
         </div>
         <div className={`border rounded-xl p-4 ${noRecipe > 0 ? 'bg-red-50 border-red-300' : 'bg-gray-50 border-gray-200'}`}>
           <div className="text-2xl font-bold text-gray-800">{noRecipe}</div>
-          <div className="text-sm text-gray-600 mt-0.5">Missing active recipe</div>
+          <div className="text-sm text-gray-600 mt-0.5">{t('technologist.missingRecipe')}</div>
         </div>
         <div className="border rounded-xl p-4 bg-blue-50 border-blue-200">
           <div className="text-2xl font-bold text-gray-800">{withLeadTime}</div>
-          <div className="text-sm text-gray-600 mt-0.5">Products with lead time set</div>
+          <div className="text-sm text-gray-600 mt-0.5">{t('technologist.withLeadTime')}</div>
         </div>
         <div className="border rounded-xl p-4 bg-amber-50 border-amber-200">
           <div className="text-2xl font-bold text-gray-800">{avgLeadTime.toFixed(1)}h</div>
-          <div className="text-sm text-gray-600 mt-0.5">Avg production lead time</div>
+          <div className="text-sm text-gray-600 mt-0.5">{t('technologist.avgLeadTime')}</div>
         </div>
       </div>
 
       {/* Recipe health table */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Recipe Health</h2>
-          <Link href="/recipes" className="text-xs text-blue-600 hover:underline">Manage recipes →</Link>
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">{t('technologist.recipeHealth')}</h2>
+          <Link href="/recipes" className="text-xs text-blue-600 hover:underline">{t('technologist.manageRecipes')}</Link>
         </div>
         <div className="bg-white border rounded-xl shadow-sm overflow-hidden">
           {productRecipes.length === 0 ? (
             <div className="px-5 py-10 text-center text-sm text-gray-400">
-              No products yet. <Link href="/products" className="text-blue-600 hover:underline">Add products</Link>
+              {t('technologist.noProducts')} <Link href="/products" className="text-blue-600 hover:underline">{t('technologist.addProducts')}</Link>
             </div>
           ) : (
             <div className="divide-y">
@@ -179,13 +182,13 @@ export default function TechnologistPage() {
                     {isOpen && recipe && (
                       <div className="px-5 py-4 bg-gray-50 border-t text-sm space-y-3">
                         <div className="flex flex-wrap gap-4 text-gray-600">
-                          <span>Batch: <strong>{recipe.batchSize} {recipe.batchSizeUom}</strong></span>
-                          <span>Yield: <strong>{recipe.expectedYield} {recipe.yieldUom}</strong></span>
-                          {recipe.leadTimeHours && <span>Lead time: <strong>{recipe.leadTimeHours}h</strong></span>}
+                          <span>{t('recipes.batch')}: <strong>{recipe.batchSize} {recipe.batchSizeUom}</strong></span>
+                          <span>{t('recipes.yield')}: <strong>{recipe.expectedYield} {recipe.yieldUom}</strong></span>
+                          {recipe.leadTimeHours && <span>{t('floor.leadTimeValue')}: <strong>{recipe.leadTimeHours}h</strong></span>}
                         </div>
                         {recipe.productionNotes && (
                           <div className="bg-amber-50 border border-amber-200 rounded p-3 text-xs whitespace-pre-wrap leading-relaxed">
-                            <div className="font-semibold text-amber-800 mb-1 uppercase tracking-wide text-[10px]">Technological Process</div>
+                            <div className="font-semibold text-amber-800 mb-1 uppercase tracking-wide text-[10px]">{t('technologist.technologicalProcess')}</div>
                             {recipe.productionNotes}
                           </div>
                         )}
@@ -193,9 +196,9 @@ export default function TechnologistPage() {
                           <table className="w-full text-xs">
                             <thead className="text-gray-400 border-b">
                               <tr>
-                                <th className="pb-1 text-left">Ingredient</th>
-                                <th className="pb-1 text-right">Qty</th>
-                                <th className="pb-1 text-right">Waste</th>
+                                <th className="pb-1 text-left">{t('floor.ingredient')}</th>
+                                <th className="pb-1 text-right">{t('orders.qty')}</th>
+                                <th className="pb-1 text-right">{t('recipes.waste')}</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -209,13 +212,13 @@ export default function TechnologistPage() {
                             </tbody>
                           </table>
                         )}
-                        {!recipe.productionNotes && <p className="text-gray-400 text-xs">No production notes (technological process) on this recipe version.</p>}
+                        {!recipe.productionNotes && <p className="text-gray-400 text-xs">{t('technologist.noProductionNotes')}</p>}
                       </div>
                     )}
 
                     {isOpen && !recipe && (
                       <div className="px-5 py-4 bg-red-50 border-t text-sm text-red-600">
-                        No active recipe. <Link href="/recipes" className="underline">Create and activate one</Link> to enable lead time conflict detection and floor process display.
+                        {t('technologist.noActiveRecipeMsg')} <Link href="/recipes" className="underline">{t('technologist.createAndActivate')}</Link> {t('technologist.toEnableDetection')}
                       </div>
                     )}
                   </div>
@@ -229,7 +232,7 @@ export default function TechnologistPage() {
       {/* Production frequency analysis */}
       {topProducts.length > 0 && (
         <div>
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">Production Frequency (all time)</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">{t('technologist.productionFrequency')}</h2>
           <div className="bg-white border rounded-xl shadow-sm p-5">
             <div className="space-y-3">
               {topProducts.map(([name, stats]) => {
@@ -242,8 +245,8 @@ export default function TechnologistPage() {
                       <div className="h-3 bg-blue-500 rounded-full" style={{ width: `${pct}%` }} />
                     </div>
                     <div className="text-xs text-gray-500 w-24 text-right">
-                      {stats.count} WO{stats.count !== 1 ? 's' : ''}
-                      {stats.batches ? ` / ${stats.batches} batches` : ''}
+                      {t('technologist.woCount', { count: stats.count })}
+                      {stats.batches ? ` ${t('technologist.batchCount', { count: stats.batches })}` : ''}
                     </div>
                   </div>
                 );
@@ -257,8 +260,8 @@ export default function TechnologistPage() {
       {recentPlans.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Recent Production Plans</h2>
-            <Link href="/production-plans" className="text-xs text-blue-600 hover:underline">View all →</Link>
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">{t('technologist.recentPlans')}</h2>
+            <Link href="/production-plans" className="text-xs text-blue-600 hover:underline">{t('common.viewAll')}</Link>
           </div>
           <div className="bg-white border rounded-xl shadow-sm overflow-hidden">
             <div className="divide-y">
@@ -271,7 +274,7 @@ export default function TechnologistPage() {
                     <div className="flex-1">
                       <div className="text-sm font-medium">{plan.planDate} · {plan.shift}</div>
                       <div className="text-xs text-gray-400 mt-0.5">
-                        {total} work orders · {pct}% complete
+                        {t('technologist.workOrdersPct', { total, pct })}
                         {total > 0 && (
                           <span className="ml-2 inline-block bg-gray-100 rounded-full h-1.5 w-20 overflow-hidden align-middle">
                             <span className="block h-1.5 bg-green-500" style={{ width: `${pct}%` }} />

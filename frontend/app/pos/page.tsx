@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Alert } from '@/components/ui';
+import { useT } from '@/lib/i18n';
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -50,6 +51,7 @@ interface QuickAddProps {
 }
 
 function QuickAdd({ product, deptName, onAdd, onCancel }: QuickAddProps) {
+  const t = useT();
   const [qty, setQty] = useState('1');
   const [price, setPrice] = useState('0.00');
 
@@ -74,7 +76,7 @@ function QuickAdd({ product, deptName, onAdd, onCancel }: QuickAddProps) {
       <div className="font-semibold text-sm mb-3 truncate">{product.name}</div>
       <form onSubmit={submit} className="flex flex-col gap-2 flex-1">
         <div>
-          <label className="text-xs text-gray-500 mb-1 block">Qty ({product.baseUom})</label>
+          <label className="text-xs text-gray-500 mb-1 block">{t('orders.qty')} ({product.baseUom})</label>
           <input
             autoFocus
             className="input w-full text-center text-lg font-bold"
@@ -86,7 +88,7 @@ function QuickAdd({ product, deptName, onAdd, onCancel }: QuickAddProps) {
           />
         </div>
         <div>
-          <label className="text-xs text-gray-500 mb-1 block">Unit Price</label>
+          <label className="text-xs text-gray-500 mb-1 block">{t('pos.unitPrice')}</label>
           <input
             className="input w-full text-center"
             type="number"
@@ -97,11 +99,11 @@ function QuickAdd({ product, deptName, onAdd, onCancel }: QuickAddProps) {
           />
         </div>
         <div className="text-xs text-right text-gray-500 mt-0.5">
-          Total: {fmt(parseFloat(qty || '0') * parseFloat(price || '0'))}
+          {t('common.total')}: {fmt(parseFloat(qty || '0') * parseFloat(price || '0'))}
         </div>
         <div className="flex gap-2 mt-auto pt-2">
-          <button type="button" className="flex-1 btn-secondary text-xs py-1.5" onClick={onCancel}>Cancel</button>
-          <button type="submit" className="flex-1 btn-primary text-xs py-1.5">Add to Cart</button>
+          <button type="button" className="flex-1 btn-secondary text-xs py-1.5" onClick={onCancel}>{t('common.cancel')}</button>
+          <button type="submit" className="flex-1 btn-primary text-xs py-1.5">{t('pos.addToCart')}</button>
         </div>
       </form>
     </div>
@@ -111,6 +113,7 @@ function QuickAdd({ product, deptName, onAdd, onCancel }: QuickAddProps) {
 // ─── main component ───────────────────────────────────────────────────────────
 
 export default function POSPage() {
+  const t = useT();
   const [products, setProducts] = useState<Product[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
@@ -236,8 +239,8 @@ export default function POSPage() {
         body: JSON.stringify(body),
       });
 
-      const change = changeAmount !== null ? `  Change: ${fmt(changeAmount)}` : '';
-      setSuccess(`✅ Sale complete — #${sale.saleId.slice(0, 8).toUpperCase()}${change}`);
+      const change = changeAmount !== null ? `  ${t('pos.change')}: ${fmt(changeAmount)}` : '';
+      setSuccess(`${t('pos.saleComplete', { id: sale.saleId.slice(0, 8).toUpperCase() })}${change}`);
       setCart([]);
       setCustomerName('Walk-In');
       setCashReceived('');
@@ -254,8 +257,8 @@ export default function POSPage() {
   return (
     <div className="h-[calc(100vh-64px)] flex flex-col">
       <div className="flex items-center justify-between mb-3 shrink-0">
-        <h1 className="text-2xl font-semibold">Point of Sale</h1>
-        <span className="text-sm text-gray-400">POS — walk-in &amp; counter sales</span>
+        <h1 className="text-2xl font-semibold">{t('pos.title')}</h1>
+        <span className="text-sm text-gray-400">{t('pos.subtitle')}</span>
       </div>
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
@@ -273,7 +276,7 @@ export default function POSPage() {
           <div className="flex gap-2 mb-3 shrink-0">
             <input
               className="input flex-1"
-              placeholder="Search products…"
+              placeholder={t('pos.searchProducts')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -282,7 +285,7 @@ export default function POSPage() {
               value={deptFilter}
               onChange={(e) => setDeptFilter(e.target.value)}
             >
-              <option value="ALL">All Departments</option>
+              <option value="ALL">{t('pos.allDepartments')}</option>
               {departments.map((d) => (
                 <option key={d.departmentId} value={d.departmentId}>{d.name}</option>
               ))}
@@ -295,8 +298,8 @@ export default function POSPage() {
           ) : filtered.length === 0 ? (
             <div className="flex-1 flex items-center justify-center text-sm text-gray-400">
               {products.filter((p) => p.status === 'ACTIVE').length === 0
-                ? 'No active products. Add products in Admin → Products.'
-                : 'No products match the search.'}
+                ? t('pos.noActiveProducts')
+                : t('pos.noProductsMatch')}
             </div>
           ) : (
             <div className="overflow-y-auto flex-1 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 content-start">
@@ -318,7 +321,7 @@ export default function POSPage() {
                       <div className="text-xs text-gray-400 mt-0.5">{p.baseUom}</div>
                       {inCart && (
                         <div className="mt-2 inline-block bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded-full font-medium">
-                          ×{inCart.qty} in cart
+                          {t('pos.inCart', { qty: inCart.qty })}
                         </div>
                       )}
                     </button>
@@ -342,13 +345,13 @@ export default function POSPage() {
         {/* ── Cart ────────────────────────────────────────────────────────── */}
         <div className="w-80 shrink-0 flex flex-col bg-white border rounded-xl shadow-sm overflow-hidden">
           <div className="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
-            <span className="font-semibold text-sm">Cart</span>
+            <span className="font-semibold text-sm">{t('pos.cart')}</span>
             {cart.length > 0 && (
               <button
                 className="text-xs text-red-500 hover:underline"
                 onClick={() => setCart([])}
               >
-                Clear
+                {t('pos.clear')}
               </button>
             )}
           </div>
@@ -357,7 +360,7 @@ export default function POSPage() {
           <div className="flex-1 overflow-y-auto divide-y">
             {cart.length === 0 ? (
               <div className="py-12 text-center text-sm text-gray-400">
-                Tap a product to add it to the cart.
+                {t('pos.tapToAdd')}
               </div>
             ) : (
               cart.map((line) => (
@@ -408,12 +411,12 @@ export default function POSPage() {
           {/* Summary + checkout */}
           <div className="border-t px-4 py-4 space-y-3">
             <div className="flex justify-between items-center text-sm font-semibold">
-              <span>Total ({cartCount} items)</span>
+              <span>{t('pos.totalItems', { count: cartCount })}</span>
               <span className="text-lg">{fmt(cartTotal)}</span>
             </div>
 
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Customer Name</label>
+              <label className="text-xs text-gray-500 mb-1 block">{t('pos.customerName')}</label>
               <input
                 className="input w-full"
                 value={customerName}
@@ -423,7 +426,7 @@ export default function POSPage() {
             </div>
 
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Payment Method</label>
+              <label className="text-xs text-gray-500 mb-1 block">{t('pos.paymentMethod')}</label>
               <div className="flex gap-2">
                 {(['CASH', 'CARD'] as const).map((m) => (
                   <button
@@ -436,7 +439,7 @@ export default function POSPage() {
                     }`}
                     onClick={() => setPaymentMethod(m)}
                   >
-                    {m === 'CASH' ? '💵 Cash' : '💳 Card'}
+                    {m === 'CASH' ? t('pos.cash') : t('pos.card')}
                   </button>
                 ))}
               </div>
@@ -444,7 +447,7 @@ export default function POSPage() {
 
             {paymentMethod === 'CASH' && (
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Cash Received</label>
+                <label className="text-xs text-gray-500 mb-1 block">{t('pos.cashReceived')}</label>
                 <input
                   className="input w-full"
                   type="number"
@@ -456,17 +459,17 @@ export default function POSPage() {
                 />
                 {changeAmount !== null && (
                   <div className="mt-1 text-right text-sm font-semibold text-green-600">
-                    Change: {fmt(changeAmount)}
+                    {t('pos.change')}: {fmt(changeAmount)}
                   </div>
                 )}
               </div>
             )}
 
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Notes (optional)</label>
+              <label className="text-xs text-gray-500 mb-1 block">{t('pos.notesOptional')}</label>
               <input
                 className="input w-full"
-                placeholder="e.g. paid cash"
+                placeholder={t('pos.notesPaidCash')}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
@@ -477,7 +480,7 @@ export default function POSPage() {
               disabled={cart.length === 0 || checkingOut}
               onClick={completeSale}
             >
-              {checkingOut ? 'Processing…' : `Complete Sale — ${fmt(cartTotal)}`}
+              {checkingOut ? t('pos.processing') : t('pos.completeSale', { total: fmt(cartTotal) })}
             </button>
           </div>
         </div>

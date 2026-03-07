@@ -1,5 +1,5 @@
 # BreadCost App — Work Session Snapshot
-**Last Updated:** 2026-03-04 (FE Requirements drafted — paused for review)
+**Last Updated:** 2026-03-07 (Full i18n — EN/HY language support across all pages)
 **Purpose:** Handoff context for continuing development in a new chat session
 
 > **Frontend Requirements:** See `work/120-task/FE_REQUIREMENTS.md` — PENDING USER APPROVAL before implementation continues.
@@ -10,18 +10,41 @@
 ## 🔄 IN PROGRESS — Active Development
 
 ### Completed today (resume point)
-- `FE_REQUIREMENTS.md` drafted and accepted
-- `/orders` page: **complete** — see Session 3 below
+- Full i18n (English + Armenian) across all 15 frontend pages
+- Build migrated from Maven to Gradle (build.gradle.kts, settings.gradle.kts)
 
-### Next recommended screens (in order)
-1. `/inventory` — receive stock, view stock levels, adjust, transfer
-2. `/admin` — user management (needed to create real accounts)
-3. `/dashboard` — real data widgets
-4. `/production-plans` — finish approve + WO transitions
-5. `/pos` — POS sale screen
-6. `/reports` — standard reports
+### Next recommended work
+1. Visual QA pass — verify all pages render correctly in both EN and HY
+2. Fix any remaining untranslated strings (placeholders, enum labels, etc.)
+3. Continue feature development per FE_REQUIREMENTS.md
 
 ---
+
+## Session History — 2026-03-07
+
+### Session 5 — Full i18n Implementation (English + Armenian)
+**Infrastructure created:**
+- `frontend/lib/i18n.tsx` — React Context-based i18n system (I18nProvider, useT, useI18n hooks, localStorage persistence under `breadcost_locale`, dot-notation key access, `{placeholder}` interpolation)
+- `frontend/locales/en.ts` — ~550+ English translation strings across 17 sections
+- `frontend/locales/hy.ts` — Full Armenian translations using Unicode escape sequences (avoids encoding issues)
+
+**Layout & shell:**
+- `frontend/app/layout.tsx` — Wrapped app with `<I18nProvider>`
+- `frontend/components/AuthShell.tsx` — Refactored nav labels to use translation keys (`labelKey`), added EN/HY language switcher in sidebar footer, role labels via `t('roles.${role}')`
+
+**All pages translated (useT + t() calls for all UI strings):**
+- login, dashboard, orders, products, recipes, departments, floor, inventory, pos, production-plans, reports, admin, technologist
+
+**Key decisions:**
+- No external i18n library — lightweight React Context + nested dictionaries
+- Armenian text encoded as Unicode escapes in source to avoid file encoding issues
+- `dictionaries` type relaxed to `Record<string, unknown>` so hy.ts doesn't need identical literal types as en.ts
+- Variable renames where loop vars conflicted with `t` function (e.g., `t` → `tb`, `tp`, `tabKey`)
+
+### Session 4 — Gradle Migration
+- Migrated build from Maven to Gradle (build.gradle.kts, settings.gradle.kts, gradlew)
+- start.bat updated for Gradle
+- Backend runs via `.\gradlew bootRun`
 
 ## Session History — 2026-03-04
 
@@ -60,9 +83,10 @@ API calls:
 5. **ProductionPlanService** — generateWorkOrders falls back to all confirmed orders if none match by date.
 
 ### Current build state
-- Backend: rebuilt ✅ JAR at `target/breadcost-app-1.0.0-SNAPSHOT.jar`, runs on :8080
-- Frontend: Next.js dev server on :3000, no TypeScript errors in modified files
-- To restart backend: `mvn clean package -DskipTests` then `java -jar target\breadcost-app-1.0.0-SNAPSHOT.jar`
+- Backend: Gradle build, runs via `.\gradlew bootRun` on :8080
+- Frontend: Next.js dev server on :3000, `npx next build` passes cleanly, no TypeScript errors
+- To restart backend: `.\gradlew bootRun`
+- To restart frontend: `cd frontend && npm run dev`
 
 
 
@@ -73,13 +97,13 @@ API calls:
 A Spring Boot (Java 25 / JDK 25) event-sourced CQRS application for managing a bread factory.
 - Multi-tenant SaaS
 - Pattern: Command → Handler → Event → EventStore → Projection (read model)
-- Database: H2 in-memory (dev). PostgreSQL planned for production.
+- Database: H2 file-based (dev, stored in `./data/breadcost`). PostgreSQL planned for production.
 - Auth: Spring Security basic auth (admin/admin) — real user management is a future task
-- Build: Maven 3.9 with Lombok edge-SNAPSHOT (required for Java 25 compatibility)
+- Build: Gradle (build.gradle.kts) with Lombok
 
-**Workspace:** `C:\workspace\breadcost-app`  
-**Run command:** `mvn clean package -DskipTests` then `java -jar target\breadcost-app-1.0.0-SNAPSHOT.jar`  
-**Key config:** `.mvn/jvm.config` has `--add-opens` flags for Lombok + Java 25  
+**Workspace:** `C:\Users\tigra\breadcost-app`  
+**Run backend:** `.\gradlew bootRun`  
+**Run frontend:** `cd frontend && npm run dev`  
 
 ---
 

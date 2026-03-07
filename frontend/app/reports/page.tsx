@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Badge } from '@/components/ui';
+import { useT } from '@/lib/i18n';
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -103,6 +104,7 @@ function StatBox({ label, value, sub, color = 'text-gray-800' }: { label: string
 // ─── Orders Report ────────────────────────────────────────────────────────────
 
 function OrdersReport({ orders }: { orders: Order[] }) {
+  const t = useT();
   const total = orders.length;
   const delivered = orders.filter((o) => o.status === 'DELIVERED').length;
   const cancelled = orders.filter((o) => o.status === 'CANCELLED').length;
@@ -133,23 +135,23 @@ function OrdersReport({ orders }: { orders: Order[] }) {
     <div className="space-y-6">
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <StatBox label="Total Orders" value={total} />
-        <StatBox label="Active" value={active} color="text-blue-600" />
-        <StatBox label="Delivered" value={delivered} color="text-green-600" sub={`${pct(delivered, total)}% completion`} />
-        <StatBox label="Cancelled" value={cancelled} color="text-red-500" />
-        <StatBox label="Rush Orders" value={rushCount} color="text-orange-500" sub={`${pct(rushCount, total)}% of total`} />
-        <StatBox label="Recorded Revenue" value={fmtMoney(revenue)} color="text-emerald-600" />
+        <StatBox label={t('reports.totalOrders')} value={total} />
+        <StatBox label={t('reports.activeOrders')} value={active} color="text-blue-600" />
+        <StatBox label={t('reports.delivered')} value={delivered} color="text-green-600" sub={t('reports.completionPct', { pct: pct(delivered, total) })} />
+        <StatBox label={t('reports.cancelled')} value={cancelled} color="text-red-500" />
+        <StatBox label={t('reports.rushOrders')} value={rushCount} color="text-orange-500" sub={t('reports.ofTotal', { pct: pct(rushCount, total) })} />
+        <StatBox label={t('reports.recordedRevenue')} value={fmtMoney(revenue)} color="text-emerald-600" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Revenue by status */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Revenue by Status</h3>
+          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('reports.revenueByStatus')}</h3>
           <div className="bg-white border rounded-xl shadow-sm overflow-hidden">
             <table className="min-w-full text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  {['Status', 'Orders', 'Revenue', '%'].map((h) => (
+                  {[t('reports.cols.status'), t('reports.cols.orders'), t('reports.cols.revenue'), '%'].map((h) => (
                     <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase">{h}</th>
                   ))}
                 </tr>
@@ -170,15 +172,15 @@ function OrdersReport({ orders }: { orders: Order[] }) {
 
         {/* Top customers */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Top Customers</h3>
+          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('reports.topCustomers')}</h3>
           <div className="bg-white border rounded-xl shadow-sm overflow-hidden">
             {topCustomers.length === 0 ? (
-              <div className="py-8 text-center text-sm text-gray-400">No customer data</div>
+              <div className="py-8 text-center text-sm text-gray-400">{t('reports.noCustomerData')}</div>
             ) : (
               <table className="min-w-full text-sm">
                 <thead className="bg-gray-50 border-b">
                   <tr>
-                    {['Customer', 'Orders', 'Revenue'].map((h) => (
+                    {[t('reports.cols.customer'), t('reports.cols.orders'), t('reports.cols.revenue')].map((h) => (
                       <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase">{h}</th>
                     ))}
                   </tr>
@@ -203,12 +205,12 @@ function OrdersReport({ orders }: { orders: Order[] }) {
 
       {/* Order listing summary */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">All Orders</h3>
+        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('reports.allOrders')}</h3>
         <div className="bg-white border rounded-xl shadow-sm overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
-                {['Order ID', 'Customer', 'Status', 'Delivery Date', 'Amount', 'Lines'].map((h) => (
+                {[t('reports.cols.orderId'), t('reports.cols.customer'), t('reports.cols.status'), t('reports.cols.deliveryDate'), t('reports.cols.amount'), t('reports.cols.lines')].map((h) => (
                   <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -232,7 +234,7 @@ function OrdersReport({ orders }: { orders: Order[] }) {
             </tbody>
           </table>
           {orders.length === 0 && (
-            <div className="py-8 text-center text-sm text-gray-400">No orders found</div>
+            <div className="py-8 text-center text-sm text-gray-400">{t('reports.noOrdersFound')}</div>
           )}
         </div>
       </div>
@@ -243,6 +245,7 @@ function OrdersReport({ orders }: { orders: Order[] }) {
 // ─── Inventory Report ─────────────────────────────────────────────────────────
 
 function InventoryReport({ positions, items }: { positions: StockPosition[]; items: StockItem[] }) {
+  const t = useT();
   const itemMap: Record<string, StockItem> = {};
   items.forEach((i) => { itemMap[i.itemId] = i; });
 
@@ -273,16 +276,16 @@ function InventoryReport({ positions, items }: { positions: StockPosition[]; ite
     <div className="space-y-6">
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatBox label="Total Positions" value={positions.length} />
-        <StatBox label="Total Stock Value" value={fmtMoney(totalValue)} color="text-emerald-600" />
-        <StatBox label="Unique Items" value={items.length} />
-        <StatBox label="Low Stock Alerts" value={belowThreshold.length} color={belowThreshold.length > 0 ? 'text-red-500' : 'text-gray-800'} />
+        <StatBox label={t('reports.totalPositions')} value={positions.length} />
+        <StatBox label={t('reports.totalStockValue')} value={fmtMoney(totalValue)} color="text-emerald-600" />
+        <StatBox label={t('reports.uniqueItems')} value={items.length} />
+        <StatBox label={t('reports.lowStockAlerts')} value={belowThreshold.length} color={belowThreshold.length > 0 ? 'text-red-500' : 'text-gray-800'} />
       </div>
 
       {/* Breakdown by type */}
       {Object.keys(byType).length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Valuation by Item Type</h3>
+          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('reports.valuationByType')}</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
             {Object.entries(byType).sort((a, b) => b[1].value - a[1].value).map(([type, data]) => (
               <div key={type} className="bg-white border rounded-xl p-4 shadow-sm">
@@ -298,12 +301,12 @@ function InventoryReport({ positions, items }: { positions: StockPosition[]; ite
       {/* Low stock items */}
       {belowThreshold.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold text-red-500 uppercase tracking-wide mb-3">⚠ Low Stock Alerts</h3>
+          <h3 className="text-sm font-semibold text-red-500 uppercase tracking-wide mb-3">{t('reports.lowStockAlertsTitle')}</h3>
           <div className="bg-red-50 border border-red-200 rounded-xl overflow-hidden">
             <table className="min-w-full text-sm">
               <thead className="bg-red-100 border-b border-red-200">
                 <tr>
-                  {['Item', 'Type', 'On Hand', 'Min Threshold', 'Deficit'].map((h) => (
+                  {[t('reports.cols.item'), t('reports.cols.type'), t('reports.onHand'), t('reports.minThreshold'), t('reports.deficit')].map((h) => (
                     <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold text-red-700 uppercase">{h}</th>
                   ))}
                 </tr>
@@ -334,19 +337,19 @@ function InventoryReport({ positions, items }: { positions: StockPosition[]; ite
 
       {/* Full positions table */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Stock Positions Detail</h3>
+        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('reports.stockPositionsDetail')}</h3>
         <div className="bg-white border rounded-xl shadow-sm overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
-                {['Item', 'Type', 'Site', 'Location', 'Lot', 'On Hand', 'Avg Cost', 'Total Value'].map((h) => (
+                {[t('reports.cols.item'), t('reports.cols.type'), t('reports.cols.site'), t('reports.cols.location'), t('reports.cols.lot'), t('reports.onHand'), t('reports.cols.avgCost'), t('reports.cols.totalValue')].map((h) => (
                   <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y">
               {positions.length === 0 ? (
-                <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">No stock positions</td></tr>
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">{t('reports.noStockPositions')}</td></tr>
               ) : (
                 positions.map((p) => {
                   const item = itemMap[p.itemId];
@@ -374,7 +377,7 @@ function InventoryReport({ positions, items }: { positions: StockPosition[]; ite
             {positions.length > 0 && (
               <tfoot className="border-t bg-gray-50">
                 <tr>
-                  <td colSpan={7} className="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase">Total</td>
+                  <td colSpan={7} className="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase">{t('common.total')}</td>
                   <td className="px-4 py-2 font-bold">{fmtMoney(totalValue)}</td>
                 </tr>
               </tfoot>
@@ -389,6 +392,7 @@ function InventoryReport({ positions, items }: { positions: StockPosition[]; ite
 // ─── Production Report ────────────────────────────────────────────────────────
 
 function ProductionReport({ plans }: { plans: Plan[] }) {
+  const t = useT();
   const total = plans.length;
   const completed = plans.filter((p) => p.status === 'COMPLETED').length;
   const inProgress = plans.filter((p) => p.status === 'IN_PROGRESS').length;
@@ -420,21 +424,21 @@ function ProductionReport({ plans }: { plans: Plan[] }) {
     <div className="space-y-6">
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatBox label="Production Plans" value={total} />
-        <StatBox label="Completed Plans" value={completed} color="text-green-600" sub={`${pct(completed, total)}% completion rate`} />
-        <StatBox label="Work Orders Total" value={woTotal} />
-        <StatBox label="WOs Completed" value={woCompleted} color="text-green-600" sub={`${pct(woCompleted, woTotal)}% completion`} />
+        <StatBox label={t('reports.productionPlans')} value={total} />
+        <StatBox label={t('reports.completedPlans')} value={completed} color="text-green-600" sub={t('reports.completionRate', { pct: pct(completed, total) })} />
+        <StatBox label={t('reports.workOrdersTotal')} value={woTotal} />
+        <StatBox label={t('reports.wosCompleted')} value={woCompleted} color="text-green-600" sub={t('reports.completionPct', { pct: pct(woCompleted, woTotal) })} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Plan status breakdown */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Plans by Status</h3>
+          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('reports.plansByStatus')}</h3>
           <div className="bg-white border rounded-xl shadow-sm overflow-hidden">
             <table className="min-w-full text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  {['Status', 'Plans', '% of Total'].map((h) => (
+                  {[t('reports.cols.status'), t('reports.productionPlans'), t('reports.cols.pctOfTotal')].map((h) => (
                     <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase">{h}</th>
                   ))}
                 </tr>
@@ -461,14 +465,14 @@ function ProductionReport({ plans }: { plans: Plan[] }) {
 
         {/* WO status breakdown */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Work Orders Summary</h3>
+          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('reports.woSummary')}</h3>
           <div className="bg-white border rounded-xl shadow-sm p-5 space-y-3">
             {[
-              { label: 'Total', value: woTotal, color: 'bg-gray-300' },
-              { label: 'In Progress', value: woInProgress, color: 'bg-blue-400' },
-              { label: 'Completed', value: woCompleted, color: 'bg-green-400' },
-              { label: 'Cancelled', value: woCancelled, color: 'bg-red-300' },
-              { label: 'Pending', value: woTotal - woCompleted - woInProgress - woCancelled, color: 'bg-gray-200' },
+              { label: t('common.total'), value: woTotal, color: 'bg-gray-300' },
+              { label: t('reports.inProgress'), value: woInProgress, color: 'bg-blue-400' },
+              { label: t('reports.cols.completed'), value: woCompleted, color: 'bg-green-400' },
+              { label: t('reports.cancelled'), value: woCancelled, color: 'bg-red-300' },
+              { label: t('reports.pending'), value: woTotal - woCompleted - woInProgress - woCancelled, color: 'bg-gray-200' },
             ].map((row) => (
               <div key={row.label} className="flex items-center gap-3 text-sm">
                 <div className={`w-3 h-3 rounded-full shrink-0 ${row.color}`} />
@@ -487,19 +491,19 @@ function ProductionReport({ plans }: { plans: Plan[] }) {
 
       {/* Plans table */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">All Production Plans</h3>
+        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('reports.allProductionPlans')}</h3>
         <div className="bg-white border rounded-xl shadow-sm overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
-                {['Date', 'Shift', 'Status', 'Work Orders', 'Completed', 'Progress'].map((h) => (
+                {[t('reports.date'), t('reports.shift'), t('reports.cols.status'), t('reports.cols.workOrders'), t('reports.cols.completed'), t('reports.progress')].map((h) => (
                   <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y">
               {plans.length === 0 ? (
-                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">No production plans</td></tr>
+                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">{t('reports.noProductionPlans')}</td></tr>
               ) : (
                 [...plans]
                   .sort((a, b) => b.planDate.localeCompare(a.planDate))
@@ -546,6 +550,7 @@ function ProductionReport({ plans }: { plans: Plan[] }) {
 type ReportTab = 'orders' | 'inventory' | 'production' | 'revenue';
 
 export default function ReportsPage() {
+  const t = useT();
   const [tab, setTab] = useState<ReportTab>('orders');
   const [orders, setOrders] = useState<Order[]>([]);
   const [positions, setPositions] = useState<StockPosition[]>([]);
@@ -589,10 +594,10 @@ export default function ReportsPage() {
   const revBanner = revenue ? (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
       {[
-        { label: 'Today', value: revenue.today },
-        { label: 'Last 7 days', value: revenue.week },
-        { label: 'Last 30 days', value: revenue.month },
-        { label: 'All-time', value: revenue.allTime },
+        { label: t('reports.today'), value: revenue.today },
+        { label: t('reports.last7Days'), value: revenue.week },
+        { label: t('reports.last30Days'), value: revenue.month },
+        { label: t('reports.allTime'), value: revenue.allTime },
       ].map(({ label, value }) => (
         <div key={label} className="bg-white border rounded-xl p-4 shadow-sm">
           <div className="text-xs text-gray-400 mb-1">{label}</div>
@@ -606,7 +611,7 @@ export default function ReportsPage() {
   // ── Top products sidebar ──────────────────────────────────────────────────
   const topProductsPanel = topProducts.length > 0 ? (
     <div className="mt-6 bg-white border rounded-xl shadow-sm p-5">
-      <div className="text-sm font-semibold text-gray-700 mb-3">Top Products — last 7 days</div>
+      <div className="text-sm font-semibold text-gray-700 mb-3">{t('reports.topProductsWeek')}</div>
       <table className="w-full text-xs">
         <thead>
           <tr className="text-gray-400 border-b">
@@ -631,23 +636,23 @@ export default function ReportsPage() {
   ) : null;
 
   const tabs: { id: ReportTab; label: string; count?: number }[] = [
-    { id: 'orders', label: '📦 Orders', count: orders.length },
-    { id: 'inventory', label: '🏬 Inventory', count: positions.length },
-    { id: 'production', label: '📅 Production', count: plans.length },
-    { id: 'revenue', label: '💰 Revenue' },
+    { id: 'orders', label: t('reports.ordersTab'), count: orders.length },
+    { id: 'inventory', label: t('reports.inventoryTab'), count: positions.length },
+    { id: 'production', label: t('reports.productionTab'), count: plans.length },
+    { id: 'revenue', label: t('reports.revenueTab') },
   ];
 
   return (
     <div className="max-w-6xl">
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h1 className="text-2xl font-semibold">Reports</h1>
+          <h1 className="text-2xl font-semibold">{t('reports.title')}</h1>
           <p className="text-xs text-gray-400 mt-0.5">
-            Last refreshed: {lastRefresh.toLocaleTimeString()}
+            {t('reports.lastRefreshed', { time: lastRefresh.toLocaleTimeString() })}
           </p>
         </div>
         <button className="btn-secondary" onClick={load} disabled={loading}>
-          {loading ? 'Loading…' : '↻ Refresh'}
+          {loading ? t('common.loading') : `↻ ${t('common.refresh')}`}
         </button>
       </div>
 
@@ -687,7 +692,7 @@ export default function ReportsPage() {
           {tab === 'revenue' && (
             <div>
               {topProductsPanel ?? (
-                <div className="text-sm text-gray-400 py-8 text-center">No sales data available yet.</div>
+                <div className="text-sm text-gray-400 py-8 text-center">{t('reports.noSalesData')}</div>
               )}
             </div>
           )}

@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Modal, Spinner, Alert, Badge, Field } from '@/components/ui';
+import { useT } from '@/lib/i18n';
 
 interface Product {
   productId: string;
@@ -60,6 +61,7 @@ const newIng = () => ({
 });
 
 export default function RecipesPage() {
+  const t = useT();
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedPid, setSelectedPid] = useState('');
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -243,7 +245,7 @@ export default function RecipesPage() {
   };
 
   const deleteStep = async (stepId: string, recipeId: string) => {
-    if (!confirm('Delete this technology step?')) return;
+    if (!confirm(t('recipes.deleteStep'))) return;
     try {
       await apiFetch(`/v1/technology-steps/${stepId}?tenantId=${TENANT_ID}`, { method: 'DELETE' });
       loadSteps(recipeId, true);
@@ -318,13 +320,13 @@ export default function RecipesPage() {
   return (
     <div className="max-w-5xl">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Recipes</h1>
+        <h1 className="text-2xl font-semibold">{t('recipes.title')}</h1>
         <button
           className="btn-primary"
           disabled={!selectedPid}
           onClick={openForm}
         >
-          + New Recipe
+          {t('recipes.newRecipe')}
         </button>
       </div>
 
@@ -336,14 +338,14 @@ export default function RecipesPage() {
         <>
           <div className="mb-5 max-w-xs">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Select Product
+              {t('recipes.selectProduct')}
             </label>
             <select
               className="input"
               value={selectedPid}
               onChange={(e) => selectProduct(e.target.value)}
             >
-              <option value="">-- choose a product --</option>
+              <option value="">{t('recipes.chooseProduct')}</option>
               {products.map((p) => (
                 <option key={p.productId} value={p.productId}>
                   {p.name}
@@ -358,7 +360,7 @@ export default function RecipesPage() {
             <div className="space-y-2">
               {recipes.length === 0 ? (
                 <div className="text-sm text-gray-400 py-12 text-center border rounded-xl bg-white">
-                  No recipes for this product yet.
+                  {t('recipes.noRecipes')}
                 </div>
               ) : (
                 recipes.map((r) => {
@@ -373,10 +375,10 @@ export default function RecipesPage() {
                       <span className="font-medium text-sm">v{r.version}</span>
                       <Badge status={r.status} />
                       <span className="text-sm text-gray-500">
-                        Batch: {r.batchSize} {r.batchSizeUom}
+                        {t('recipes.batch')}: {r.batchSize} {r.batchSizeUom}
                       </span>
                       <span className="text-sm text-gray-500">
-                        Yield: {r.expectedYield} {r.yieldUom}
+                        {t('recipes.yield')}: {r.expectedYield} {r.yieldUom}
                       </span>
                       {r.leadTimeHours && (
                         <span className="text-sm text-blue-600 font-medium">
@@ -384,7 +386,7 @@ export default function RecipesPage() {
                         </span>
                       )}
                       <span className="text-xs text-gray-400 ml-auto">
-                        {r.ingredients?.length ?? 0} ingr · {recipeSteps.length} steps
+                        {r.ingredients?.length ?? 0} {t('recipes.ingr')} · {recipeSteps.length} steps
                       </span>
                       {r.status === 'DRAFT' && (
                         <button
@@ -392,7 +394,7 @@ export default function RecipesPage() {
                           disabled={activating === r.recipeId}
                           onClick={(ev) => { ev.stopPropagation(); activate(r.recipeId); }}
                         >
-                          {activating === r.recipeId ? 'Activating…' : 'Activate'}
+                          {activating === r.recipeId ? t('recipes.activating') : t('recipes.activate')}
                         </button>
                       )}
                       <span className="text-gray-400 text-xs">
@@ -404,19 +406,19 @@ export default function RecipesPage() {
                       <div className="border-t">
                         {/* Tab bar */}
                         <div className="flex border-b px-4 bg-gray-50">
-                          {(['ingredients', 'steps'] as const).map((t) => (
+                          {(['ingredients', 'steps'] as const).map((tabKey) => (
                             <button
-                              key={t}
+                              key={tabKey}
                               className={`px-4 py-2 text-xs font-semibold border-b-2 transition-colors ${
-                                tab === t
+                                tab === tabKey
                                   ? 'border-blue-600 text-blue-700'
                                   : 'border-transparent text-gray-500 hover:text-gray-700'
                               }`}
-                              onClick={() => setActiveTab((prev) => ({ ...prev, [r.recipeId]: t }))}
+                              onClick={() => setActiveTab((prev) => ({ ...prev, [r.recipeId]: tabKey }))}
                             >
-                              {t === 'ingredients'
-                                ? `Ingredients (${r.ingredients?.length ?? 0})`
-                                : `Technology Steps (${recipeSteps.length})`}
+                              {tabKey === 'ingredients'
+                                ? `${t('recipes.ingredients')} (${r.ingredients?.length ?? 0})`
+                                : `${t('recipes.steps')} (${recipeSteps.length})`}
                             </button>
                           ))}
                         </div>
@@ -428,33 +430,33 @@ export default function RecipesPage() {
                               /* ── EDIT MODE ── */
                               <div>
                                 <div className="flex items-center justify-between mb-2">
-                                  <span className="text-xs font-semibold text-gray-600">Editing ingredients</span>
+                                  <span className="text-xs font-semibold text-gray-600">{t('recipes.editingIngredients')}</span>
                                   <div className="flex gap-2">
                                     <button
                                       className="btn-xs bg-gray-200 text-gray-700 hover:bg-gray-300"
                                       onClick={cancelEditIngredients}
                                     >
-                                      Cancel
+                                      {t('common.cancel')}
                                     </button>
                                     <button
                                       className="btn-xs bg-green-600 text-white hover:bg-green-700"
                                       disabled={savingIngredients}
                                       onClick={() => saveIngredients(r.recipeId)}
                                     >
-                                      {savingIngredients ? 'Saving…' : 'Save'}
+                                      {savingIngredients ? t('common.saving') : t('common.save')}
                                     </button>
                                   </div>
                                 </div>
                                 <table className="w-full text-xs mb-2">
                                   <thead>
                                     <tr className="text-gray-500">
-                                      <th className="text-left py-1 pr-2 w-32">Item ID</th>
-                                      <th className="text-left py-1 pr-2 w-28">Name</th>
-                                      <th className="text-left py-1 pr-2 w-20">Qty</th>
-                                      <th className="text-left py-1 pr-2 w-16">UoM</th>
-                                      <th className="text-left py-1 pr-2 w-20">Buy size</th>
-                                      <th className="text-left py-1 pr-2 w-16">Buy UoM</th>
-                                      <th className="text-left py-1 pr-2 w-16">Waste</th>
+                                      <th className="text-left py-1 pr-2 w-32">{t('recipes.itemId')}</th>
+                                      <th className="text-left py-1 pr-2 w-28">{t('common.name')}</th>
+                                      <th className="text-left py-1 pr-2 w-20">{t('recipes.qtyPerBatch')}</th>
+                                      <th className="text-left py-1 pr-2 w-16">{t('recipes.uom')}</th>
+                                      <th className="text-left py-1 pr-2 w-20">{t('recipes.buySize')}</th>
+                                      <th className="text-left py-1 pr-2 w-16">{t('recipes.buyUom')}</th>
+                                      <th className="text-left py-1 pr-2 w-16">{t('recipes.waste')}</th>
                                       <th />
                                     </tr>
                                   </thead>
@@ -503,7 +505,7 @@ export default function RecipesPage() {
                                   className="btn-xs bg-blue-100 text-blue-700 hover:bg-blue-200"
                                   onClick={() => setEditIngRows((rows) => [...rows, newIng()])}
                                 >
-                                  + Add Row
+                                  {t('recipes.addRow')}
                                 </button>
                               </div>
                             ) : (
@@ -516,19 +518,19 @@ export default function RecipesPage() {
                                       className="btn-xs bg-amber-500 text-white hover:bg-amber-600"
                                       onClick={() => startEditIngredients(r)}
                                     >
-                                      ✏ Edit Ingredients
+                                      {t('recipes.editIngredients')}
                                     </button>
                                   )}
                                 </div>
                                 <table className="w-full text-xs">
                                   <thead>
                                     <tr className="text-gray-500">
-                                      <th className="text-left py-1 pr-4">Item</th>
-                                      <th className="text-left py-1 pr-4">Qty/batch</th>
-                                      <th className="text-left py-1 pr-4">UoM</th>
-                                      <th className="text-left py-1 pr-4">Waste</th>
-                                      <th className="text-left py-1 pr-4">Purchase size</th>
-                                      <th className="text-left py-1">Purchase UoM</th>
+                                      <th className="text-left py-1 pr-4">{t('recipes.item')}</th>
+                                      <th className="text-left py-1 pr-4">{t('recipes.qtyPerBatch')}</th>
+                                      <th className="text-left py-1 pr-4">{t('recipes.uom')}</th>
+                                      <th className="text-left py-1 pr-4">{t('recipes.waste')}</th>
+                                      <th className="text-left py-1 pr-4">{t('recipes.purchaseSize')}</th>
+                                      <th className="text-left py-1">{t('recipes.purchaseUom')}</th>
                                     </tr>
                                   </thead>
                                   <tbody className="divide-y divide-gray-100">
@@ -546,7 +548,7 @@ export default function RecipesPage() {
                                 </table>
                                 {r.productionNotes && (
                                   <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-gray-700 whitespace-pre-wrap">
-                                    <span className="font-semibold block mb-1 text-amber-700">Process Notes</span>
+                                    <span className="font-semibold block mb-1 text-amber-700">{t('recipes.processNotes')}</span>
                                     {r.productionNotes}
                                   </div>
                                 )}
@@ -559,19 +561,19 @@ export default function RecipesPage() {
                         {tab === 'steps' && (
                           <div className="px-4 py-3">
                             <div className="flex items-center justify-between mb-3">
-                              <span className="text-xs text-gray-500">Step-by-step process shown to floor workers</span>
+                              <span className="text-xs text-gray-500">{t('recipes.stepGuide')}</span>
                               <button
                                 className="btn-xs bg-blue-600 text-white hover:bg-blue-700"
                                 onClick={() => openAddStep(r.recipeId)}
                               >
-                                + Add Step
+                                {t('recipes.addStep')}
                               </button>
                             </div>
                             {loadingSteps === r.recipeId ? (
-                              <p className="text-xs text-gray-400">Loading…</p>
+                              <p className="text-xs text-gray-400">{t('common.loading')}</p>
                             ) : recipeSteps.length === 0 ? (
                               <p className="text-xs text-gray-400 py-4 text-center border rounded-lg bg-gray-50">
-                                No technology steps yet. Click &quot;+ Add Step&quot; to define the production process.
+                                {t('recipes.noSteps')}
                               </p>
                             ) : (
                               <div className="space-y-2">
@@ -592,7 +594,7 @@ export default function RecipesPage() {
                                       </div>
                                     </div>
                                     <div className="flex gap-1 flex-shrink-0">
-                                      <button className="btn-xs border text-gray-500 hover:bg-gray-100" onClick={() => openEditStep(step)}>Edit</button>
+                                      <button className="btn-xs border text-gray-500 hover:bg-gray-100" onClick={() => openEditStep(step)}>{t('common.edit')}</button>
                                       <button className="btn-xs bg-red-50 text-red-600 hover:bg-red-100" onClick={() => deleteStep(step.stepId, step.recipeId)}>×</button>
                                     </div>
                                   </div>
@@ -617,10 +619,10 @@ export default function RecipesPage() {
       )}
 
       {open && (
-        <Modal title="New Recipe" onClose={() => setOpen(false)} wide>
+        <Modal title={t('recipes.newRecipeTitle')} onClose={() => setOpen(false)} wide>
           <form onSubmit={submit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Batch Size">
+              <Field label={t('recipes.batchSize')}>
                 <div className="flex gap-2">
                   <input
                     className="input"
@@ -635,7 +637,7 @@ export default function RecipesPage() {
                   />
                   <input
                     className="input w-20"
-                    placeholder="UoM"
+                    placeholder={t('recipes.batchSizeUom')}
                     value={form.batchSizeUom}
                     onChange={(e) =>
                       setForm((f) => ({ ...f, batchSizeUom: e.target.value }))
@@ -643,7 +645,7 @@ export default function RecipesPage() {
                   />
                 </div>
               </Field>
-              <Field label="Expected Yield">
+              <Field label={t('recipes.expectedYield')}>
                 <div className="flex gap-2">
                   <input
                     className="input"
@@ -658,7 +660,7 @@ export default function RecipesPage() {
                   />
                   <input
                     className="input w-20"
-                    placeholder="UoM"
+                    placeholder={t('recipes.yieldUom')}
                     value={form.yieldUom}
                     onChange={(e) =>
                       setForm((f) => ({ ...f, yieldUom: e.target.value }))
@@ -669,7 +671,7 @@ export default function RecipesPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Lead Time (hours)" hint="Hours from production start to delivery-ready">
+              <Field label={t('recipes.leadTimeHours')}>
                 <input
                   type="number"
                   min={0}
@@ -683,7 +685,7 @@ export default function RecipesPage() {
               </Field>
             </div>
 
-            <Field label="Technological Process / Production Notes">
+            <Field label={t('recipes.productionNotes')}>
               <textarea
                 className="input min-h-[80px] resize-y"
                 placeholder="Step-by-step process, temperatures, timings, quality checkpoints..."
@@ -697,14 +699,14 @@ export default function RecipesPage() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-gray-700">
-                  Ingredients ({form.ingredients.length})
+                  {t('recipes.recipeIngredients')} ({form.ingredients.length})
                 </span>
                 <button
                   type="button"
                   className="text-xs text-blue-600 hover:underline"
                   onClick={addIng}
                 >
-                  + Add ingredient
+                  {t('recipes.addIngredient')}
                 </button>
               </div>
               <div className="space-y-3">
@@ -720,13 +722,13 @@ export default function RecipesPage() {
                           className="text-xs text-red-500 hover:underline"
                           onClick={() => removeIng(i)}
                         >
-                          Remove
+                          {t('recipes.removeIngredient')}
                         </button>
                       )}
                     </div>
                     <div className="grid grid-cols-2 gap-2 mb-2">
                       <div>
-                        <label className="text-xs text-gray-500">Item ID *</label>
+                        <label className="text-xs text-gray-500">{t('recipes.itemId')} *</label>
                         <input
                           className="input"
                           placeholder="e.g. flour-001"
@@ -736,7 +738,7 @@ export default function RecipesPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500">Item Name</label>
+                        <label className="text-xs text-gray-500">{t('recipes.itemName')}</label>
                         <input
                           className="input"
                           placeholder="e.g. Wheat Flour"
@@ -747,7 +749,7 @@ export default function RecipesPage() {
                     </div>
                     <div className="grid grid-cols-4 gap-2">
                       <div>
-                        <label className="text-xs text-gray-500">Qty / batch</label>
+                        <label className="text-xs text-gray-500">{t('recipes.qtyPerBatch')}</label>
                         <input
                           className="input"
                           type="number"
@@ -760,7 +762,7 @@ export default function RecipesPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500">UoM</label>
+                        <label className="text-xs text-gray-500">{t('recipes.uom')}</label>
                         <input
                           className="input"
                           placeholder="G, KG…"
@@ -770,7 +772,7 @@ export default function RecipesPage() {
                       </div>
                       <div>
                         <label className="text-xs text-gray-500">
-                          Purchase unit size
+                          {t('recipes.purchaseSize')}
                         </label>
                         <input
                           className="input"
@@ -784,7 +786,7 @@ export default function RecipesPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500">Purchase UoM</label>
+                        <label className="text-xs text-gray-500">{t('recipes.purchaseUom')}</label>
                         <input
                           className="input"
                           placeholder="G, BAG…"
@@ -797,7 +799,7 @@ export default function RecipesPage() {
                     </div>
                     <div className="mt-2 max-w-xs">
                       <label className="text-xs text-gray-500">
-                        Waste factor (0.02 = 2%)
+                        {t('recipes.wasteFactor')}
                       </label>
                       <input
                         className="input"
@@ -822,10 +824,10 @@ export default function RecipesPage() {
                 className="btn-secondary"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button type="submit" className="btn-primary" disabled={saving}>
-                {saving ? 'Saving…' : 'Create Recipe'}
+                {saving ? t('common.saving') : t('common.create')}
               </button>
             </div>
           </form>
@@ -834,41 +836,41 @@ export default function RecipesPage() {
 
       {/* ── Technology Step modal ─────────────────────────────────────────────── */}
       {stepOpen && (
-        <Modal title={editStepId ? 'Edit Technology Step' : 'Add Technology Step'} onClose={() => setStepOpen(false)}>
+        <Modal title={editStepId ? t('recipes.editStepTitle') : t('recipes.addStepTitle')} onClose={() => setStepOpen(false)}>
           <form onSubmit={submitStep} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Step Number">
+              <Field label={t('recipes.stepNumber')}>
                 <input className="input" type="number" min={1} required
                   value={stepForm.stepNumber}
                   onChange={(e) => setStepForm((f) => ({ ...f, stepNumber: +e.target.value }))} />
               </Field>
-              <Field label="Step Name *">
+              <Field label={`${t('recipes.stepName')} *`}>
                 <input className="input" placeholder="e.g. Mixing, Baking, Cooling" required
                   value={stepForm.name}
                   onChange={(e) => setStepForm((f) => ({ ...f, name: e.target.value }))} />
               </Field>
             </div>
 
-            <Field label="Activities / Instructions">
+            <Field label={t('recipes.activities')}>
               <textarea className="input min-h-[80px] resize-y"
                 placeholder="What to do: temperatures, actions, quality checks…"
                 value={stepForm.activities}
                 onChange={(e) => setStepForm((f) => ({ ...f, activities: e.target.value }))} />
             </Field>
 
-            <Field label="Instruments / Equipment">
+            <Field label={t('recipes.instruments')}>
               <input className="input" placeholder="e.g. Spiral mixer, Proofing cabinet, Deck oven"
                 value={stepForm.instruments}
                 onChange={(e) => setStepForm((f) => ({ ...f, instruments: e.target.value }))} />
             </Field>
 
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Duration (minutes)">
+              <Field label={t('recipes.duration')}>
                 <input className="input" type="number" min={0}
                   value={stepForm.durationMinutes}
                   onChange={(e) => setStepForm((f) => ({ ...f, durationMinutes: +e.target.value }))} />
               </Field>
-              <Field label="Temperature (°C, optional)">
+              <Field label={t('recipes.temperature')}>
                 <input className="input" type="number" placeholder="e.g. 220"
                   value={stepForm.temperatureCelsius}
                   onChange={(e) => setStepForm((f) => ({ ...f, temperatureCelsius: e.target.value }))} />
@@ -876,9 +878,9 @@ export default function RecipesPage() {
             </div>
 
             <div className="flex justify-end gap-2 pt-2 border-t">
-              <button type="button" className="btn-secondary" onClick={() => setStepOpen(false)}>Cancel</button>
+              <button type="button" className="btn-secondary" onClick={() => setStepOpen(false)}>{t('common.cancel')}</button>
               <button type="submit" className="btn-primary" disabled={savingStep}>
-                {savingStep ? 'Saving…' : editStepId ? 'Save Changes' : 'Add Step'}
+                {savingStep ? t('common.saving') : editStepId ? t('common.save') : t('recipes.addStep')}
               </button>
             </div>
           </form>

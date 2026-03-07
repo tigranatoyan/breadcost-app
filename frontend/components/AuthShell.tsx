@@ -3,99 +3,90 @@ import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { isLoggedIn, getUsername, getRole, getUserInfo, clearCredentials, type Role } from '@/lib/auth';
+import { useI18n, type Locale } from '@/lib/i18n';
 
 // ─── nav definition ─────────────────────────────────────────────────────────
 
-type NavItem = { href: string; label: string };
-type NavSection = { title?: string; items: NavItem[]; roles: Role[] };
+type NavItem = { href: string; labelKey: string };
+type NavSection = { titleKey?: string; items: NavItem[]; roles: Role[] };
 
 const SECTIONS: NavSection[] = [
-  // ── admin / management / viewer ──────────────────────────────────────────
   {
-    items: [{ href: '/dashboard', label: '📊 Dashboard' }],
+    items: [{ href: '/dashboard', labelKey: 'nav.dashboard' }],
     roles: ['admin', 'management', 'viewer', 'finance'],
   },
   {
-    title: 'Operations',
+    titleKey: 'nav.operations',
     items: [
-      { href: '/orders', label: '📦 Orders' },
-      { href: '/production-plans', label: '📅 Production Plans' },
+      { href: '/orders', labelKey: 'nav.orders' },
+      { href: '/production-plans', labelKey: 'nav.productionPlans' },
     ],
     roles: ['admin', 'management'],
   },
   {
-    title: 'Warehouse',
-    items: [{ href: '/inventory', label: '🏬 Inventory' }],
+    titleKey: 'nav.warehouse',
+    items: [{ href: '/inventory', labelKey: 'nav.inventory' }],
     roles: ['admin', 'management', 'warehouse'],
   },
   {
-    title: 'Sales',
-    items: [{ href: '/pos', label: '🛒 Point of Sale' }],
+    titleKey: 'nav.sales',
+    items: [{ href: '/pos', labelKey: 'nav.pos' }],
     roles: ['admin', 'management', 'cashier'],
   },
   {
-    title: 'Reports',
-    items: [{ href: '/reports', label: '📈 Reports' }],
+    titleKey: 'nav.reportsSection',
+    items: [{ href: '/reports', labelKey: 'nav.reports' }],
     roles: ['admin', 'management', 'viewer', 'finance'],
   },
-  // ── floor ─────────────────────────────────────────────────────────────────
   {
-    title: 'My Shift',
-    items: [{ href: '/floor', label: '🏭 Production Floor' }],
+    titleKey: 'nav.myShift',
+    items: [{ href: '/floor', labelKey: 'nav.floor' }],
     roles: ['floor'],
   },
   {
-    title: 'Operations',
-    items: [{ href: '/production-plans', label: '📅 Production Plans' }],
+    titleKey: 'nav.operations',
+    items: [{ href: '/production-plans', labelKey: 'nav.productionPlans' }],
     roles: ['floor'],
   },
-  // ── technologist ─────────────────────────────────────────────────────────
   {
-    title: 'Workshop',
+    titleKey: 'nav.workshop',
     items: [
-      { href: '/recipes', label: '📋 Recipes & Steps' },
-      { href: '/products', label: '🍞 Products' },
+      { href: '/recipes', labelKey: 'nav.recipes' },
+      { href: '/products', labelKey: 'nav.products' },
     ],
     roles: ['technologist'],
   },
   {
-    title: 'Analysis',
-    items: [{ href: '/technologist', label: '🔬 Technologist View' }],
+    titleKey: 'nav.analysis',
+    items: [{ href: '/technologist', labelKey: 'nav.technologistView' }],
     roles: ['technologist'],
   },
-  // ── admin only ────────────────────────────────────────────────────────────
   {
-    title: 'Floor',
-    items: [{ href: '/floor', label: '🏭 Production Floor' }],
+    titleKey: 'nav.floorSection',
+    items: [{ href: '/floor', labelKey: 'nav.floor' }],
     roles: ['admin'],
   },
   {
-    title: 'Analysis',
-    items: [{ href: '/technologist', label: '🔬 Technologist' }],
+    titleKey: 'nav.analysis',
+    items: [{ href: '/technologist', labelKey: 'nav.technologist' }],
     roles: ['admin'],
   },
   {
-    title: 'Configuration',
+    titleKey: 'nav.configuration',
     items: [
-      { href: '/admin', label: '⚙️ Admin Panel' },
-      { href: '/departments', label: '   🏢 Departments' },
-      { href: '/products', label: '   🍞 Products' },
-      { href: '/recipes', label: '   📋 Recipes & Steps' },
+      { href: '/admin', labelKey: 'nav.admin' },
+      { href: '/departments', labelKey: 'nav.departments' },
+      { href: '/products', labelKey: 'nav.navProducts' },
+      { href: '/recipes', labelKey: 'nav.navRecipes' },
     ],
     roles: ['admin'],
   },
 ];
 
-const ROLE_LABELS: Record<Role, string> = {
-  admin: 'Administrator',
-  floor: 'Floor Staff',
-  management: 'Management',
-  viewer: 'Viewer',
-  finance: 'Finance',
-  warehouse: 'Warehouse',
-  cashier: 'Cashier',
-  technologist: 'Technologist',
-};
+const LOCALES: { code: Locale; label: string }[] = [
+  { code: 'en', label: 'EN' },
+  { code: 'hy', label: 'HY' },
+];
 
 /** Default landing route per role */
 const ROLE_DEFAULT: Partial<Record<Role, string>> = {
@@ -109,6 +100,7 @@ const ROLE_DEFAULT: Partial<Record<Role, string>> = {
 export default function AuthShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { t, locale, setLocale } = useI18n();
   const [checked, setChecked] = useState(false);
   const [user, setUser] = useState('');
   const [role, setRole] = useState<Role>('viewer');
@@ -151,15 +143,15 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
       <aside className="w-56 shrink-0 bg-slate-900 text-white flex flex-col">
         <div className="px-5 py-4 border-b border-slate-700">
           <div className="font-bold text-lg tracking-tight">🍞 BreadCost</div>
-          <div className="text-xs text-slate-400 mt-0.5">{ROLE_LABELS[role]}</div>
+          <div className="text-xs text-slate-400 mt-0.5">{t(`roles.${role}`)}</div>
         </div>
 
         <nav className="flex-1 p-3 overflow-y-auto space-y-4">
           {SECTIONS.filter((s) => s.roles.includes(role)).map((section, si) => (
             <div key={si}>
-              {section.title && (
+              {section.titleKey && (
                 <div className="px-3 mb-1 text-xs font-semibold uppercase tracking-widest text-slate-500">
-                  {section.title}
+                  {t(section.titleKey)}
                 </div>
               )}
               <div className="space-y-0.5">
@@ -175,7 +167,7 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
                           : 'text-slate-300 hover:bg-slate-700 hover:text-white'
                       }`}
                     >
-                      {item.label}
+                      {t(item.labelKey)}
                     </Link>
                   );
                 })}
@@ -183,6 +175,22 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
             </div>
           ))}
         </nav>
+
+        <div className="px-4 py-2 border-t border-slate-700 flex items-center justify-center gap-1">
+          {LOCALES.map((l) => (
+            <button
+              key={l.code}
+              onClick={() => setLocale(l.code)}
+              className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                locale === l.code
+                  ? 'bg-blue-600 text-white'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-700'
+              }`}
+            >
+              {l.label}
+            </button>
+          ))}
+        </div>
 
         <div className="px-4 py-3 border-t border-slate-700 flex items-center justify-between">
           <div className="min-w-0">
@@ -193,7 +201,7 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
             onClick={logout}
             className="text-xs text-slate-400 hover:text-white transition-colors px-2 py-1 rounded hover:bg-slate-700 shrink-0 ml-1"
           >
-            Sign out
+            {t('nav.signOut')}
           </button>
         </div>
       </aside>

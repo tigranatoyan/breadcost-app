@@ -3,9 +3,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { setSession, isLoggedIn, UserInfo } from '@/lib/auth';
 import { API_BASE } from '@/lib/api';
+import { useT } from '@/lib/i18n';
 
 export default function LoginPage() {
   const router = useRouter();
+  const t = useT();
   const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('admin');
   const [loading, setLoading] = useState(false);
@@ -26,12 +28,12 @@ export default function LoginPage() {
         body: JSON.stringify({ username, password }),
       });
       if (res.status === 401 || res.status === 403) {
-        setError('Invalid username or password.');
+        setError(t('login.invalidCredentials'));
         return;
       }
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data.message ?? 'Login failed. Please try again.');
+        setError(data.message ?? t('login.loginFailed'));
         return;
       }
       const data = await res.json();
@@ -45,7 +47,7 @@ export default function LoginPage() {
       setSession(data.token, userInfo);
       router.push('/dashboard');
     } catch {
-      setError('Cannot reach the server. Make sure the backend is running on port 8080.');
+      setError(t('login.serverUnreachable'));
     } finally {
       setLoading(false);
     }
@@ -57,13 +59,13 @@ export default function LoginPage() {
         {/* Logo / headline */}
         <div className="text-center mb-8">
           <div className="text-5xl mb-3">🍞</div>
-          <h1 className="text-2xl font-bold text-white">BreadCost</h1>
-          <p className="text-slate-400 text-sm mt-1">Manufacturing Management</p>
+          <h1 className="text-2xl font-bold text-white">{t('login.title')}</h1>
+          <p className="text-slate-400 text-sm mt-1">{t('login.subtitle')}</p>
         </div>
 
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <h2 className="text-lg font-semibold text-gray-800 mb-6">Sign in</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-6">{t('login.signIn')}</h2>
 
           {error && (
             <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
@@ -74,7 +76,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Username
+                {t('login.username')}
               </label>
               <input
                 className="input"
@@ -87,7 +89,7 @@ export default function LoginPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Password
+                {t('login.password')}
               </label>
               <input
                 className="input"
@@ -103,12 +105,12 @@ export default function LoginPage() {
               className="btn-primary w-full justify-center py-2.5 text-base mt-2"
               disabled={loading}
             >
-              {loading ? 'Signing in…' : 'Sign in'}
+              {loading ? t('login.signingIn') : t('login.signIn')}
             </button>
           </form>
 
           <div className="mt-5 pt-4 border-t text-center">
-            <p className="text-xs text-gray-400 mb-2">Demo accounts</p>
+            <p className="text-xs text-gray-400 mb-2">{t('login.demoAccounts')}</p>
             <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
               {[
                 ['admin', 'admin'],

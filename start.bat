@@ -9,7 +9,7 @@ echo.
 
 REM ── Start Backend (Spring Boot) in a new window ──
 echo [1/2] Starting Backend on http://localhost:8080 ...
-start "BreadCost-Backend" cmd /k "cd /d %~dp0 && mvn spring-boot:run"
+start "BreadCost-Backend" cmd /k "cd /d %~dp0 && .\gradlew bootRun"
 
 REM ── Wait a few seconds for backend to initialize ──
 echo       Waiting 10s for backend to start...

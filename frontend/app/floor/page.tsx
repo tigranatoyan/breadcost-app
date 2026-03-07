@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Badge, Alert } from '@/components/ui';
+import { useT } from '@/lib/i18n';
 
 // â”€â”€â”€ interfaces â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -94,6 +95,7 @@ function WOPanel({
   onAction: (planId: string, woId: string, action: string) => void;
   actionBusy: boolean;
 }) {
+  const t = useT();
   const [tab, setTab] = useState<'steps' | 'recipe'>(techSteps.length > 0 ? 'steps' : 'recipe');
   const [confirmed, setConfirmed] = useState<Record<number, boolean>>(() => getConfirmed(wo.workOrderId, techSteps));
 
@@ -118,12 +120,12 @@ function WOPanel({
         {/* Header */}
         <div className="flex items-start justify-between px-5 py-4 border-b bg-slate-800 text-white">
           <div className="flex-1 min-w-0">
-            <div className="text-xs uppercase tracking-wide opacity-60 mb-0.5">Work Order</div>
+            <div className="text-xs uppercase tracking-wide opacity-60 mb-0.5">{t('floor.workOrder')}</div>
             <div className="font-semibold text-lg truncate">{wo.productName}</div>
             <div className="text-sm opacity-70 mt-0.5">
-              Target: {wo.targetQty} {wo.targetUom}
-              {wo.batchCount ? ` Â· ${wo.batchCount} batch(es)` : ''}
-              {recipe && ` Â· Batch size: ${recipe.batchSize} ${recipe.batchSizeUom}`}
+              {t('floor.target')}: {wo.targetQty} {wo.targetUom}
+              {wo.batchCount ? ` · ${t('floor.batches', {count: wo.batchCount})}` : ''}
+              {recipe && ` · ${t('floor.batchSizeLabel')}: ${recipe.batchSize} ${recipe.batchSizeUom}`}
             </div>
           </div>
           <div className="flex items-center gap-2 ml-3">
@@ -134,19 +136,19 @@ function WOPanel({
 
         {/* Tabs */}
         <div className="flex border-b bg-gray-50 px-5">
-          {(['steps', 'recipe'] as const).map((t) => (
+          {(['steps', 'recipe'] as const).map((tb) => (
             <button
-              key={t}
+              key={tb}
               className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-colors ${
-                tab === t
+                tab === tb
                   ? 'border-blue-600 text-blue-700'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
-              onClick={() => setTab(t)}
+              onClick={() => setTab(tb)}
             >
-              {t === 'steps'
-                ? `Technology Steps${techSteps.length > 0 ? ` (${confirmedCount}/${techSteps.length})` : ''}`
-                : `Recipe${recipe ? ` v${recipe.versionNumber}` : ''}`}
+              {tb === 'steps'
+                ? `${t('floor.technologySteps')}${techSteps.length > 0 ? ` (${confirmedCount}/${techSteps.length})` : ''}`
+                : `${t('floor.recipe')}${recipe ? ` v${recipe.versionNumber}` : ''}`}
             </button>
           ))}
         </div>
@@ -161,11 +163,11 @@ function WOPanel({
               ) : techSteps.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="text-3xl mb-2">ðŸ“‹</div>
-                  <div className="text-sm font-medium text-gray-600">No technology steps defined</div>
-                  <div className="text-xs text-gray-400 mt-1">Ask your technologist to add steps to this recipe.</div>
+                  <div className="text-sm font-medium text-gray-600">{t('floor.noStepsDefined')}</div>
+                  <div className="text-xs text-gray-400 mt-1">{t('floor.askTechnologistSteps')}</div>
                   {recipe?.productionNotes && (
                     <div className="mt-4 text-left bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-gray-700 whitespace-pre-wrap">
-                      <div className="font-semibold text-amber-700 mb-1">Process Notes</div>
+                      <div className="font-semibold text-amber-700 mb-1">{t('recipes.processNotes')}</div>
                       {recipe.productionNotes}
                     </div>
                   )}
@@ -174,7 +176,7 @@ function WOPanel({
                 <div className="space-y-3">
                   {allStepsDone && (
                     <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-2 text-sm text-green-700 font-medium">
-                      âœ“ All steps confirmed â€” ready to complete!
+                      {t('floor.allStepsConfirmed')}
                     </div>
                   )}
                   {techSteps.map((step) => {
@@ -197,7 +199,7 @@ function WOPanel({
                           </button>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-bold text-gray-400">Step {step.stepNumber}</span>
+                              <span className="text-xs font-bold text-gray-400">{t('recipes.stepNumber')} {step.stepNumber}</span>
                               <span className={`font-semibold text-sm ${done ? 'text-green-700 line-through' : 'text-gray-800'}`}>
                                 {step.name}
                               </span>
@@ -238,16 +240,16 @@ function WOPanel({
               {!recipe ? (
                 <div className="text-center py-12">
                   <div className="text-3xl mb-2">âŒ</div>
-                  <div className="text-sm font-medium text-gray-600">No active recipe</div>
-                  <div className="text-xs text-gray-400 mt-1">Ask your technologist to activate a recipe for this product.</div>
+                  <div className="text-sm font-medium text-gray-600">{t('floor.noActiveRecipe')}</div>
+                  <div className="text-xs text-gray-400 mt-1">{t('floor.askTechnologistRecipe')}</div>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div className="grid grid-cols-3 gap-3 text-xs">
                     {[
-                      { label: 'Batch Size', value: `${recipe.batchSize} ${recipe.batchSizeUom}` },
-                      { label: 'Yield', value: `${recipe.expectedYield} ${recipe.yieldUom}` },
-                      { label: 'Lead Time', value: recipe.leadTimeHours ? `${recipe.leadTimeHours}h` : 'â€”' },
+                      { label: t('floor.batchSizeValue'), value: `${recipe.batchSize} ${recipe.batchSizeUom}` },
+                      { label: t('floor.yieldValue'), value: `${recipe.expectedYield} ${recipe.yieldUom}` },
+                      { label: t('floor.leadTimeValue'), value: recipe.leadTimeHours ? `${recipe.leadTimeHours}h` : '—' },
                     ].map((kv) => (
                       <div key={kv.label} className="bg-gray-50 border rounded-lg p-3">
                         <div className="text-gray-400">{kv.label}</div>
@@ -257,21 +259,21 @@ function WOPanel({
                   </div>
                   {recipe.productionNotes && (
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-gray-700 whitespace-pre-wrap">
-                      <div className="font-semibold text-amber-700 mb-1">Process Notes</div>
+                      <div className="font-semibold text-amber-700 mb-1">{t('recipes.processNotes')}</div>
                       {recipe.productionNotes}
                     </div>
                   )}
                   {recipe.ingredients.length > 0 && (
                     <div>
                       <div className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
-                        Ingredients â€” per batch Ã— {wo.batchCount}
+                        {t('floor.ingredientsPerBatch', {count: wo.batchCount})}
                       </div>
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="text-left text-xs text-gray-400 border-b">
-                            <th className="pb-2">Ingredient</th>
-                            <th className="pb-2 text-right">Per batch</th>
-                            <th className="pb-2 text-right">Total</th>
+                            <th className="pb-2">{t('floor.ingredient')}</th>
+                            <th className="pb-2 text-right">{t('floor.perBatch')}</th>
+                            <th className="pb-2 text-right">{t('floor.totalCol')}</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y">
@@ -306,7 +308,7 @@ function WOPanel({
               disabled={actionBusy}
               onClick={() => onAction(planId, wo.workOrderId, 'start')}
             >
-              {actionBusy ? 'â€¦' : 'â–¶ Start Work Order'}
+              {actionBusy ? 'â€¦' : t('floor.startWorkOrder')}
             </button>
           )}
           {wo.status === 'STARTED' && (
@@ -315,7 +317,7 @@ function WOPanel({
               disabled={actionBusy}
               onClick={() => onAction(planId, wo.workOrderId, 'complete')}
             >
-              {actionBusy ? 'â€¦' : 'âœ“ Complete Work Order'}
+              {actionBusy ? 'â€¦' : t('floor.completeWorkOrder')}
             </button>
           )}
           {(wo.status === 'PENDING' || wo.status === 'STARTED') && (
@@ -324,10 +326,10 @@ function WOPanel({
               disabled={actionBusy}
               onClick={() => onAction(planId, wo.workOrderId, 'cancel')}
             >
-              Cancel
+              {t('common.cancel')}
             </button>
           )}
-          <button className="ml-auto btn-secondary" onClick={onClose}>Close</button>
+          <button className="ml-auto btn-secondary" onClick={onClose}>{t('common.close')}</button>
         </div>
       </div>
     </div>
@@ -337,6 +339,7 @@ function WOPanel({
 // â”€â”€â”€ main page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function FloorPage() {
+  const t = useT();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -463,12 +466,12 @@ export default function FloorPage() {
     <div className="max-w-4xl space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold">Production Floor</h1>
+        <h1 className="text-2xl font-semibold">{t('floor.title')}</h1>
         <p className="text-sm text-gray-400 mt-0.5">
           {now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
           {activePlan && (
             <span className="ml-3 text-amber-600 font-medium">
-              Active: {activePlan.shift} shift
+              {t('floor.activeShift', {shift: activePlan.shift})}
             </span>
           )}
         </p>
@@ -479,8 +482,8 @@ export default function FloorPage() {
       {plans.length === 0 ? (
         <div className="bg-white border rounded-xl p-12 text-center text-gray-400">
           <div className="text-4xl mb-3">ðŸ­</div>
-          <div className="font-medium">No production plans for today</div>
-          <div className="text-sm mt-1">Plans are created and published by your supervisor.</div>
+          <div className="font-medium">{t('floor.noPlansToday')}</div>
+          <div className="text-sm mt-1">{t('floor.plansCreatedBySupervisor')}</div>
         </div>
       ) : (
         plans.map((plan) => {
@@ -504,7 +507,7 @@ export default function FloorPage() {
                 {isActive && <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">â–¶ IN PROGRESS</span>}
                 <div className="ml-auto flex items-center gap-3">
                   <span className={`text-sm ${isActive ? 'text-blue-100' : 'text-gray-500'}`}>
-                    {doneCount}/{total} done
+                    {t('floor.progress', {done: doneCount, total})}
                   </span>
                   <Badge status={plan.status} />
                 </div>
@@ -535,8 +538,8 @@ export default function FloorPage() {
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium">{wo.productName}</div>
                         <div className="text-xs text-gray-400">
-                          Target: {wo.targetQty} {wo.targetUom}
-                          {wo.batchCount ? ` Â· ${wo.batchCount} batch(es)` : ''}
+                          {t('floor.target')}: {wo.targetQty} {wo.targetUom}
+                          {wo.batchCount ? ` · ${t('floor.batches', {count: wo.batchCount})}` : ''}
                         </div>
                       </div>
                       <Badge status={wo.status} />
