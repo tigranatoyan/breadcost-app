@@ -72,6 +72,37 @@ const SECTIONS: NavSection[] = [
     roles: ['admin'],
   },
   {
+    titleKey: 'nav.supplyChain',
+    items: [
+      { href: '/suppliers', labelKey: 'nav.suppliers' },
+      { href: '/deliveries', labelKey: 'nav.deliveries' },
+    ],
+    roles: ['admin', 'management'],
+  },
+  {
+    titleKey: 'nav.finance',
+    items: [
+      { href: '/invoices', labelKey: 'nav.invoices' },
+      { href: '/customers', labelKey: 'nav.customers' },
+    ],
+    roles: ['admin', 'management', 'finance'],
+  },
+  {
+    titleKey: 'nav.loyalty',
+    items: [{ href: '/loyalty', labelKey: 'nav.loyalty' }],
+    roles: ['admin', 'management'],
+  },
+  {
+    titleKey: 'nav.analytics',
+    items: [{ href: '/report-builder', labelKey: 'nav.reportBuilder' }],
+    roles: ['admin', 'management', 'finance'],
+  },
+  {
+    titleKey: 'nav.platform',
+    items: [{ href: '/subscriptions', labelKey: 'nav.subscriptions' }],
+    roles: ['admin'],
+  },
+  {
     titleKey: 'nav.configuration',
     items: [
       { href: '/admin', labelKey: 'nav.admin' },
