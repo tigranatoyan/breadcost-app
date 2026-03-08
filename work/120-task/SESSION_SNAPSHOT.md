@@ -1,22 +1,41 @@
 # BreadCost App — Work Session Snapshot
-**Last Updated:** 2026-03-07 (Full i18n — EN/HY language support across all pages)
+**Last Updated:** 2026-03-08 (R1.5 Jira updated, Sprint 4 implementation starting)
 **Purpose:** Handoff context for continuing development in a new chat session
 
-> **Frontend Requirements:** See `work/120-task/FE_REQUIREMENTS.md` — PENDING USER APPROVAL before implementation continues.
+> **Frontend Requirements:** See `work/120-task/FE_REQUIREMENTS.md` — APPROVED, implementation in progress.
 > **Frontend Spec:** See `work/120-task/FRONTEND_SPEC.md` — frozen implementation reference for what is already built.
 
 ---
 
-## 🔄 IN PROGRESS — Active Development
+## 🔄 IN PROGRESS — R1.5 Sprint 4: Inventory & Warehouse FE
 
-### Completed today (resume point)
-- Full i18n (English + Armenian) across all 15 frontend pages
-- Build migrated from Maven to Gradle (build.gradle.kts, settings.gradle.kts)
+### Release Progression: R1.5 → R2 → R3
+
+### Jira State (as of 2026-03-08)
+- **R1**: 60 stories Done (Sprint 1 closed)
+- **R1.5**: 23 stories To Do, 4 epics (BC-218..221), 4 sprints (4-7, ids=40-43), version id=10035
+- **R2**: 37 stories To Do (reverted from incorrectly Done), 6 sprints (8-13, ids=44-49)
+- **R3**: 15 stories To Do, 6 epics, 3 sprints (ids=83-85)
+
+### Sprint 4 — Inventory & Warehouse FE (5 stories)
+| Story | Title | Status |
+|-------|-------|--------|
+| BC-1501 | Adjustment modal (waste/spoilage/correction) | 📋 Planned |
+| BC-1502 | Lot detail expand with FIFO cost layers | 📋 Planned |
+| BC-1503 | Department/site filter + last receipt date | 📋 Planned |
+| BC-1504 | Receive Lot: currency + exchange rate fields | 📋 Planned |
+| BC-1505 | Dashboard stock alert widget + 60s auto-refresh | 📋 Planned |
+
+### Backend endpoints available for Sprint 4
+- `POST /v1/inventory/adjust` — AdjustRequest{tenantId, siteId, itemId, adjustmentQty, unit, reasonCode, notes} → AdjustResponse
+- `GET /v1/inventory/positions?tenantId=&siteId=` — List<InventoryPosition> (id, tenantId, siteId, itemId, lotId, locationId, onHandQty, uom, avgUnitCost, valuationAmount)
+- `GET /v1/inventory/alerts?tenantId=` — List<StockAlert> (itemId, itemName, onHandQty, minThreshold, severity, uom)
+- `POST /v1/inventory/receipts` — ReceiveLotCommand{tenantId, siteId, receiptId, itemId, lotId, uom, qty, unitCostBase, idempotencyKey}
+- `GET /v1/departments?tenantId=` — List<DepartmentEntity>
 
 ### Next recommended work
-1. Visual QA pass — verify all pages render correctly in both EN and HY
-2. Fix any remaining untranslated strings (placeholders, enum labels, etc.)
-3. Continue feature development per FE_REQUIREMENTS.md
+1. **Implement Sprint 4 stories** in `frontend/app/inventory/page.tsx` and `frontend/app/dashboard/page.tsx`
+2. After Sprint 4: Sprint 5 (POS), Sprint 6 (Admin/Catalog), Sprint 7 (Reports/Dashboard)
 
 ---
 

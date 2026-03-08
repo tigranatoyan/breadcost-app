@@ -132,6 +132,10 @@ const en = {
     confirmedNoMatchPlan: '{count} confirmed order(s) have no matching production plan date',
     cancelledOnRecord: '{count} cancelled order(s) on record',
     view: 'View →',
+    refresh: '↻ Refresh',
+    stockAlertsWidget: 'Stock Alerts',
+    alertOnHand: 'On hand: {qty} {uom}',
+    alertThreshold: 'Min: {threshold}',
   },
 
   // ── Orders ─────────────────────────────────────────────────────────────────
@@ -357,6 +361,36 @@ const en = {
     editItemTitle: 'Edit Item',
     itemType: 'Type',
     minStock: 'Min Stock Threshold',
+    // adjustment modal (BC-1501)
+    adjust: '± Adjust',
+    adjustBtn: 'Adjust',
+    adjustTitle: 'Inventory Adjustment',
+    adjustQty: 'Adjustment Qty',
+    adjustQtyHint: 'Negative = reduce, Positive = add',
+    reasonCode: 'Reason Code',
+    notes: 'Notes',
+    notesPlaceholder: 'Optional reason or details…',
+    adjustWarn: '⚠ This will reduce stock. Ensure the reason code is correct.',
+    adjustAdd: 'This will increase stock. Ensure the reason code is correct.',
+    adjusting: 'Adjusting…',
+    adjustSubmit: 'Submit Adjustment',
+    adjustSuccess: 'Adjustment recorded successfully.',
+    receiptSuccess: 'Receipt recorded successfully.',
+    reasons: {
+      WASTE: 'Waste',
+      SPOILAGE: 'Spoilage',
+      COUNT_CORRECTION: 'Count Correction',
+      OTHER: 'Other',
+    },
+    // lot detail (BC-1502)
+    lotDetail: 'Lot Detail — FIFO Cost Layer',
+    fifoNote: 'Cost layers shown per lot. Oldest lots are consumed first (FIFO).',
+    // department filter (BC-1503)
+    allLocations: 'All Locations',
+    // currency/exchange rate (BC-1504)
+    currency: 'Currency (optional)',
+    exchangeRate: 'Exchange Rate to Main',
+    fxNote: 'Exchange rate: 1 {currency} = {rate} main currency',
     cols: {
       item: 'Item',
       type: 'Type',

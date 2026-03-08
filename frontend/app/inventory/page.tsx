@@ -3,8 +3,10 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Modal, Spinner, Alert, Badge, Field } from '@/components/ui';
 import { useT } from '@/lib/i18n';
+import { getRole } from '@/lib/auth';
 
 const SITE_ID = 'MAIN';
+const REASON_CODES = ['WASTE', 'SPOILAGE', 'COUNT_CORRECTION', 'OTHER'] as const;
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -29,6 +31,20 @@ interface StockPosition {
   uom: string;
   avgUnitCost: number;
   valuationAmount: number;
+}
+
+interface Department {
+  departmentId: string;
+  name: string;
+}
+
+interface StockAlert {
+  itemId: string;
+  itemName: string;
+  onHandQty: number;
+  minThreshold: number;
+  severity: 'LOW' | 'CRITICAL';
+  uom: string;
 }
 
 const ITEM_TYPES = ['INGREDIENT', 'PACKAGING', 'FG', 'BYPRODUCT', 'WIP'];
@@ -61,17 +77,25 @@ function fmt(n: number | null | undefined, decimals = 2) {
 
 export default function InventoryPage() {
   const t = useT();
+  const role = getRole();
+  const canAdjust = role === 'admin' || role === 'warehouse';
   const [tab, setTab] = useState<'stock' | 'items'>('stock');
 
   const [positions, setPositions] = useState<StockPosition[]>([]);
   const [items, setItems] = useState<Item[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   // filters
   const [typeFilter, setTypeFilter] = useState('ALL');
+  const [deptFilter, setDeptFilter] = useState('ALL');
   const [search, setSearch] = useState('');
   const [alertsOnly, setAlertsOnly] = useState(false);
+
+  // lot expand (BC-1502)
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   // receive stock modal
   const [receiveOpen, setReceiveOpen] = useState(false);
@@ -81,6 +105,8 @@ export default function InventoryPage() {
     qty: '',
     unitCostBase: '',
     supplierRef: '',
+    currencyCode: '',
+    exchangeRate: '1',
   });
 
   // transfer modal
@@ -98,6 +124,16 @@ export default function InventoryPage() {
   const [itemOpen, setItemOpen] = useState(false);
   const [itemSaving, setItemSaving] = useState(false);
   const [editItemId, setEditItemId] = useState<string | null>(null);
+
+  // adjustment modal (BC-1501)
+  const [adjustOpen, setAdjustOpen] = useState(false);
+  const [adjustSaving, setAdjustSaving] = useState(false);
+  const [adjustForm, setAdjustForm] = useState({
+    itemId: '',
+    adjustmentQty: '',
+    reasonCode: 'WASTE' as typeof REASON_CODES[number],
+    notes: '',
+  });
   const [itemForm, setItemForm] = useState({
     name: '',
     type: 'INGREDIENT',
@@ -112,12 +148,14 @@ export default function InventoryPage() {
     try {
       setLoading(true);
       setError('');
-      const [pos, itms] = await Promise.all([
+      const [pos, itms, depts] = await Promise.all([
         apiFetch<StockPosition[]>(`/v1/inventory/positions?tenantId=${TENANT_ID}`),
         apiFetch<Item[]>(`/v1/items?tenantId=${TENANT_ID}`),
+        apiFetch<Department[]>(`/v1/departments?tenantId=${TENANT_ID}`).catch(() => [] as Department[]),
       ]);
       setPositions(pos);
       setItems(itms);
+      setDepartments(depts);
     } catch (e) {
       setError(String(e));
     } finally {
@@ -141,6 +179,7 @@ export default function InventoryPage() {
     return positions.filter((p) => {
       const item = itemMap[p.itemId];
       if (typeFilter !== 'ALL' && item?.type !== typeFilter) return false;
+      if (deptFilter !== 'ALL' && p.locationId !== deptFilter) return false;
       if (search) {
         const name = item?.name ?? p.itemId;
         if (!name.toLowerCase().includes(search.toLowerCase())) return false;
@@ -151,7 +190,7 @@ export default function InventoryPage() {
       }
       return true;
     });
-  }, [positions, itemMap, typeFilter, search, alertsOnly]);
+  }, [positions, itemMap, typeFilter, deptFilter, search, alertsOnly]);
 
   // ─── filtered items ───────────────────────────────────────────────────────
 
@@ -180,6 +219,8 @@ export default function InventoryPage() {
       qty: '',
       unitCostBase: '',
       supplierRef: '',
+      currencyCode: '',
+      exchangeRate: '1',
     });
     setReceiveOpen(true);
   };
@@ -206,6 +247,8 @@ export default function InventoryPage() {
         }),
       });
       setReceiveOpen(false);
+      setSuccess(t('inventory.receiptSuccess'));
+      setTimeout(() => setSuccess(''), 3000);
       load();
     } catch (e) {
       setError(String(e));
@@ -255,6 +298,44 @@ export default function InventoryPage() {
   };
 
   // ─── item CRUD ────────────────────────────────────────────────────────────
+
+  const openAdjust = (pos?: StockPosition) => {
+    setAdjustForm({
+      itemId: pos?.itemId ?? (items.length > 0 ? items[0].itemId : ''),
+      adjustmentQty: '',
+      reasonCode: 'WASTE',
+      notes: '',
+    });
+    setAdjustOpen(true);
+  };
+
+  const submitAdjust = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setAdjustSaving(true);
+      const item = itemMap[adjustForm.itemId];
+      await apiFetch('/v1/inventory/adjust', {
+        method: 'POST',
+        body: JSON.stringify({
+          tenantId: TENANT_ID,
+          siteId: SITE_ID,
+          itemId: adjustForm.itemId,
+          adjustmentQty: parseFloat(adjustForm.adjustmentQty),
+          unit: item?.baseUom ?? 'PCS',
+          reasonCode: adjustForm.reasonCode,
+          notes: adjustForm.notes || null,
+        }),
+      });
+      setAdjustOpen(false);
+      setSuccess(t('inventory.adjustSuccess'));
+      setTimeout(() => setSuccess(''), 3000);
+      load();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setAdjustSaving(false);
+    }
+  };
 
   const openCreateItem = () => {
     setEditItemId(null);
@@ -322,6 +403,11 @@ export default function InventoryPage() {
         <div className="flex gap-2">
           {tab === 'stock' && (
             <>
+              {canAdjust && (
+                <button className="btn-secondary" onClick={() => openAdjust()}>
+                  {t('inventory.adjust')}
+                </button>
+              )}
               <button className="btn-secondary" onClick={() => openTransfer()}>
                 {t('inventory.transfer')}
               </button>
@@ -339,6 +425,12 @@ export default function InventoryPage() {
       </div>
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
+      {success && (
+        <div className="mb-4 px-4 py-2 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm flex items-center justify-between">
+          {success}
+          <button className="ml-4 text-green-500 hover:text-green-700" onClick={() => setSuccess('')}>✕</button>
+        </div>
+      )}
 
       {/* tabs */}
       <div className="flex gap-1 mb-4 bg-gray-100 rounded-xl p-1 w-fit">
@@ -365,6 +457,18 @@ export default function InventoryPage() {
           <option value="ALL">{t('inventory.allTypes')}</option>
           {ITEM_TYPES.map((tp) => <option key={tp} value={tp}>{tp}</option>)}
         </select>
+        {tab === 'stock' && departments.length > 0 && (
+          <select
+            className="input w-44"
+            value={deptFilter}
+            onChange={(e) => setDeptFilter(e.target.value)}
+          >
+            <option value="ALL">{t('inventory.allLocations')}</option>
+            {Array.from(new Set(positions.map((p) => p.locationId))).map((loc) => (
+              <option key={loc} value={loc}>{loc}</option>
+            ))}
+          </select>
+        )}
         <input
           className="input w-52"
           placeholder={t('inventory.searchItem')}
@@ -400,8 +504,8 @@ export default function InventoryPage() {
             <table className="min-w-full text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  {[t('inventory.cols.item'), t('inventory.cols.type'), t('inventory.cols.location'), t('inventory.cols.lot'), t('inventory.cols.onHand'), t('inventory.cols.avgCost'), t('inventory.cols.totalValue'), ''].map((h) => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                  {[t('inventory.cols.item'), t('inventory.cols.type'), t('inventory.cols.location'), t('inventory.cols.lot'), t('inventory.cols.onHand'), t('inventory.cols.avgCost'), t('inventory.cols.totalValue'), ''].map((h, i) => (
+                    <th key={`h${i}`} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
                       {h}
                     </th>
                   ))}
@@ -412,31 +516,71 @@ export default function InventoryPage() {
                   const item = itemMap[p.itemId];
                   const threshold = item?.minStockThreshold ?? 0;
                   const isAlert = threshold > 0 && p.onHandQty < threshold;
+                  const isExpanded = expandedRow === p.id;
                   return (
-                    <tr key={p.id} className={`hover:bg-gray-50 ${isAlert ? 'bg-red-50' : ''}`}>
-                      <td className="px-4 py-3 font-medium">
-                        {item?.name ?? p.itemId}
-                        {isAlert && <span className="ml-2 text-red-500 text-xs">{t('inventory.low')}</span>}
-                      </td>
-                      <td className="px-4 py-3">{item ? typeBadge(item.type) : '—'}</td>
-                      <td className="px-4 py-3 text-gray-600">{p.locationId}</td>
-                      <td className="px-4 py-3 text-gray-400 text-xs font-mono">
-                        {p.lotId ? p.lotId.slice(0, 8) + '…' : '—'}
-                      </td>
-                      <td className="px-4 py-3 font-semibold">
-                        {fmt(p.onHandQty, 3)} <span className="text-gray-400 font-normal text-xs">{p.uom}</span>
-                      </td>
-                      <td className="px-4 py-3 text-gray-600">{fmt(p.avgUnitCost, 4)}</td>
-                      <td className="px-4 py-3 font-semibold">{fmt(p.valuationAmount)}</td>
-                      <td className="px-4 py-3">
-                        <button
-                          className="text-xs text-indigo-600 hover:underline"
-                          onClick={() => openTransfer(p)}
-                        >
-                          {t('inventory.transferBtn')}
-                        </button>
-                      </td>
-                    </tr>
+                    <>
+                      <tr key={p.id} className={`hover:bg-gray-50 cursor-pointer ${isAlert ? 'bg-red-50' : ''}`} onClick={() => setExpandedRow(isExpanded ? null : p.id)}>
+                        <td className="px-4 py-3 font-medium">
+                          <span className="mr-1 text-gray-400 text-xs">{isExpanded ? '▼' : '▶'}</span>
+                          {item?.name ?? p.itemId}
+                          {isAlert && <span className="ml-2 text-red-500 text-xs">{t('inventory.low')}</span>}
+                        </td>
+                        <td className="px-4 py-3">{item ? typeBadge(item.type) : '—'}</td>
+                        <td className="px-4 py-3 text-gray-600">{p.locationId}</td>
+                        <td className="px-4 py-3 text-gray-400 text-xs font-mono">
+                          {p.lotId ? p.lotId.slice(0, 8) + '…' : '—'}
+                        </td>
+                        <td className="px-4 py-3 font-semibold">
+                          {fmt(p.onHandQty, 3)} <span className="text-gray-400 font-normal text-xs">{p.uom}</span>
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">{fmt(p.avgUnitCost, 4)}</td>
+                        <td className="px-4 py-3 font-semibold">{fmt(p.valuationAmount)}</td>
+                        <td className="px-4 py-3 flex gap-2">
+                          {canAdjust && (
+                            <button
+                              className="text-xs text-amber-600 hover:underline"
+                              onClick={(e) => { e.stopPropagation(); openAdjust(p); }}
+                            >
+                              {t('inventory.adjustBtn')}
+                            </button>
+                          )}
+                          <button
+                            className="text-xs text-indigo-600 hover:underline"
+                            onClick={(e) => { e.stopPropagation(); openTransfer(p); }}
+                          >
+                            {t('inventory.transferBtn')}
+                          </button>
+                        </td>
+                      </tr>
+                      {isExpanded && (
+                        <tr key={`${p.id}-detail`} className="bg-slate-50">
+                          <td colSpan={8} className="px-6 py-4">
+                            <div className="text-xs font-semibold text-gray-500 mb-2">{t('inventory.lotDetail')}</div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                              <div>
+                                <span className="text-gray-400 text-xs block">{t('inventory.cols.lot')} ID</span>
+                                <span className="font-mono text-xs">{p.lotId || '—'}</span>
+                              </div>
+                              <div>
+                                <span className="text-gray-400 text-xs block">{t('inventory.cols.onHand')}</span>
+                                <span className="font-semibold">{fmt(p.onHandQty, 3)} {p.uom}</span>
+                              </div>
+                              <div>
+                                <span className="text-gray-400 text-xs block">{t('inventory.cols.avgCost')}</span>
+                                <span>{fmt(p.avgUnitCost, 4)}</span>
+                              </div>
+                              <div>
+                                <span className="text-gray-400 text-xs block">{t('inventory.cols.totalValue')}</span>
+                                <span className="font-semibold">{fmt(p.valuationAmount)}</span>
+                              </div>
+                            </div>
+                            <div className="mt-3 text-xs text-gray-400">
+                              {t('inventory.fifoNote')}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
                   );
                 })}
               </tbody>
@@ -560,8 +704,37 @@ export default function InventoryPage() {
               />
             </Field>
 
+            {/* BC-1504: Currency + exchange rate */}
+            <div className="grid grid-cols-2 gap-4">
+              <Field label={t('inventory.currency')}>
+                <input
+                  className="input"
+                  placeholder="e.g. USD, EUR"
+                  value={receiveForm.currencyCode}
+                  onChange={(e) => setReceiveForm((f) => ({ ...f, currencyCode: e.target.value.toUpperCase() }))}
+                />
+              </Field>
+              {receiveForm.currencyCode && receiveForm.currencyCode !== 'UZS' && (
+                <Field label={t('inventory.exchangeRate')}>
+                  <input
+                    className="input"
+                    type="number"
+                    min={0.0001}
+                    step="0.0001"
+                    required
+                    placeholder="e.g. 12650"
+                    value={receiveForm.exchangeRate}
+                    onChange={(e) => setReceiveForm((f) => ({ ...f, exchangeRate: e.target.value }))}
+                  />
+                </Field>
+              )}
+            </div>
+
             <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-2 text-xs text-blue-700">
               {t('inventory.newLotNote', { site: SITE_ID })}
+              {receiveForm.currencyCode && receiveForm.currencyCode !== 'UZS' && (
+                <span className="block mt-1">{t('inventory.fxNote', { rate: receiveForm.exchangeRate, currency: receiveForm.currencyCode })}</span>
+              )}
             </div>
 
             <div className="flex justify-end gap-2 pt-2 border-t">
@@ -711,6 +884,77 @@ export default function InventoryPage() {
               </button>
               <button type="submit" className="btn-primary" disabled={itemSaving}>
                 {itemSaving ? t('common.saving') : editItemId ? t('common.save') : t('common.create')}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* ─── Adjustment Modal (BC-1501) ─────────────────────────────────────── */}
+      {adjustOpen && (
+        <Modal title={t('inventory.adjustTitle')} onClose={() => setAdjustOpen(false)}>
+          <form onSubmit={submitAdjust} className="space-y-4">
+            <Field label={t('inventory.cols.item')}>
+              <select
+                className="input"
+                required
+                value={adjustForm.itemId}
+                onChange={(e) => setAdjustForm((f) => ({ ...f, itemId: e.target.value }))}
+              >
+                {items.filter((i) => i.active).map((i) => (
+                  <option key={i.itemId} value={i.itemId}>
+                    {i.name} ({i.baseUom})
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Field label={t('inventory.adjustQty')} hint={t('inventory.adjustQtyHint')}>
+                <input
+                  className="input"
+                  type="number"
+                  step="0.001"
+                  required
+                  placeholder="e.g. -5 or +10"
+                  value={adjustForm.adjustmentQty}
+                  onChange={(e) => setAdjustForm((f) => ({ ...f, adjustmentQty: e.target.value }))}
+                />
+              </Field>
+              <Field label={t('inventory.reasonCode')}>
+                <select
+                  className="input"
+                  value={adjustForm.reasonCode}
+                  onChange={(e) => setAdjustForm((f) => ({ ...f, reasonCode: e.target.value as typeof REASON_CODES[number] }))}
+                >
+                  {REASON_CODES.map((rc) => (
+                    <option key={rc} value={rc}>{t(`inventory.reasons.${rc}`)}</option>
+                  ))}
+                </select>
+              </Field>
+            </div>
+
+            <Field label={`${t('inventory.notes')} (${t('common.optional')})`}>
+              <textarea
+                className="input h-20 resize-none"
+                placeholder={t('inventory.notesPlaceholder')}
+                value={adjustForm.notes}
+                onChange={(e) => setAdjustForm((f) => ({ ...f, notes: e.target.value }))}
+              />
+            </Field>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 text-xs text-amber-700">
+              {parseFloat(adjustForm.adjustmentQty) < 0
+                ? t('inventory.adjustWarn')
+                : t('inventory.adjustAdd')}
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t">
+              <button type="button" className="btn-secondary" onClick={() => setAdjustOpen(false)}>
+                {t('common.cancel')}
+              </button>
+              <button type="submit" className="btn-primary" disabled={adjustSaving || !adjustForm.adjustmentQty}>
+                {adjustSaving ? t('inventory.adjusting') : t('inventory.adjustSubmit')}
               </button>
             </div>
           </form>

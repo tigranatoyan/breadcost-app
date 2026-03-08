@@ -144,11 +144,12 @@ export default function DashboardPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  // refresh countdowns every 30s
+  // auto-refresh every 60s (BC-1505) + refresh countdowns every 30s
   useEffect(() => {
-    const id = setInterval(() => setTick((t) => t + 1), 30_000);
-    return () => clearInterval(id);
-  }, []);
+    const refreshId = setInterval(() => { load(); }, 60_000);
+    const tickId = setInterval(() => setTick((t) => t + 1), 30_000);
+    return () => { clearInterval(refreshId); clearInterval(tickId); };
+  }, [load]);
 
   // ── derived metrics ────────────────────────────────────────────────────────
   const activeOrders = orders.filter((o) => o.status !== 'CANCELLED' && o.status !== 'DELIVERED');
@@ -249,11 +250,19 @@ export default function DashboardPage() {
   return (
     <div className="max-w-6xl space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold">{t('dashboard.title')}</h1>
-        <p className="text-sm text-gray-400 mt-0.5">
-          {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">{t('dashboard.title')}</h1>
+          <p className="text-sm text-gray-400 mt-0.5">
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          </p>
+        </div>
+        <button
+          className="btn-secondary text-xs"
+          onClick={load}
+        >
+          {t('dashboard.refresh')}
+        </button>
       </div>
 
       {/* KPI row */}
@@ -336,6 +345,34 @@ export default function DashboardPage() {
           </Card>
         </div>
       </div>
+
+      {/* Stock Alerts Widget (BC-1505) */}
+      {serverAlerts.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <SectionTitle>{t('dashboard.stockAlertsWidget')}</SectionTitle>
+            <Link href="/inventory" className="text-xs text-blue-600 hover:underline">{t('common.viewAll')}</Link>
+          </div>
+          <Card>
+            <div className="divide-y">
+              {serverAlerts.map((a) => (
+                <div key={a.itemId} className={`px-5 py-3 flex items-center gap-3 ${a.severity === 'CRITICAL' ? 'bg-red-50' : 'bg-yellow-50'}`}>
+                  <span className="text-lg shrink-0">{a.severity === 'CRITICAL' ? '🔴' : '🟡'}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium truncate">{a.itemName}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">
+                      {t('dashboard.alertOnHand', { qty: a.onHandQty.toFixed(1), uom: a.uom })} · {t('dashboard.alertThreshold', { threshold: a.minThreshold.toFixed(1) })}
+                    </div>
+                  </div>
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${a.severity === 'CRITICAL' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                    {a.severity}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Production Floor */}
       <div className="space-y-4">
