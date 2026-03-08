@@ -1042,7 +1042,7 @@ STORIES = [
             "Only Admin, Warehouse roles can see button",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["inventory", "frontend", "r1.5"],
     },
     {
@@ -1057,7 +1057,7 @@ STORIES = [
             "Cost layers ordered by receipt date (oldest first)",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["inventory", "frontend", "r1.5"],
     },
     {
@@ -1072,7 +1072,7 @@ STORIES = [
             "Filters applied client-side from existing data",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["inventory", "frontend", "r1.5"],
     },
     {
@@ -1087,7 +1087,7 @@ STORIES = [
             "Cost stored in original + converted currency",
         ],
         "priority": "P2",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["inventory", "frontend", "r1.5"],
     },
     {
@@ -1103,7 +1103,7 @@ STORIES = [
             "Top 5 Products widget shows quantity ordered this week",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["dashboard", "frontend", "r1.5"],
     },
 
@@ -1124,7 +1124,7 @@ STORIES = [
             "'New Sale' button resets transaction panel and closes receipt",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["pos", "frontend", "r1.5"],
     },
     {
@@ -1139,7 +1139,7 @@ STORIES = [
             "CASH mode hides the terminal field, shows received amount + change calculation",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["pos", "frontend", "r1.5"],
     },
     {
@@ -1155,7 +1155,7 @@ STORIES = [
             "Summary is printable",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["pos", "frontend", "r1.5"],
     },
     {
@@ -1171,7 +1171,7 @@ STORIES = [
             "Widget uses same auto-refresh as other dashboard widgets (60s)",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["dashboard", "frontend", "r1.5"],
     },
 
@@ -1195,7 +1195,7 @@ STORIES = [
             "Only Admin role can see edit controls",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["admin", "users", "frontend", "r1.5"],
     },
     {
@@ -1211,7 +1211,7 @@ STORIES = [
             "Success message shown; user's next login requires new password",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["admin", "users", "frontend", "r1.5"],
     },
     {
@@ -1227,7 +1227,7 @@ STORIES = [
             "Config values reflect new values immediately",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["admin", "config", "frontend", "r1.5"],
     },
     {
@@ -1243,7 +1243,7 @@ STORIES = [
             "System Config tab: editable tenant settings",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["admin", "frontend", "r1.5"],
     },
     {
@@ -1259,7 +1259,7 @@ STORIES = [
             "Description field added to create/edit modal",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["departments", "frontend", "r1.5"],
     },
     {
@@ -1274,7 +1274,7 @@ STORIES = [
             "Department and Status dropdown filters on product list",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["products", "frontend", "r1.5"],
     },
     {
@@ -1290,7 +1290,7 @@ STORIES = [
             "Production Notes visible in expanded recipe view (not just create modal)",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["recipes", "frontend", "r1.5"],
     },
 
@@ -1315,7 +1315,7 @@ STORIES = [
             "Clear filters button resets to defaults",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["reports", "frontend", "r1.5"],
     },
     {
@@ -1330,7 +1330,7 @@ STORIES = [
             "Filename includes report name + date range",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["reports", "frontend", "r1.5"],
     },
     {
@@ -1346,7 +1346,7 @@ STORIES = [
             "Covers FR-9.4",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["reports", "frontend", "r1.5"],
     },
     {
@@ -1361,7 +1361,7 @@ STORIES = [
             "Covers FR-9.2 and FR-9.3",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["reports", "frontend", "r1.5"],
     },
     {
@@ -1377,7 +1377,7 @@ STORIES = [
             "Covers FE-RPT-3",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["reports", "technologist", "frontend", "r1.5"],
     },
     {
@@ -1393,7 +1393,7 @@ STORIES = [
             "'No confirmed orders found' feedback message on empty generate (FE-PP-4)",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["production", "frontend", "r1.5"],
     },
     {
@@ -1408,7 +1408,7 @@ STORIES = [
             "All widgets match FE-DASH-2 spec exactly",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["dashboard", "frontend", "r1.5"],
     },
 
@@ -1496,7 +1496,7 @@ STORIES = [
             "FR-2.3 satisfied",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["customer-portal", "auth"],
     },
     {
@@ -1511,7 +1511,7 @@ STORIES = [
             "FR-2.4 satisfied",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["customer-portal", "products"],
     },
     {
@@ -1526,7 +1526,7 @@ STORIES = [
             "FR-2.5 satisfied",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["customer-portal", "orders"],
     },
     {
@@ -1541,7 +1541,7 @@ STORIES = [
             "FR-2.11 and FR-2.12 satisfied",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["customer-portal", "orders"],
     },
 
@@ -1558,7 +1558,7 @@ STORIES = [
             "FR-2.6 satisfied",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["loyalty"],
     },
     {
@@ -1572,7 +1572,7 @@ STORIES = [
             "FR-2.7 satisfied",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["loyalty"],
     },
     {
@@ -1586,7 +1586,7 @@ STORIES = [
             "FR-2.8 satisfied",
         ],
         "priority": "P2",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["loyalty"],
     },
     {
@@ -1601,7 +1601,7 @@ STORIES = [
             "FR-2.9 satisfied",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["loyalty"],
     },
     {
@@ -1615,7 +1615,7 @@ STORIES = [
             "FR-2.10 satisfied",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["loyalty"],
     },
     {
@@ -1629,7 +1629,7 @@ STORIES = [
             "FR-2.7 and FR-2.8 UI satisfied",
         ],
         "priority": "P2",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["loyalty", "admin"],
     },
 
@@ -1647,7 +1647,7 @@ STORIES = [
             "FR-6.1 satisfied",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["suppliers"],
     },
     {
@@ -1662,7 +1662,7 @@ STORIES = [
             "FR-6.2 satisfied",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["suppliers", "procurement"],
     },
     {
@@ -1677,7 +1677,7 @@ STORIES = [
             "FR-6.3 satisfied",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["suppliers", "procurement"],
     },
     {
@@ -1692,7 +1692,7 @@ STORIES = [
             "FR-6.4 satisfied",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["suppliers", "procurement"],
     },
     {
@@ -1707,7 +1707,7 @@ STORIES = [
             "FR-6.5 satisfied",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["suppliers", "inventory"],
     },
     {
@@ -1721,7 +1721,7 @@ STORIES = [
             "FR-6.6 satisfied",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["suppliers", "finance"],
     },
 
@@ -1737,7 +1737,7 @@ STORIES = [
             "FR-7.1 satisfied",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["delivery"],
     },
     {
@@ -1752,7 +1752,7 @@ STORIES = [
             "FR-7.2 satisfied",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["delivery"],
     },
     {
@@ -1766,7 +1766,7 @@ STORIES = [
             "FR-7.3 satisfied",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["delivery"],
     },
     {
@@ -1781,7 +1781,7 @@ STORIES = [
             "FR-7.4 satisfied",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["delivery"],
     },
     {
@@ -1795,7 +1795,7 @@ STORIES = [
             "FR-7.5 satisfied",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["delivery", "orders"],
     },
     {
@@ -1809,7 +1809,7 @@ STORIES = [
             "FR-7.6 satisfied",
         ],
         "priority": "P2",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["delivery", "finance"],
     },
 
@@ -1825,7 +1825,7 @@ STORIES = [
             "FR-9.8 satisfied",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["invoicing"],
     },
     {
@@ -1839,7 +1839,7 @@ STORIES = [
             "FR-9.8 satisfied",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["invoicing", "finance"],
     },
     {
@@ -1854,7 +1854,7 @@ STORIES = [
             "FR-9.9 satisfied",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["invoicing", "finance"],
     },
     {
@@ -1869,7 +1869,7 @@ STORIES = [
             "FR-9.10 satisfied",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["invoicing", "finance", "orders"],
     },
     {
@@ -1884,7 +1884,7 @@ STORIES = [
             "FR-9.11 satisfied",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["invoicing", "orders"],
     },
 
@@ -1900,7 +1900,7 @@ STORIES = [
             "FR-10.3 satisfied",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["reports"],
     },
     {
@@ -1915,7 +1915,7 @@ STORIES = [
             "FR-10.2 and FR-10.4 satisfied",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["reports"],
     },
     {
@@ -1931,7 +1931,7 @@ STORIES = [
             "FR-10.3 satisfied",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["reports", "finance"],
     },
     {
@@ -1946,7 +1946,7 @@ STORIES = [
             "FR-10.6 satisfied",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["reports"],
     },
 
@@ -1962,7 +1962,7 @@ STORIES = [
             "FR-11.7 satisfied",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["subscriptions", "admin"],
     },
     {
@@ -1977,7 +1977,7 @@ STORIES = [
             "FR-11.7 satisfied",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["subscriptions"],
     },
 
