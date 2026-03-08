@@ -1,5 +1,5 @@
 # BreadCost — JIRA Project Structure
-**Project Key:** BC | **Date:** 2026-03-04 | **Methodology:** Scrum
+**Project Key:** BC | **Date:** 2026-03-08 | **Methodology:** Scrum | **Version:** 2.0
 
 ---
 
@@ -321,32 +321,122 @@
 
 ---
 
-## Release 2 — Growth (Planned)
+## Release 2 — Growth
 
 ### Acceptance Criteria (Release Level)
 
-| # | Criterion | FRs |
-|---|-----------|-----|
-| R2-AC-01 | Customers can register and log into a web portal | FR-2.1..2.3 |
-| R2-AC-02 | Loyalty points are awarded per purchase and redeemable | FR-2.6, FR-2.9 |
-| R2-AC-03 | Supplier PO suggestions auto-generated from stock thresholds | FR-6.2, FR-6.3 |
-| R2-AC-04 | POs exportable to Excel | FR-6.4 |
-| R2-AC-05 | Delivery runs and manifests can be managed | FR-7.1..FR-7.6 |
-| R2-AC-06 | B2B invoices generated from delivered orders with payment terms | FR-9.8 |
-| R2-AC-07 | Credit limits enforced — overdue customers blocked from ordering | FR-9.10 |
-| R2-AC-08 | Report constructor allows assembling custom reports from KPI blocks | FR-10.2, FR-10.3 |
+| # | Criterion | FRs | Verified By |
+|---|-----------|-----|-------------|
+| R2-AC-01 | Customers can register and log into a web portal | FR-2.1..2.3 | `CustomerRegistrationTest`, `CustomerLoginTest` |
+| R2-AC-02 | Customers can browse catalog and place orders via portal | FR-2.4..2.5 | `CustomerCatalogTest`, `CustomerOrderTest` |
+| R2-AC-03 | Loyalty points are awarded per purchase and redeemable | FR-2.6, FR-2.9 | `LoyaltyAwardTest`, `LoyaltyRedeemTest` |
+| R2-AC-04 | Loyalty tiers configurable with benefits | FR-2.7..2.10 | `LoyaltyTiersTest`, `LoyaltyTierBenefitsTest`, `LoyaltyTierConfigTest` |
+| R2-AC-05 | Supplier catalog maintained and PO suggestions auto-generated | FR-6.1..6.3 | `SupplierCatalogTest`, `POSuggestionTest`, `POApprovalTest` |
+| R2-AC-06 | POs exportable to Excel and delivery matched against PO | FR-6.4..6.5 | `POExcelExportTest`, `DeliveryMatchingTest` |
+| R2-AC-07 | Delivery runs and manifests can be managed | FR-7.1..FR-7.6 | `DeliveryRunAssignTest`, `DeliveryManifestTest`, `DeliveryCompleteTest` |
+| R2-AC-08 | B2B invoices generated from delivered orders with payment terms | FR-9.8..9.9 | `GenerateInvoiceTest`, `PaymentTermsTest`, `InvoicePaymentTest` |
+| R2-AC-09 | Credit limits enforced — overdue customers blocked from ordering | FR-9.10 | `CreditLimitTest` |
+| R2-AC-10 | Customer-specific pricing and discount rules | FR-9.11 | `CustomerPricingTest` |
+| R2-AC-11 | Report constructor allows assembling custom reports from KPI blocks | FR-10.2..10.4 | `KpiBlockCatalogTest`, `CustomReportBuilderTest` |
+| R2-AC-12 | Reports exportable to Excel/CSV with advanced financial KPIs | FR-10.5..10.6 | `AdvancedFinancialKpiTest`, `ReportExportTest` |
+| R2-AC-13 | Subscription tier assignment and feature enforcement | FR-11.7 | `SubscriptionTierTest`, `TierFeatureAccessTest` |
 
-### Epics (Planned)
+---
 
-| Epic | Title | Key FRs | Sprint Target |
-|------|-------|---------|---------------|
-| BC-E11 | Customer Portal & Registration | FR-2.1..2.5 | R2-S1 |
-| BC-E12 | Loyalty Program | FR-2.6..2.10 | R2-S2 |
-| BC-E13 | Supplier Management & PO Workflow | FR-6.1..6.7 | R2-S1 |
-| BC-E14 | Delivery Management | FR-7.1..7.6 | R2-S2 |
-| BC-E15 | B2B Invoicing & Credit Control | FR-9.8..9.11 | R2-S3 |
-| BC-E16 | Advanced Report Constructor | FR-10.2..10.4 | R2-S3 |
-| BC-E17 | Subscription Tier Management | FR-11.6 | R2-S1 |
+### Epic: BC-E11 — Customer Portal & Registration
+**Goal:** Web-based customer portal with registration, login, catalog browsing, order placement, and order tracking.
+**Sprint:** R2-S1 | **Requirements:** FR-2.1..2.5, FR-2.11, FR-2.12
+
+| Story ID | Title | Acceptance Criteria | Priority | Status |
+|----------|-------|-------------------|----------|--------|
+| BC-1101 | **Customer registration** | 1. `POST /v2/customers/register` with name, email, phone, addresses 2. Returns 201 with customerId 3. Duplicate email (case-insensitive) → 409 4. Missing name → 400 5. Invalid email → 400 | P0 | ✅ Done |
+| BC-1102 | **Customer login and profile management** | 1. `POST /v2/customers/login` returns JWT 2. `GET /v2/customers/profile` returns customer details 3. `PUT /v2/customers/profile` updates profile 4. Invalid credentials → 401 | P0 | ✅ Done |
+| BC-1103 | **Customer-facing product catalog** | 1. `GET /v2/products` returns product catalog 2. Shows customer-applicable prices 3. Filters by category/department 4. Products without active recipe excluded | P1 | ✅ Done |
+| BC-1104 | **Place order via customer portal** | 1. `POST /v2/orders` creates order on behalf of customer 2. Subject to cutoff rules and lead time constraints 3. Returns 201 with orderId 4. Validates product availability | P0 | ✅ Done |
+| BC-1105 | **Real-time order status and history** | 1. `GET /v2/orders` returns customer's order history 2. `GET /v2/orders/{id}` returns order with real-time status 3. Filters by status and date range | P1 | ✅ Done |
+
+---
+
+### Epic: BC-E12 — Loyalty Program
+**Goal:** Points-based loyalty system with configurable tiers, benefits, and redemption.
+**Sprint:** R2-S2 | **Requirements:** FR-2.6..2.10
+
+| Story ID | Title | Acceptance Criteria | Priority | Status |
+|----------|-------|-------------------|----------|--------|
+| BC-1201 | **Award loyalty points on completed purchase** | 1. Points awarded automatically on DELIVERED order 2. Configurable earning rate (points per currency unit) 3. Cancelled/refunded orders do not earn points 4. Idempotent — re-processing same order does not double-award | P0 | ✅ Done |
+| BC-1202 | **Configurable loyalty tiers** | 1. CRUD for loyalty tiers (Bronze, Silver, Gold, etc.) 2. Each tier has name, point threshold, sort order 3. Customer auto-advances when threshold met 4. Admin-only configuration | P0 | ✅ Done |
+| BC-1203 | **Tier benefits management** | 1. Benefits configurable per tier (discount %, free items, priority) 2. `GET /v2/loyalty/tiers/{id}/benefits` returns benefits list 3. Benefits applied at order creation | P1 | ✅ Done |
+| BC-1204 | **Redeem loyalty points at checkout** | 1. `POST /v2/loyalty/redeem` redeems points against eligible order 2. Points balance checked — insufficient points → 400 3. Redemption rate configurable 4. Partial redemption supported | P0 | ✅ Done |
+| BC-1205 | **Points balance and history view** | 1. `GET /v2/loyalty/balance` returns current points and tier 2. `GET /v2/loyalty/history` returns points transactions 3. Paginated with date filters | P1 | ✅ Done |
+| BC-1206 | **Loyalty tier rule configuration** | 1. Admin configures tier advancement rules from UI 2. Configurable thresholds (spend amount, order count, points) 3. Rules validated on save 4. Changes take effect immediately | P2 | ✅ Done |
+
+---
+
+### Epic: BC-E13 — Supplier Management & PO Workflow
+**Goal:** Supplier catalog, automated PO suggestions, approval workflow, Excel export, and delivery matching.
+**Sprint:** R2-S1 | **Requirements:** FR-6.1..6.7
+
+| Story ID | Title | Acceptance Criteria | Priority | Status |
+|----------|-------|-------------------|----------|--------|
+| BC-1301 | **Supplier catalog CRUD** | 1. `POST /v2/suppliers` creates supplier with name, contacts, items, prices, lead time 2. `GET /v2/suppliers` lists suppliers 3. `PUT /v2/suppliers/{id}` updates supplier 4. Admin/Manager only | P0 | ✅ Done |
+| BC-1302 | **PO suggestion generation** | 1. System generates PO suggestions when stock < min threshold 2. Based on consumption rate and supplier lead time 3. `GET /v2/purchase-orders/suggestions` returns pending suggestions 4. Each suggestion: supplier, items, quantities, estimated cost | P0 | ✅ Done |
+| BC-1303 | **PO review and approval** | 1. `PUT /v2/purchase-orders/{id}/approve` approves PO 2. Manager can adjust quantities before approval 3. Rejected POs can be edited and resubmitted 4. Approval logged in audit trail | P0 | ✅ Done |
+| BC-1304 | **PO Excel export** | 1. `GET /v2/purchase-orders/{id}/export` returns formatted Excel 2. Includes supplier info, items, quantities, prices 3. Exports within 5 seconds | P1 | ✅ Done |
+| BC-1305 | **Delivery matching against PO** | 1. `POST /v2/purchase-orders/{id}/receive` records delivery 2. Matches received items/quantities against PO 3. Discrepancies flagged (qty mismatch, price mismatch) 4. Auto-creates inventory receipts for matched items | P0 | ✅ Done |
+| BC-1306 | **FX rate per purchase transaction** | 1. Foreign currency receipts record exchange rate at time of receipt 2. Converted to main currency automatically 3. Manual rate entry supported 4. Rate stored per transaction | P1 | ✅ Done |
+
+---
+
+### Epic: BC-E14 — Delivery Management
+**Goal:** Delivery run assignment, manifest generation, completion tracking, and courier charge management.
+**Sprint:** R2-S2 | **Requirements:** FR-7.1..7.6
+
+| Story ID | Title | Acceptance Criteria | Priority | Status |
+|----------|-------|-------------------|----------|--------|
+| BC-1401 | **Assign orders to delivery runs** | 1. `POST /v2/delivery-runs` creates run with driver, time window 2. `POST /v2/delivery-runs/{id}/assign` assigns orders to run 3. Based on delivery time windows and driver availability 4. Only READY orders can be assigned | P0 | ✅ Done |
+| BC-1402 | **Delivery manifest generation** | 1. `GET /v2/delivery-runs/{id}/manifest` returns printable manifest 2. Lists: orders, customers, addresses, items, quantities 3. Grouped by delivery stop 4. Exportable format | P1 | ✅ Done |
+| BC-1403 | **Mark delivery completed** | 1. `POST /v2/deliveries/{id}/complete` marks delivery as completed 2. Updates order status to DELIVERED 3. Timestamp recorded 4. Triggers loyalty point award if applicable | P0 | ✅ Done |
+| BC-1404 | **Failed delivery recording and re-delivery** | 1. `POST /v2/deliveries/{id}/fail` records failure with reason 2. Triggers return or re-delivery workflow 3. Re-delivery creates new delivery entry linked to original 4. Failed delivery reason required | P1 | ✅ Done |
+| BC-1405 | **Split delivery courier charge calculation** | 1. System calculates courier charge for split deliveries 2. Charge applied to secondary delivery 3. Charge amount configurable per zone/distance 4. Presented to customer before confirmation | P1 | ✅ Done |
+| BC-1406 | **Courier charge waiver with authorization** | 1. `POST /v2/deliveries/{id}/waive-charge` waives courier charge 2. Requires Manager-level authorization 3. Waiver logged in audit trail with reason 4. Cannot waive charge on already-delivered orders | P2 | ✅ Done |
+
+---
+
+### Epic: BC-E15 — B2B Invoicing & Credit Control
+**Goal:** Invoice generation from delivered orders, payment tracking, credit limits, and customer-specific pricing.
+**Sprint:** R2-S3 | **Requirements:** FR-9.8..9.11
+
+| Story ID | Title | Acceptance Criteria | Priority | Status |
+|----------|-------|-------------------|----------|--------|
+| BC-1501 | **Generate invoice from delivered order** | 1. Invoice auto-generated when order reaches DELIVERED status 2. Includes line items, totals, tax, payment terms 3. `GET /v2/invoices` lists invoices 4. `GET /v2/invoices/{id}` returns invoice detail 5. Invoice number auto-generated | P0 | ✅ Done |
+| BC-1502 | **Payment terms per customer** | 1. Configurable payment terms per customer (net 7/14/30) 2. Default terms configurable at tenant level 3. Due date auto-calculated from invoice date + terms 4. Terms applied to new invoices | P1 | ✅ Done |
+| BC-1503 | **Invoice payment status tracking** | 1. `POST /v2/invoices/{id}/payment` records payment 2. Statuses: UNPAID → PARTIALLY_PAID → PAID 3. Partial payments tracked with running balance 4. Overdue detection (past due date + grace days) | P0 | ✅ Done |
+| BC-1504 | **Credit limit enforcement and overdue order blocking** | 1. Credit limit configurable per customer 2. Outstanding balance checked at order creation 3. Over-limit or overdue → order creation blocked 4. Finance alerted on limit breach | P0 | ✅ Done |
+| BC-1505 | **Customer-specific pricing and discount rules** | 1. Price overrides configurable per customer per product 2. Discount rules (% or fixed) per customer 3. Applied automatically at order creation 4. Price change history retained | P1 | ✅ Done |
+
+---
+
+### Epic: BC-E16 — Advanced Report Constructor
+**Goal:** KPI block catalog, custom report builder, advanced financial KPIs, and export capabilities.
+**Sprint:** R2-S3 | **Requirements:** FR-10.2..10.7
+
+| Story ID | Title | Acceptance Criteria | Priority | Status |
+|----------|-------|-------------------|----------|--------|
+| BC-1601 | **Report KPI block catalog** | 1. `GET /v2/reports/kpi-blocks` returns available KPI blocks 2. Blocks: gross revenue, net revenue, COGS, gross margin, profitability, inventory turnover, variance, customer balance, top customers 3. Each block: id, name, description, category 4. Seeded catalog on startup | P0 | ✅ Done |
+| BC-1602 | **Custom report builder** | 1. `POST /v2/reports/custom` creates report from selected KPI blocks 2. `GET /v2/reports/custom/{id}` returns saved report with computed data 3. Reports saved and reusable 4. Date range and dimension filters supported | P0 | ✅ Done |
+| BC-1603 | **Advanced financial KPI computation** | 1. COGS, gross margin, profitability per product/department calculated 2. Inventory turnover computed 3. Plan vs actual variance per batch/period 4. Customer balance summary | P1 | ✅ Done |
+| BC-1604 | **Report export to Excel and CSV** | 1. `GET /v2/reports/custom/{id}/export?format=EXCEL` returns .xlsx 2. `GET /v2/reports/custom/{id}/export?format=CSV` returns .csv 3. Export includes header, data rows, computed totals 4. Completes within 5 seconds | P1 | ✅ Done |
+
+---
+
+### Epic: BC-E17 — Subscription Tier Management
+**Goal:** Super-admin can assign subscription tiers per tenant; feature access enforced by tier.
+**Sprint:** R2-S1 | **Requirements:** FR-11.7
+
+| Story ID | Title | Acceptance Criteria | Priority | Status |
+|----------|-------|-------------------|----------|--------|
+| BC-1701 | **Super-admin subscription tier assignment** | 1. `PUT /v2/admin/tenants/{id}/tier` sets subscription tier 2. Tiers: STARTER, PROFESSIONAL, ENTERPRISE 3. Only super-admin can assign 4. Change logged in audit trail | P0 | ✅ Done |
+| BC-1702 | **Feature access enforcement by subscription tier** | 1. Tier-restricted endpoints return 403 with upgrade message 2. STARTER: core features only 3. PROFESSIONAL: + custom reports, loyalty, PO workflow 4. ENTERPRISE: all features | P0 | ✅ Done |
 
 ---
 
@@ -377,6 +467,8 @@
 ---
 
 ## Story-to-Test Traceability Matrix
+
+### Release 1
 
 | Story | Manual Test Cases | Automated Test Class |
 |-------|------------------|---------------------|
@@ -414,6 +506,45 @@
 | BC-806 | TC-DEPT-01, 02, 03 | — |
 | BC-807 | TC-CFG-01, 02, 03 | — |
 
+### Release 2
+
+| Story | Tests | Automated Test Class |
+|-------|-------|---------------------|
+| BC-1101 | 7 | `CustomerRegistrationTest` |
+| BC-1102 | — | `CustomerLoginTest` |
+| BC-1103 | — | `CustomerCatalogTest` |
+| BC-1104 | — | `CustomerOrderTest` |
+| BC-1105 | — | `CustomerOrderStatusTest` |
+| BC-1201 | — | `LoyaltyAwardTest` |
+| BC-1202 | — | `LoyaltyTiersTest` |
+| BC-1203 | 6 | `LoyaltyTierBenefitsTest` |
+| BC-1204 | 6 | `LoyaltyRedeemTest` |
+| BC-1205 | 6 | `LoyaltyBalanceHistoryTest` |
+| BC-1206 | 5 | `LoyaltyTierConfigTest` |
+| BC-1301 | 6 | `SupplierCatalogTest` |
+| BC-1302 | 5 | `POSuggestionTest` |
+| BC-1303 | 6 | `POApprovalTest` |
+| BC-1304 | 4 | `POExcelExportTest` |
+| BC-1305 | 5 | `DeliveryMatchingTest` |
+| BC-1306 | 5 | `POFxRateTest` |
+| BC-1401 | 5 | `DeliveryRunAssignTest` |
+| BC-1402 | 4 | `DeliveryManifestTest` |
+| BC-1403 | 3 | `DeliveryCompleteTest` |
+| BC-1404 | 3 | `DeliveryFailRedeliverTest` |
+| BC-1405 | 3 | `CourierChargeSplitTest` |
+| BC-1406 | 3 | `CourierChargeWaiverTest` |
+| BC-1501 | 5 | `GenerateInvoiceTest` |
+| BC-1502 | 3 | `PaymentTermsTest` |
+| BC-1503 | 3 | `InvoicePaymentTest` |
+| BC-1504 | 4 | `CreditLimitTest` |
+| BC-1505 | 4 | `CustomerPricingTest` |
+| BC-1601 | 4 | `KpiBlockCatalogTest` |
+| BC-1602 | 4 | `CustomReportBuilderTest` |
+| BC-1603 | 4 | `AdvancedFinancialKpiTest` |
+| BC-1604 | 3 | `ReportExportTest` |
+| BC-1701 | 4 | `SubscriptionTierTest` |
+| BC-1702 | 3 | `TierFeatureAccessTest` |
+
 ---
 
 ## Known Spec Gaps (Tracked)
@@ -427,4 +558,4 @@
 
 ---
 
-*End of JIRA Project Structure v1.0*
+*End of JIRA Project Structure v2.0 — Updated 2026-03-08*

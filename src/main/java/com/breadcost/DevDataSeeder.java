@@ -3,6 +3,8 @@ package com.breadcost;
 import com.breadcost.domain.Department;
 import com.breadcost.domain.Product;
 import com.breadcost.masterdata.*;
+import com.breadcost.reporting.ReportService;
+import com.breadcost.subscription.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -28,11 +30,17 @@ public class DevDataSeeder implements CommandLineRunner {
     private final ProductRepository productRepository;
     private final PasswordEncoder passwordEncoder;
     private final TenantConfigRepository tenantConfigRepository;
+    private final ReportService reportService;
+    private final SubscriptionService subscriptionService;
 
     private static final String TENANT = "tenant1";
 
     @Override
     public void run(String... args) {
+        // Always seed catalogs (methods are idempotent)
+        reportService.seedKpiBlocks();
+        subscriptionService.seedTiers();
+
         if (userRepository.findByUsername("admin").isPresent()) {
             log.info("Seed data already exists — skipping");
             return;
