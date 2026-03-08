@@ -19,6 +19,8 @@ public class CustomReportBlockEntity {
     @Id
     private String id;
 
+    private String tenantId;
+
     @Column(nullable = false)
     private String blockKey;
 

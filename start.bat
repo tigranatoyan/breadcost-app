@@ -8,7 +8,14 @@ echo === BreadCost Startup ===
 echo.
 
 REM ── Start Backend (Spring Boot) in a new window ──
+REM   Default: PostgreSQL (requires docker-compose up -d)
+REM   Dev mode (H2): set SPRING_PROFILES_ACTIVE=dev before running
 echo [1/2] Starting Backend on http://localhost:8080 ...
+if "%SPRING_PROFILES_ACTIVE%"=="" (
+    echo       Profile: default (PostgreSQL — run 'docker-compose up -d' first)
+) else (
+    echo       Profile: %SPRING_PROFILES_ACTIVE%
+)
 start "BreadCost-Backend" cmd /k "cd /d %~dp0 && .\gradlew bootRun"
 
 REM ── Wait a few seconds for backend to initialize ──

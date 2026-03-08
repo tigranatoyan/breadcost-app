@@ -24,6 +24,9 @@ public class RecipeIngredientEntity {
     @Column(name = "ingredient_line_id")
     private String ingredientLineId;
 
+    @Column(name = "tenant_id")
+    private String tenantId;
+
     @Column(name = "recipe_id", nullable = false)
     private String recipeId;
 

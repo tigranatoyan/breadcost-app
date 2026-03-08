@@ -19,6 +19,8 @@ public class OrderLineEntity {
     @Id
     private String orderLineId;
 
+    private String tenantId;
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)

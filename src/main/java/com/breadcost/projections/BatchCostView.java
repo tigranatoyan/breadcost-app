@@ -22,6 +22,8 @@ import java.math.BigDecimal;
 public class BatchCostView {
     @Id
     private String batchId;
+
+    private String tenantId;
     
     private String siteId;
     private String status;

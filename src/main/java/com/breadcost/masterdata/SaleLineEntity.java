@@ -19,6 +19,8 @@ public class SaleLineEntity {
     @Id
     private String lineId;
 
+    private String tenantId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "saleId")
     @JsonIgnore

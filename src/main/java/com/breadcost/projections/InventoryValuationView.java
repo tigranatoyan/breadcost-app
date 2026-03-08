@@ -22,6 +22,8 @@ public class InventoryValuationView {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private String tenantId;
     
     private String siteId;
     private String itemId;

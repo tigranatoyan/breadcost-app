@@ -30,8 +30,13 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
-    // H2 Database
-    runtimeOnly("com.h2database:h2")
+    // Databases
+    runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("com.h2database:h2")            // kept for tests
+
+    // Flyway schema migration
+    implementation("org.flywaydb:flyway-core")
+    implementation("org.flywaydb:flyway-database-postgresql")
 
     // Jackson for JSON
     implementation("com.fasterxml.jackson.core:jackson-databind")
