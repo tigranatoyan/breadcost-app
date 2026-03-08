@@ -33,7 +33,12 @@ interface Plan {
   planDate: string;
   shift: string;
   status: string;
-  workOrders: { productName: string; status: string; batchCount?: number }[];
+  workOrders: { productName: string; status: string; batchCount?: number; actualYield?: number }[];
+}
+
+interface Dept {
+  departmentId: string;
+  name: string;
 }
 
 interface ProductRecipe {
@@ -54,19 +59,23 @@ export default function TechnologistPage() {
   const t = useT();
   const [productRecipes, setProductRecipes] = useState<ProductRecipe[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
+  const [depts, setDepts] = useState<Dept[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [deptFilter, setDeptFilter] = useState('ALL');
 
   const load = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
-      const [products, allPlans] = await Promise.all([
+      const [products, allPlans, allDepts] = await Promise.all([
         apiFetch<Product[]>(`/v1/products?tenantId=${TENANT_ID}`),
         apiFetch<Plan[]>(`/v1/production-plans?tenantId=${TENANT_ID}`),
+        apiFetch<Dept[]>(`/v1/departments?tenantId=${TENANT_ID}`).catch(() => [] as Dept[]),
       ]);
       setPlans(allPlans);
+      setDepts(allDepts);
 
       // Fetch active recipe for each product (best-effort: errors become null)
       const entries: ProductRecipe[] = await Promise.all(
@@ -92,11 +101,12 @@ export default function TechnologistPage() {
   useEffect(() => { load(); }, [load]);
 
   // ── derived stats ──────────────────────────────────────────────────────────
-  const withRecipe = productRecipes.filter((pr) => pr.recipe !== null).length;
-  const withLeadTime = productRecipes.filter((pr) => pr.recipe?.leadTimeHours).length;
-  const noRecipe = productRecipes.length - withRecipe;
+  const filteredPR = deptFilter === 'ALL' ? productRecipes : productRecipes.filter((pr) => pr.product.departmentId === deptFilter);
+  const withRecipe = filteredPR.filter((pr) => pr.recipe !== null).length;
+  const withLeadTime = filteredPR.filter((pr) => pr.recipe?.leadTimeHours).length;
+  const noRecipe = filteredPR.length - withRecipe;
   const avgLeadTime =
-    productRecipes.filter((pr) => pr.recipe?.leadTimeHours)
+    filteredPR.filter((pr) => pr.recipe?.leadTimeHours)
       .reduce((sum, pr) => sum + (pr.recipe?.leadTimeHours ?? 0), 0) /
     (withLeadTime || 1);
 
@@ -118,13 +128,32 @@ export default function TechnologistPage() {
     .sort((a, b) => b.planDate.localeCompare(a.planDate))
     .slice(0, 10);
 
+  // Yield variance analysis (BC-1805)
+  const yieldVariance: { product: string; expected: number; actual: number; variance: number; uom: string }[] = [];
+  for (const pr of filteredPR) {
+    if (!pr.recipe) continue;
+    const wos = plans.flatMap((p) => p.workOrders ?? []).filter((w) => w.productName === pr.product.name && w.status === 'COMPLETED');
+    if (wos.length === 0) continue;
+    const totalBatches = wos.reduce((s, w) => s + (w.batchCount ?? 1), 0);
+    const expectedTotal = pr.recipe.expectedYield * totalBatches;
+    const actualTotal = wos.reduce((s, w) => s + (w.actualYield ?? pr.recipe!.expectedYield * (w.batchCount ?? 1)), 0);
+    const variance = expectedTotal > 0 ? ((actualTotal - expectedTotal) / expectedTotal) * 100 : 0;
+    yieldVariance.push({ product: pr.product.name, expected: expectedTotal, actual: actualTotal, variance, uom: pr.recipe.yieldUom });
+  }
+
   if (loading) return <Spinner />;
 
   return (
     <div className="max-w-5xl space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold">{t('technologist.title')}</h1>
-        <p className="text-sm text-gray-400 mt-0.5">{t('technologist.subtitle')}</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">{t('technologist.title')}</h1>
+          <p className="text-sm text-gray-400 mt-0.5">{t('technologist.subtitle')}</p>
+        </div>
+        <select className="input w-48" value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)}>
+          <option value="ALL">{t('technologist.allDepartments')}</option>
+          {depts.map((d) => <option key={d.departmentId} value={d.departmentId}>{d.name}</option>)}
+        </select>
       </div>
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
@@ -156,13 +185,13 @@ export default function TechnologistPage() {
           <Link href="/recipes" className="text-xs text-blue-600 hover:underline">{t('technologist.manageRecipes')}</Link>
         </div>
         <div className="bg-white border rounded-xl shadow-sm overflow-hidden">
-          {productRecipes.length === 0 ? (
+          {filteredPR.length === 0 ? (
             <div className="px-5 py-10 text-center text-sm text-gray-400">
               {t('technologist.noProducts')} <Link href="/products" className="text-blue-600 hover:underline">{t('technologist.addProducts')}</Link>
             </div>
           ) : (
             <div className="divide-y">
-              {productRecipes.map(({ product, recipe }) => {
+              {filteredPR.map(({ product, recipe }) => {
                 const isOpen = expanded === product.productId;
                 return (
                   <div key={product.productId}>
@@ -228,6 +257,36 @@ export default function TechnologistPage() {
           )}
         </div>
       </div>
+
+      {/* Yield Variance Analysis (BC-1805) */}
+      {yieldVariance.length > 0 && (
+        <div>
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">{t('technologist.yieldVariance')}</h2>
+          <div className="bg-white border rounded-xl shadow-sm overflow-hidden">
+            <table className="min-w-full text-sm">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  {[t('technologist.product'), t('technologist.expectedYield'), t('technologist.actualYield'), t('technologist.variancePct')].map((h) => (
+                    <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {yieldVariance.map((v) => (
+                  <tr key={v.product} className="hover:bg-gray-50">
+                    <td className="px-4 py-2.5 font-medium">{v.product}</td>
+                    <td className="px-4 py-2.5">{v.expected.toFixed(1)} {v.uom}</td>
+                    <td className="px-4 py-2.5">{v.actual.toFixed(1)} {v.uom}</td>
+                    <td className={`px-4 py-2.5 font-semibold ${v.variance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {v.variance >= 0 ? '+' : ''}{v.variance.toFixed(1)}%
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Production frequency analysis */}
       {topProducts.length > 0 && (

@@ -1,0 +1,51 @@
+[
+  {
+    "key": "BC-241",
+    "summary": "[BC-1801] FE /reports — Date range picker + department filter",
+    "to_do_at": "2026-03-08T17:52:08.161580",
+    "in_progress_at": "2026-03-08T17:52:08.864203",
+    "done_at": "2026-03-08T17:52:10.042532"
+  },
+  {
+    "key": "BC-242",
+    "summary": "[BC-1802] FE /reports — CSV export for all report tabs",
+    "to_do_at": "2026-03-08T17:52:10.542929",
+    "in_progress_at": "2026-03-08T17:52:11.207912",
+    "done_at": "2026-03-08T17:52:12.398747"
+  },
+  {
+    "key": "BC-243",
+    "summary": "[BC-1803] FE /reports — Material consumption report",
+    "to_do_at": "2026-03-08T17:52:12.899191",
+    "in_progress_at": "2026-03-08T17:52:13.577075",
+    "done_at": "2026-03-08T17:52:14.844726"
+  },
+  {
+    "key": "BC-244",
+    "summary": "[BC-1804] FE /reports — Cost per batch report",
+    "to_do_at": "2026-03-08T17:52:15.345740",
+    "in_progress_at": "2026-03-08T17:52:15.993301",
+    "done_at": "2026-03-08T17:52:17.180193"
+  },
+  {
+    "key": "BC-227",
+    "summary": "[BC-1805] FE /technologist — Complete technologist view page",
+    "to_do_at": "2026-03-08T17:52:17.681473",
+    "in_progress_at": "2026-03-08T17:52:18.365723",
+    "done_at": "2026-03-08T17:52:19.515569"
+  },
+  {
+    "key": "BC-228",
+    "summary": "[BC-1806] FE /production-plans — Approve confirmation + yield input",
+    "to_do_at": "2026-03-08T17:52:20.015680",
+    "in_progress_at": "2026-03-08T17:52:20.633007",
+    "done_at": "2026-03-08T17:52:21.895791"
+  },
+  {
+    "key": "BC-229",
+    "summary": "[BC-1807] FE /dashboard — Today's Orders + Active Plans widgets",
+    "to_do_at": "2026-03-08T17:52:22.396571",
+    "in_progress_at": "2026-03-08T17:52:23.457922",
+    "done_at": "2026-03-08T17:52:24.673637"
+  }
+]

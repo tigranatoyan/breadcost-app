@@ -191,6 +191,21 @@ export default function DashboardPage() {
     .sort((a, b) => new Date(a.requestedDeliveryTime).getTime() - new Date(b.requestedDeliveryTime).getTime())
     .slice(0, 8);
 
+  // BC-1807: Today's Orders widget data
+  const todayOrders = orders.filter((o) => {
+    const placed = (o as unknown as { orderPlacedAt?: string }).orderPlacedAt;
+    const dt = placed || o.requestedDeliveryTime;
+    return dt && dt.substring(0, 10) === today;
+  });
+  const todayOrderValue = todayOrders.reduce((s, o) => s + (o.totalAmount ?? 0), 0);
+
+  // BC-1807: Active Plans widget data
+  const activePlans = plans.filter((p) => ['IN_PROGRESS', 'PUBLISHED', 'APPROVED'].includes(p.status));
+  const activePlanStatusBreakdown: Record<string, number> = {};
+  for (const p of activePlans) {
+    activePlanStatusBreakdown[p.status] = (activePlanStatusBreakdown[p.status] ?? 0) + 1;
+  }
+
   // next big event
   const nextEvent: { label: string; detail: string; accent: string } | null = (() => {
     const nextDelivery = deliveryTimeline[0];
@@ -278,6 +293,80 @@ export default function DashboardPage() {
       {/* KPI row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stats.map((s) => <KpiCard key={s.label} {...s} />)}
+      </div>
+
+      {/* BC-1807: Today's Orders + Active Plans widgets */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Today's Orders */}
+        <Card className="p-5">
+          <div className="flex items-center justify-between mb-3">
+            <SectionTitle>{t('dashboard.todaysOrders')}</SectionTitle>
+            <Link href="/orders" className="text-xs text-blue-600 hover:underline">{t('dashboard.view')}</Link>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <div className="text-3xl font-bold text-gray-800">{todayOrders.length}</div>
+              <div className="text-xs text-gray-500">{t('dashboard.ordersToday')}</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-emerald-600">{fmtMoney(todayOrderValue)}</div>
+              <div className="text-xs text-gray-500">{t('dashboard.todayValue')}</div>
+            </div>
+          </div>
+          {todayOrders.length > 0 && (
+            <div className="mt-3 divide-y max-h-32 overflow-y-auto">
+              {todayOrders.slice(0, 5).map((o) => (
+                <div key={o.orderId} className="flex items-center justify-between py-1.5 text-xs">
+                  <span className="font-medium truncate">{o.customerName}</span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-gray-500">{fmtMoney(o.totalAmount ?? 0)}</span>
+                    <Badge status={o.status} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+
+        {/* Active Plans */}
+        <Card className="p-5">
+          <div className="flex items-center justify-between mb-3">
+            <SectionTitle>{t('dashboard.activePlansWidget')}</SectionTitle>
+            <Link href="/production-plans" className="text-xs text-blue-600 hover:underline">{t('dashboard.view')}</Link>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <div className="text-3xl font-bold text-gray-800">{activePlans.length}</div>
+              <div className="text-xs text-gray-500">{t('dashboard.activePlansCount')}</div>
+            </div>
+            <div className="space-y-1">
+              {Object.entries(activePlanStatusBreakdown).map(([status, count]) => (
+                <div key={status} className="flex items-center gap-2 text-xs">
+                  <Badge status={status} />
+                  <span className="text-gray-600 font-medium">×{count}</span>
+                </div>
+              ))}
+              {activePlans.length === 0 && <div className="text-xs text-gray-400">{t('dashboard.noneActive')}</div>}
+            </div>
+          </div>
+          {activePlans.length > 0 && (
+            <div className="mt-3 divide-y max-h-32 overflow-y-auto">
+              {activePlans.slice(0, 5).map((p) => {
+                const wos = p.workOrders?.length ?? 0;
+                const done = p.workOrders?.filter((w) => w.status === 'COMPLETED').length ?? 0;
+                return (
+                  <div key={p.planId} className="flex items-center justify-between py-1.5 text-xs">
+                    <span className="font-medium">{p.planDate} · {p.shift}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-500">{done}/{wos} WOs</span>
+                      <Badge status={p.status} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Card>
       </div>
 
       {/* Next big event banner */}

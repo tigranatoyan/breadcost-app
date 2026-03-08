@@ -110,6 +110,7 @@ export default function ProductionPlansPage() {
   };
 
   const planAction = async (planId: string, action: string) => {
+    if (action === 'approve' && !confirm(t('productionPlans.confirmApprove'))) return;
     try {
       setActionId(`${planId}-${action}`);
       await apiFetch(
@@ -124,6 +125,8 @@ export default function ProductionPlansPage() {
     }
   };
 
+  const [yieldInputs, setYieldInputs] = useState<Record<string, string>>({});
+
   const woAction = async (
     planId: string,
     woId: string,
@@ -131,9 +134,13 @@ export default function ProductionPlansPage() {
   ) => {
     try {
       setActionId(woId);
+      const body: Record<string, unknown> = {};
+      if (action === 'complete' && yieldInputs[woId]) {
+        body.actualYield = parseFloat(yieldInputs[woId]);
+      }
       await apiFetch(
         `/v1/production-plans/work-orders/${woId}/${action}?tenantId=${TENANT_ID}`,
-        { method: 'POST' }
+        { method: 'POST', body: Object.keys(body).length > 0 ? JSON.stringify(body) : undefined }
       );
       await reloadPlan(planId);
     } catch (e) {
@@ -381,6 +388,7 @@ export default function ProductionPlansPage() {
                             <th className="text-left py-1 pr-3">{t('productionPlans.cols.qty')}</th>
                             <th className="text-left py-1 pr-3">{t('productionPlans.cols.batches')}</th>
                             <th className="text-left py-1 pr-3">{t('productionPlans.cols.status')}</th>
+                            <th className="text-left py-1 pr-3">{t('productionPlans.cols.yield')}</th>
                             <th className="text-left py-1">{t('productionPlans.cols.actions')}</th>
                           </tr>
                         </thead>
@@ -397,6 +405,24 @@ export default function ProductionPlansPage() {
                               <td className="py-1.5 pr-3">{wo.batchCount}</td>
                               <td className="py-1.5 pr-3">
                                 <Badge status={wo.status} />
+                              </td>
+                              <td className="py-1.5 pr-3">
+                                {wo.status === 'STARTED' && (
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    step="0.1"
+                                    className="w-20 border rounded px-1.5 py-0.5 text-xs"
+                                    placeholder={t('productionPlans.yieldPlaceholder')}
+                                    value={yieldInputs[wo.workOrderId] ?? ''}
+                                    onChange={(e) => setYieldInputs((prev) => ({ ...prev, [wo.workOrderId]: e.target.value }))}
+                                  />
+                                )}
+                                {wo.completedAt && wo.startedAt && (
+                                  <span className="text-xs text-gray-400">
+                                    {((new Date(wo.completedAt).getTime() - new Date(wo.startedAt).getTime()) / 3_600_000).toFixed(1)}h
+                                  </span>
+                                )}
                               </td>
                               <td className="py-1.5">
                                 <div className="flex gap-1">

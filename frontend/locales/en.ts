@@ -141,6 +141,12 @@ const en = {
     revenueToday: 'Today',
     revenueWeek: 'This Week',
     revenueMonth: 'This Month',
+    // Sprint 7 — BC-1807
+    todaysOrders: "Today's Orders",
+    ordersToday: 'orders today',
+    todayValue: 'total value',
+    activePlansWidget: 'Active Production Plans',
+    activePlansCount: 'active plans',
   },
 
   // ── Orders ─────────────────────────────────────────────────────────────────
@@ -500,12 +506,16 @@ const en = {
     newPlanTitle: 'New Production Plan',
     planDate: 'Plan Date',
     shift: 'Shift',
+    // Sprint 7 — BC-1806
+    confirmApprove: 'Are you sure you want to approve this production plan? This will lock the plan for execution.',
+    yieldPlaceholder: 'Yield',
     cols: {
       product: 'Product',
       department: 'Department',
       qty: 'Qty',
       batches: 'Batches',
       status: 'Status',
+      yield: 'Yield',
       actions: 'Actions',
     },
   },
@@ -565,6 +575,19 @@ const en = {
     date: 'Date',
     shift: 'Shift',
     progress: 'Progress',
+    // Sprint 7 — BC-1801/1802/1803/1804
+    exportCsv: 'Export CSV',
+    dateFrom: 'From',
+    dateTo: 'To',
+    allDepartments: 'All Departments',
+    materialConsumptionTab: '🧪 Material Consumption',
+    costPerBatchTab: '💲 Cost per Batch',
+    materialConsumptionTitle: 'Material Consumption — Planned vs Actual',
+    materialConsumptionDesc: 'Work orders by plan showing product, batches, and completion status.',
+    costPerBatchTitle: 'Cost per Batch',
+    costPerBatchDesc: 'Batch counts and status for completed production work orders.',
+    noDataForPeriod: 'No data for the selected period.',
+    batches: 'Batches',
     cols: {
       orderId: 'Order ID',
       customer: 'Customer',
@@ -584,6 +607,7 @@ const en = {
       totalValue: 'Total Value',
       workOrders: 'Work Orders',
       completed: 'Completed',
+      product: 'Product',
     },
   },
 
@@ -692,6 +716,13 @@ const en = {
     batchCount: '/ {count} batches',
     recentPlans: 'Recent Production Plans',
     workOrdersPct: '{total} work orders · {pct}% complete',
+    // Sprint 7 — BC-1805
+    allDepartments: 'All Departments',
+    yieldVariance: 'Yield Variance Analysis',
+    product: 'Product',
+    expectedYield: 'Expected Yield',
+    actualYield: 'Actual Yield',
+    variancePct: 'Variance %',
   },
 
   // ── Language ───────────────────────────────────────────────────────────────

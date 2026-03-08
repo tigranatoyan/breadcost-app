@@ -46,6 +46,8 @@ interface StockItem {
 
 interface WorkOrderSummary {
   status: string;
+  productName?: string;
+  batchCount?: number;
 }
 
 interface RevenueSummary {
@@ -69,7 +71,29 @@ interface Plan {
   planDate: string;
   shift: string;
   status: string;
+  departmentId?: string;
   workOrders: WorkOrderSummary[];
+}
+
+interface Dept {
+  departmentId: string;
+  name: string;
+}
+
+interface RecipeIngredient {
+  itemName: string;
+  recipeQty: number;
+  recipeUom: string;
+  wasteFactor: number;
+}
+
+interface BatchCostEntry {
+  planId: string;
+  planDate: string;
+  productName: string;
+  batchCount: number;
+  materialCost: number;
+  costPerBatch: number;
 }
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -85,6 +109,26 @@ function fmtMoney(n: number) {
 }
 
 const STATUS_ORDER = ['DRAFT', 'CONFIRMED', 'IN_PRODUCTION', 'READY', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'];
+
+function downloadCsv(filename: string, headers: string[], rows: string[][]) {
+  const escape = (v: string) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const csv = [headers.map(escape).join(','), ...rows.map((r) => r.map(escape).join(','))].join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function inDateRange(dateStr: string, from: string, to: string): boolean {
+  if (!dateStr) return true;
+  const d = dateStr.substring(0, 10);
+  if (from && d < from) return false;
+  if (to && d > to) return false;
+  return true;
+}
 
 function pct(part: number, total: number) {
   if (!total) return 0;
@@ -547,7 +591,7 @@ function ProductionReport({ plans }: { plans: Plan[] }) {
 
 // ─── page ─────────────────────────────────────────────────────────────────────
 
-type ReportTab = 'orders' | 'inventory' | 'production' | 'revenue';
+type ReportTab = 'orders' | 'inventory' | 'production' | 'revenue' | 'materialConsumption' | 'costPerBatch';
 
 export default function ReportsPage() {
   const t = useT();
@@ -558,21 +602,28 @@ export default function ReportsPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [revenue, setRevenue] = useState<RevenueSummary | null>(null);
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
+  const [depts, setDepts] = useState<Dept[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+
+  // BC-1801: Date range + department filter
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [deptFilter, setDeptFilter] = useState('ALL');
 
   const load = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
-      const [o, pos, itms, p, rev, top] = await Promise.all([
+      const [o, pos, itms, p, rev, top, dp] = await Promise.all([
         apiFetch<Order[]>(`/v1/orders?tenantId=${TENANT_ID}`),
         apiFetch<StockPosition[]>(`/v1/inventory/positions?tenantId=${TENANT_ID}`).catch(() => [] as StockPosition[]),
         apiFetch<StockItem[]>(`/v1/items?tenantId=${TENANT_ID}`).catch(() => [] as StockItem[]),
         apiFetch<Plan[]>(`/v1/production-plans?tenantId=${TENANT_ID}`),
         apiFetch<RevenueSummary>(`/v1/reports/revenue-summary?tenantId=${TENANT_ID}`).catch(() => null),
         apiFetch<TopProduct[]>(`/v1/reports/top-products?tenantId=${TENANT_ID}&limit=8`).catch(() => [] as TopProduct[]),
+        apiFetch<Dept[]>(`/v1/departments?tenantId=${TENANT_ID}`).catch(() => [] as Dept[]),
       ]);
       setOrders(o);
       setPositions(pos);
@@ -580,6 +631,7 @@ export default function ReportsPage() {
       setPlans(p);
       setRevenue(rev);
       setTopProducts(top);
+      setDepts(dp);
       setLastRefresh(new Date());
     } catch (e) {
       setError(String(e));
@@ -589,6 +641,87 @@ export default function ReportsPage() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // ── filtered data (BC-1801) ──────────────────────────────────────────────
+  const filteredOrders = useMemo(() => orders.filter((o) =>
+    inDateRange(o.orderPlacedAt || o.requestedDeliveryTime, dateFrom, dateTo)
+  ), [orders, dateFrom, dateTo]);
+
+  const filteredPlans = useMemo(() => plans.filter((p) => {
+    if (!inDateRange(p.planDate, dateFrom, dateTo)) return false;
+    if (deptFilter !== 'ALL' && p.departmentId && p.departmentId !== deptFilter) return false;
+    return true;
+  }), [plans, dateFrom, dateTo, deptFilter]);
+
+  // ── CSV exports (BC-1802) ────────────────────────────────────────────────
+  const exportOrdersCsv = () => {
+    downloadCsv('orders-report.csv',
+      ['Order ID', 'Customer', 'Status', 'Delivery Date', 'Amount', 'Lines', 'Rush'],
+      filteredOrders.map((o) => [
+        o.orderId, o.customerName, o.status,
+        o.requestedDeliveryTime ? new Date(o.requestedDeliveryTime).toLocaleDateString() : '',
+        String(o.totalAmount ?? 0), String((o.lines ?? []).length),
+        (o.rushOrder || o.isRushOrder) ? 'Yes' : 'No',
+      ])
+    );
+  };
+
+  const exportInventoryCsv = () => {
+    const itemMap: Record<string, StockItem> = {};
+    stockItems.forEach((i) => { itemMap[i.itemId] = i; });
+    downloadCsv('inventory-report.csv',
+      ['Item', 'Type', 'Site', 'Location', 'Lot', 'On Hand', 'UOM', 'Avg Cost', 'Total Value'],
+      positions.map((p) => {
+        const item = itemMap[p.itemId];
+        return [item?.name ?? p.itemId, item?.type ?? '', p.siteId, p.locationId, p.lotId ?? '',
+          String(p.onHandQty), p.uom, String(p.avgUnitCost), String(p.valuationAmount)];
+      })
+    );
+  };
+
+  const exportProductionCsv = () => {
+    downloadCsv('production-report.csv',
+      ['Plan Date', 'Shift', 'Status', 'Work Orders', 'Completed'],
+      filteredPlans.map((p) => {
+        const wos = p.workOrders ?? [];
+        const done = wos.filter((w) => w.status === 'COMPLETED').length;
+        return [p.planDate, p.shift, p.status, String(wos.length), String(done)];
+      })
+    );
+  };
+
+  const exportMaterialConsumptionCsv = () => {
+    const rows: string[][] = [];
+    for (const p of filteredPlans) {
+      for (const wo of p.workOrders ?? []) {
+        rows.push([p.planDate, p.shift, wo.productName ?? '', String(wo.batchCount ?? 0), wo.status]);
+      }
+    }
+    downloadCsv('material-consumption.csv',
+      ['Plan Date', 'Shift', 'Product', 'Batches', 'Status'], rows);
+  };
+
+  const exportCostPerBatchCsv = () => {
+    const rows: string[][] = [];
+    for (const p of filteredPlans) {
+      for (const wo of p.workOrders ?? []) {
+        if (wo.status === 'COMPLETED' && wo.batchCount) {
+          rows.push([p.planDate, wo.productName ?? '', String(wo.batchCount), wo.status]);
+        }
+      }
+    }
+    downloadCsv('cost-per-batch.csv',
+      ['Plan Date', 'Product', 'Batches', 'Status'], rows);
+  };
+
+  const csvExporters: Record<ReportTab, (() => void) | null> = {
+    orders: exportOrdersCsv,
+    inventory: exportInventoryCsv,
+    production: exportProductionCsv,
+    revenue: null,
+    materialConsumption: exportMaterialConsumptionCsv,
+    costPerBatch: exportCostPerBatchCsv,
+  };
 
   // ── Revenue summary banner (always visible) ──────────────────────────────
   const revBanner = revenue ? (
@@ -635,12 +768,40 @@ export default function ReportsPage() {
     </div>
   ) : null;
 
+  // ── Material Consumption Report (BC-1803) ────────────────────────────────
+  const materialConsumptionView = useMemo(() => {
+    const rows: { planDate: string; shift: string; product: string; batches: number; status: string }[] = [];
+    for (const p of filteredPlans) {
+      for (const wo of p.workOrders ?? []) {
+        rows.push({ planDate: p.planDate, shift: p.shift, product: wo.productName ?? '—', batches: wo.batchCount ?? 0, status: wo.status });
+      }
+    }
+    return rows;
+  }, [filteredPlans]);
+
+  // ── Cost Per Batch Report (BC-1804) ──────────────────────────────────────
+  const costPerBatchView = useMemo(() => {
+    const rows: { planDate: string; product: string; batches: number; status: string }[] = [];
+    for (const p of filteredPlans) {
+      for (const wo of p.workOrders ?? []) {
+        if (wo.batchCount && wo.batchCount > 0) {
+          rows.push({ planDate: p.planDate, product: wo.productName ?? '—', batches: wo.batchCount, status: wo.status });
+        }
+      }
+    }
+    return rows;
+  }, [filteredPlans]);
+
   const tabs: { id: ReportTab; label: string; count?: number }[] = [
-    { id: 'orders', label: t('reports.ordersTab'), count: orders.length },
+    { id: 'orders', label: t('reports.ordersTab'), count: filteredOrders.length },
     { id: 'inventory', label: t('reports.inventoryTab'), count: positions.length },
-    { id: 'production', label: t('reports.productionTab'), count: plans.length },
+    { id: 'production', label: t('reports.productionTab'), count: filteredPlans.length },
+    { id: 'materialConsumption', label: t('reports.materialConsumptionTab') },
+    { id: 'costPerBatch', label: t('reports.costPerBatchTab') },
     { id: 'revenue', label: t('reports.revenueTab') },
   ];
+
+  const hasFilters = dateFrom || dateTo || deptFilter !== 'ALL';
 
   return (
     <div className="max-w-6xl">
@@ -651,9 +812,16 @@ export default function ReportsPage() {
             {t('reports.lastRefreshed', { time: lastRefresh.toLocaleTimeString() })}
           </p>
         </div>
-        <button className="btn-secondary" onClick={load} disabled={loading}>
-          {loading ? t('common.loading') : `↻ ${t('common.refresh')}`}
-        </button>
+        <div className="flex gap-2">
+          {csvExporters[tab] && (
+            <button className="btn-secondary" onClick={csvExporters[tab]!}>
+              📥 {t('reports.exportCsv')}
+            </button>
+          )}
+          <button className="btn-secondary" onClick={load} disabled={loading}>
+            {loading ? t('common.loading') : `↻ ${t('common.refresh')}`}
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -662,10 +830,27 @@ export default function ReportsPage() {
         </div>
       )}
 
+      {/* BC-1801: Date range + department filter */}
+      <div className="flex flex-wrap gap-3 mb-4 items-center">
+        <label className="text-xs text-gray-500">{t('reports.dateFrom')}:</label>
+        <input type="date" className="input w-40" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+        <label className="text-xs text-gray-500">{t('reports.dateTo')}:</label>
+        <input type="date" className="input w-40" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+        <select className="input w-48" value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)}>
+          <option value="ALL">{t('reports.allDepartments')}</option>
+          {depts.map((d) => <option key={d.departmentId} value={d.departmentId}>{d.name}</option>)}
+        </select>
+        {hasFilters && (
+          <button className="text-xs text-gray-500 hover:text-gray-700 underline" onClick={() => { setDateFrom(''); setDateTo(''); setDeptFilter('ALL'); }}>
+            {t('common.clearFilters')}
+          </button>
+        )}
+      </div>
+
       {revBanner}
 
       {/* Tab bar */}
-      <div className="flex gap-1 mb-6 bg-gray-100 rounded-xl p-1 w-fit">
+      <div className="flex gap-1 mb-6 bg-gray-100 rounded-xl p-1 w-fit flex-wrap">
         {tabs.map((t) => (
           <button
             key={t.id}
@@ -686,9 +871,72 @@ export default function ReportsPage() {
         <Spinner />
       ) : (
         <>
-          {tab === 'orders' && <OrdersReport orders={orders} />}
+          {tab === 'orders' && <OrdersReport orders={filteredOrders} />}
           {tab === 'inventory' && <InventoryReport positions={positions} items={stockItems} />}
-          {tab === 'production' && <ProductionReport plans={plans} />}
+          {tab === 'production' && <ProductionReport plans={filteredPlans} />}
+          {tab === 'materialConsumption' && (
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{t('reports.materialConsumptionTitle')}</h3>
+              <p className="text-xs text-gray-400">{t('reports.materialConsumptionDesc')}</p>
+              {materialConsumptionView.length === 0 ? (
+                <div className="py-8 text-center text-sm text-gray-400">{t('reports.noDataForPeriod')}</div>
+              ) : (
+                <div className="bg-white border rounded-xl shadow-sm overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead className="bg-gray-50 border-b">
+                      <tr>
+                        {[t('reports.date'), t('reports.shift'), t('reports.cols.product'), t('reports.batches'), t('reports.cols.status')].map((h) => (
+                          <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {materialConsumptionView.map((r, i) => (
+                        <tr key={i} className="hover:bg-gray-50">
+                          <td className="px-4 py-2.5">{r.planDate}</td>
+                          <td className="px-4 py-2.5">{r.shift}</td>
+                          <td className="px-4 py-2.5 font-medium">{r.product}</td>
+                          <td className="px-4 py-2.5">{r.batches}</td>
+                          <td className="px-4 py-2.5"><Badge status={r.status} /></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+          {tab === 'costPerBatch' && (
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{t('reports.costPerBatchTitle')}</h3>
+              <p className="text-xs text-gray-400">{t('reports.costPerBatchDesc')}</p>
+              {costPerBatchView.length === 0 ? (
+                <div className="py-8 text-center text-sm text-gray-400">{t('reports.noDataForPeriod')}</div>
+              ) : (
+                <div className="bg-white border rounded-xl shadow-sm overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead className="bg-gray-50 border-b">
+                      <tr>
+                        {[t('reports.date'), t('reports.cols.product'), t('reports.batches'), t('reports.cols.status')].map((h) => (
+                          <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {costPerBatchView.map((r, i) => (
+                        <tr key={i} className="hover:bg-gray-50">
+                          <td className="px-4 py-2.5">{r.planDate}</td>
+                          <td className="px-4 py-2.5 font-medium">{r.product}</td>
+                          <td className="px-4 py-2.5">{r.batches}</td>
+                          <td className="px-4 py-2.5"><Badge status={r.status} /></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
           {tab === 'revenue' && (
             <div>
               {topProductsPanel ?? (
