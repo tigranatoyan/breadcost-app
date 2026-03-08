@@ -7,6 +7,11 @@ import { useT } from '@/lib/i18n';
 interface Product {
   productId: string;
   name: string;
+  departmentId: string;
+}
+interface Dept {
+  departmentId: string;
+  name: string;
 }
 interface RecipeIngredient {
   ingredientId: string;
@@ -63,6 +68,8 @@ const newIng = () => ({
 export default function RecipesPage() {
   const t = useT();
   const [products, setProducts] = useState<Product[]>([]);
+  const [depts, setDepts] = useState<Dept[]>([]);
+  const [selectedDeptId, setSelectedDeptId] = useState('');
   const [selectedPid, setSelectedPid] = useState('');
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(false);
@@ -138,8 +145,11 @@ export default function RecipesPage() {
   });
 
   useEffect(() => {
-    apiFetch<Product[]>(`/v1/products?tenantId=${TENANT_ID}`)
-      .then(setProducts)
+    Promise.all([
+      apiFetch<Product[]>(`/v1/products?tenantId=${TENANT_ID}`),
+      apiFetch<Dept[]>(`/v1/departments?tenantId=${TENANT_ID}`),
+    ])
+      .then(([prods, deps]) => { setProducts(prods); setDepts(deps); })
       .catch((e) => setError(String(e)))
       .finally(() => setInitLoading(false));
   }, []);
@@ -255,6 +265,7 @@ export default function RecipesPage() {
   };
 
   const activate = async (recipeId: string) => {
+    if (!confirm(t('recipes.confirmActivate'))) return;
     try {
       setActivating(recipeId);
       await apiFetch(`/v1/recipes/${recipeId}/activate?tenantId=${TENANT_ID}`, {
@@ -336,22 +347,25 @@ export default function RecipesPage() {
         <Spinner />
       ) : (
         <>
-          <div className="mb-5 max-w-xs">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('recipes.selectProduct')}
-            </label>
-            <select
-              className="input"
-              value={selectedPid}
-              onChange={(e) => selectProduct(e.target.value)}
-            >
-              <option value="">{t('recipes.chooseProduct')}</option>
-              {products.map((p) => (
-                <option key={p.productId} value={p.productId}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
+          {/* ── Department selector (BC-1707) ── */}
+          <div className="flex gap-4 mb-5">
+            <div className="max-w-xs flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('recipes.selectDepartment')}</label>
+              <select className="input" value={selectedDeptId}
+                onChange={(e) => { setSelectedDeptId(e.target.value); setSelectedPid(''); setRecipes([]); }}>
+                <option value="">{t('recipes.allDepartments')}</option>
+                {depts.map((d) => <option key={d.departmentId} value={d.departmentId}>{d.name}</option>)}
+              </select>
+            </div>
+            <div className="max-w-xs flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('recipes.selectProduct')}</label>
+              <select className="input" value={selectedPid} onChange={(e) => selectProduct(e.target.value)}>
+                <option value="">{t('recipes.chooseProduct')}</option>
+                {products
+                  .filter((p) => !selectedDeptId || p.departmentId === selectedDeptId)
+                  .map((p) => <option key={p.productId} value={p.productId}>{p.name}</option>)}
+              </select>
+            </div>
           </div>
 
           {loading ? (
@@ -526,6 +540,7 @@ export default function RecipesPage() {
                                   <thead>
                                     <tr className="text-gray-500">
                                       <th className="text-left py-1 pr-4">{t('recipes.item')}</th>
+                                      <th className="text-left py-1 pr-4">{t('recipes.unitMode')}</th>
                                       <th className="text-left py-1 pr-4">{t('recipes.qtyPerBatch')}</th>
                                       <th className="text-left py-1 pr-4">{t('recipes.uom')}</th>
                                       <th className="text-left py-1 pr-4">{t('recipes.waste')}</th>
@@ -537,6 +552,7 @@ export default function RecipesPage() {
                                     {r.ingredients?.map((ing) => (
                                       <tr key={ing.ingredientId}>
                                         <td className="py-1 pr-4 font-medium">{ing.itemName || ing.itemId}</td>
+                                        <td className="py-1 pr-4">{ing.unitMode}</td>
                                         <td className="py-1 pr-4">{ing.recipeQty}</td>
                                         <td className="py-1 pr-4">{ing.recipeUom}</td>
                                         <td className="py-1 pr-4">{(ing.wasteFactor * 100).toFixed(0)}%</td>

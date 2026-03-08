@@ -207,6 +207,11 @@ const en = {
     baseUomHint: 'e.g. PCS, KG, L',
     salePrice: 'Sale Price',
     vatRate: 'VAT Rate %',
+    // Sprint 6 — BC-1706
+    editTitle: 'Edit Product',
+    updated: 'Product updated.',
+    searchPlaceholder: 'Search products…',
+    allDepartments: 'All Departments',
     cols: {
       name: 'Name',
       department: 'Department',
@@ -274,6 +279,11 @@ const en = {
     // step modal
     addStepTitle: 'Add Technology Step',
     editStepTitle: 'Edit Technology Step',
+    // Sprint 6 — BC-1707
+    selectDepartment: 'Department',
+    allDepartments: 'All Departments',
+    confirmActivate: 'Activate this recipe? The current active version will be archived.',
+    unitMode: 'Unit Mode',
   },
 
   // ── Departments ────────────────────────────────────────────────────────────
@@ -288,6 +298,10 @@ const en = {
     warehouseMode: 'Warehouse Mode',
     isolated: 'ISOLATED – own warehouse per department',
     shared: 'SHARED – uses central warehouse',
+    // Sprint 6 — BC-1705
+    editTitle: 'Edit Department',
+    created: 'Department created.',
+    updated: 'Department updated.',
     cols: {
       name: 'Name',
       leadTime: 'Lead Time',
@@ -624,6 +638,24 @@ const en = {
     tenantIdLabel: 'Tenant ID',
     defaultSiteLabel: 'Default Site',
     adminOnlyWarning: 'Admin-only. Changes here affect all users and active production runs. Activating a new recipe version archives the previous one. Departments and products referenced by orders cannot be deleted.',
+    // Sprint 6 — BC-1701/1702/1703/1704
+    tabUsers: 'Users & Roles',
+    tabSystem: 'System Config',
+    editUserTitle: 'Edit User',
+    editingUser: 'Editing user: {username}',
+    department: 'Department',
+    noDepartment: '— No department —',
+    userCreated: 'User created successfully.',
+    userUpdated: 'User updated successfully.',
+    resetPwd: 'Reset Password',
+    resetPwdTitle: 'Reset Password',
+    resetPwdFor: 'Set a new password for {username}',
+    newPassword: 'New Password',
+    newPasswordPlaceholder: 'Enter new password (min 4 chars)',
+    resetPwdBtn: 'Reset Password',
+    passwordReset: 'Password reset successfully.',
+    configSaved: 'Configuration saved.',
+    cutoffHint: 'Orders placed after this time roll to next day',
     // demo user access descriptions
     demoAccess: {
       admin: 'Full access — all screens',
