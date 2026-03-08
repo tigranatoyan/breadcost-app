@@ -124,8 +124,8 @@ public class FinanceService {
                 .filter(inv -> inv.getStatus() == InvoiceEntity.InvoiceStatus.PAID
                         || inv.getStatus() == InvoiceEntity.InvoiceStatus.ISSUED)
                 .filter(inv -> inv.getIssuedDate() != null
-                        && !inv.getIssuedDate().isBefore(dateFrom)
-                        && !inv.getIssuedDate().isAfter(dateTo))
+                        && (dateFrom == null || !inv.getIssuedDate().isBefore(dateFrom))
+                        && (dateTo == null || !inv.getIssuedDate().isAfter(dateTo)))
                 .map(InvoiceEntity::getTotalAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
@@ -150,8 +150,8 @@ public class FinanceService {
     public long totalOrderCount(String tenantId, LocalDate dateFrom, LocalDate dateTo) {
         return invoiceRepo.findByTenantId(tenantId).stream()
                 .filter(inv -> inv.getIssuedDate() != null
-                        && !inv.getIssuedDate().isBefore(dateFrom)
-                        && !inv.getIssuedDate().isAfter(dateTo))
+                        && (dateFrom == null || !inv.getIssuedDate().isBefore(dateFrom))
+                        && (dateTo == null || !inv.getIssuedDate().isAfter(dateTo)))
                 .count();
     }
 

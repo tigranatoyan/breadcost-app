@@ -50,6 +50,9 @@ dependencies {
     // Validation
     implementation("jakarta.validation:jakarta.validation-api")
 
+    // Apache POI (Excel export)
+    implementation("org.apache.poi:poi-ooxml:5.2.5")
+
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
@@ -58,6 +61,10 @@ dependencies {
 tasks {
     bootJar {
         mainClass = "com.breadcost.BreadCostApplication"
+    }
+
+    test {
+        useJUnitPlatform()
     }
 
     withType<JavaCompile> {

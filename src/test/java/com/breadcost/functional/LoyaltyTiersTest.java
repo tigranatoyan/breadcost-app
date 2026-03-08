@@ -106,15 +106,16 @@ class LoyaltyTiersTest extends FunctionalTestBase {
     void awardPoints_withSilverTier_earnsTierRate() throws Exception {
         String suffix = UUID.randomUUID().toString();
         String cid = "silver-earner-" + suffix;
+        String isolatedTenant = "tier-rate-" + suffix;
 
-        // Create Silver tier with 2x earning
+        // Create Silver tier with 2x earning in an isolated tenant
         POST("/v2/loyalty/tiers", Map.of(
-                "tenantId", TENANT, "name", "Silver2x-" + suffix,
+                "tenantId", isolatedTenant, "name", "Silver2x-" + suffix,
                 "minPoints", 0, "pointsPerDollar", 2.0), "")
                 .andExpect(status().isCreated());
 
         POST("/v2/loyalty/award", Map.of(
-                "tenantId", TENANT, "customerId", cid,
+                "tenantId", isolatedTenant, "customerId", cid,
                 "orderId", "o1", "orderTotal", 20.0), "")
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pointsBalance", is(40)));  // 20 × 2.0

@@ -559,3 +559,115 @@
 ---
 
 *End of JIRA Project Structure v2.0 — Updated 2026-03-08*
+
+---
+
+## Appendix A — Release 2 Timing Report
+
+**Generated:** 2026-03-08 | **Source:** Git commit timestamps + Gradle test report  
+**Merge to main:** 2026-03-08 (commit `2131d57`)
+
+### R2 Implementation Timeline
+
+All R2 backend stories were implemented on 2026-03-04 in a single development session.
+
+#### Sprint R2-S1: Customer Portal + Supplier + Subscription (13 stories)
+
+| Story | Title | Started | Merged | Tests | Duration |
+|-------|-------|---------|--------|-------|----------|
+| BC-1101 | Customer registration | 17:37 | 17:38 | 7 | — (baseline) |
+| BC-1102 | Customer login + profile | 17:48 | 17:48 | 7 | ~10 min |
+| BC-1103 | Customer product catalog | 17:51 | 17:51 | 6 | ~3 min |
+| BC-1104 | Place order via portal | 17:53 | 17:54 | 6 | ~2 min |
+| BC-1105 | Order status + history | 17:56 | 17:56 | 6 | ~2 min |
+| BC-1301 | Supplier catalog CRUD | 18:19 | 18:19 | 6 | ~23 min |
+| BC-1302 | PO suggestion generation | 18:19 | 18:19 | 5 | <1 min |
+| BC-1303 | PO review and approval | 18:19 | 18:20 | 6 | <1 min |
+| BC-1304 | PO Excel export | 18:20 | 18:20 | 4 | <1 min |
+| BC-1305 | Delivery match against PO | 18:20 | 18:20 | 5 | <1 min |
+| BC-1306 | FX rate per transaction | 18:20 | 18:20 | 5 | <1 min |
+| BC-1701 | Subscription tier assign | 18:59 | 18:59 | 4 | — (see below) |
+| BC-1702 | Feature access by tier | 19:00 | 19:00 | 3 | <1 min |
+
+#### Sprint R2-S2: Loyalty + Delivery (12 stories)
+
+| Story | Title | Started | Merged | Tests | Duration |
+|-------|-------|---------|--------|-------|----------|
+| BC-1201 | Award loyalty points | 17:59 | 17:59 | 7 | ~3 min |
+| BC-1202 | Configurable loyalty tiers | 18:00 | 18:01 | 6 | ~2 min |
+| BC-1203 | Tier benefits management | 18:09 | 18:10 | 6 | ~8 min |
+| BC-1204 | Redeem points at checkout | 18:09 | 18:10 | 6 | <1 min |
+| BC-1205 | Points balance + history | 18:09 | 18:10 | 6 | <1 min |
+| BC-1206 | Loyalty tier config | 18:10 | 18:10 | 5 | <1 min |
+| BC-1401 | Assign to delivery runs | 18:26 | 18:26 | 5 | ~16 min |
+| BC-1402 | Delivery manifest gen | 18:26 | 18:26 | 4 | <1 min |
+| BC-1403 | Mark delivery completed | 18:26 | 18:26 | 3 | <1 min |
+| BC-1404 | Failed delivery + redeliver | 18:28 | 18:28 | 3 | ~2 min |
+| BC-1405 | Courier charge split | 18:28 | 18:28 | 3 | <1 min |
+| BC-1406 | Courier charge waiver | 18:28 | — | 3 | <1 min |
+
+#### Sprint R2-S3: Invoicing + Reports (9 stories)
+
+| Story | Title | Started | Merged | Tests | Duration |
+|-------|-------|---------|--------|-------|----------|
+| BC-1501 | Invoice generation | 18:39 | 18:39 | 5 | ~11 min |
+| BC-1502 | Payment terms per customer | 18:39 | 18:40 | 3 | <1 min |
+| BC-1503 | Invoice payment tracking | 18:40 | 18:40 | 3 | <1 min |
+| BC-1504 | Credit limit enforcement | 18:40 | 18:40 | 4 | <1 min |
+| BC-1505 | Customer pricing + discounts | 18:40 | 18:40 | 4 | <1 min |
+| BC-1601 | KPI block catalog | 18:57 | 18:58 | 4 | ~17 min |
+| BC-1602 | Custom report builder | 18:58 | 18:58 | 4 | <1 min |
+| BC-1603 | Advanced financial KPIs | 18:59 | 18:59 | 4 | <1 min |
+| BC-1604 | Report export Excel/CSV | 18:59 | 18:59 | 3 | <1 min |
+
+### Test Summary
+
+| Scope | Test Classes | Test Count | Failures | Duration |
+|-------|-------------|------------|----------|----------|
+| **R1 (baseline)** | 11 | 103 | 0 | — |
+| **R2 additions** | 32 | 162 | 0 | — |
+| **Total (merged)** | 43 | **265** | **0** | **8.5s** |
+
+#### R2 Test Breakdown by Epic
+
+| Epic | Stories | Test Classes | Tests | Avg Tests/Story |
+|------|---------|-------------|-------|-----------------|
+| **BC-E11** Customer Portal | 5 | `CustomerRegistrationTest`, `CustomerLoginTest`, `CustomerCatalogTest`, `CustomerOrderTest`, `CustomerOrderStatusTest` | 32 | 6.4 |
+| **BC-E12** Loyalty Program | 6 | `LoyaltyAwardTest`, `LoyaltyTiersTest`, `LoyaltyTierBenefitsTest`, `LoyaltyRedeemTest`, `LoyaltyBalanceHistoryTest`, `LoyaltyTierConfigTest` | 36 | 6.0 |
+| **BC-E13** Supplier Mgmt | 6 | `SupplierCatalogTest`, `POSuggestionTest`, `POApprovalTest`, `POExcelExportTest`, `DeliveryMatchingTest`, `POFxRateTest` | 31 | 5.2 |
+| **BC-E14** Delivery | 6 | `DeliveryRunAssignTest`, `DeliveryManifestTest`, `DeliveryCompleteTest`, `DeliveryFailRedeliverTest`, `CourierChargeSplitTest`, `CourierChargeWaiverTest` | 21 | 3.5 |
+| **BC-E15** Invoicing | 5 | `GenerateInvoiceTest`, `PaymentTermsTest`, `InvoicePaymentTest`, `CreditLimitTest`, `CustomerPricingTest` | 19 | 3.8 |
+| **BC-E16** Reports | 4 | `KpiBlockCatalogTest`, `CustomReportBuilderTest`, `FinancialKpiTest`, `ReportExportTest` | 15 | 3.8 |
+| **BC-E17** Subscription | 2 | `SubscriptionTierTest`, `FeatureAccessTest` | 7 | 3.5 |
+| **TOTAL** | **34** | **32** | **161** | **4.7** |
+
+### Merge Integration Report
+
+| Metric | Value |
+|--------|-------|
+| Merge date | 2026-03-08 |
+| Source branch tip | `1fe740b` (bc-211 → bc-1702 chain) |
+| Target | `main` (HEAD: `205f38b` — R1.5 Sprint 7) |
+| Merge conflicts | 1 (`pom.xml` — deleted on main, modified on branch; resolved by deletion) |
+| Post-merge fixes | 2 bugs fixed: `FinanceService` null date NPE (4 test failures), `LoyaltyTiersTest` tenant isolation (1 failure) |
+| Files changed | 143 (92 Java + 19 frontend + 32 scripts/config) |
+| Lines | +9,190 / -7,984 |
+| Final test result | **265 tests, 0 failures, 8.5s** |
+
+### R2 Acceptance Criteria Verification
+
+| # | Criterion | Status | Evidence |
+|---|-----------|--------|----------|
+| R2-AC-01 | Customers can register and log into a web portal | ✅ Pass | 14 tests (Registration: 7, Login: 7) |
+| R2-AC-02 | Customers can browse catalog and place orders via portal | ✅ Pass | 12 tests (Catalog: 6, Order: 6) |
+| R2-AC-03 | Loyalty points awarded per purchase and redeemable | ✅ Pass | 13 tests (Award: 7, Redeem: 6) |
+| R2-AC-04 | Loyalty tiers configurable with benefits | ✅ Pass | 17 tests (Tiers: 6, Benefits: 6, Config: 5) |
+| R2-AC-05 | Supplier catalog + PO suggestions auto-generated | ✅ Pass | 17 tests (Catalog: 6, Suggest: 5, Approve: 6) |
+| R2-AC-06 | POs exportable to Excel + delivery matched | ✅ Pass | 9 tests (Excel: 4, Match: 5) |
+| R2-AC-07 | Delivery runs and manifests managed | ✅ Pass | 21 tests across 6 classes |
+| R2-AC-08 | B2B invoices from delivered orders | ✅ Pass | 11 tests (Invoice: 5, Payment: 3, Terms: 3) |
+| R2-AC-09 | Credit limits enforced | ✅ Pass | 4 tests (CreditLimitTest) |
+| R2-AC-10 | Customer-specific pricing | ✅ Pass | 4 tests (CustomerPricingTest) |
+| R2-AC-11 | Report constructor with KPI blocks | ✅ Pass | 8 tests (Catalog: 4, Builder: 4) |
+| R2-AC-12 | Reports exportable to Excel/CSV | ✅ Pass | 7 tests (KPI: 4, Export: 3) |
+| R2-AC-13 | Subscription tier enforcement | ✅ Pass | 7 tests (Tier: 4, Access: 3) |
