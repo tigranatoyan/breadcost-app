@@ -136,6 +136,11 @@ const en = {
     stockAlertsWidget: 'Stock Alerts',
     alertOnHand: 'On hand: {qty} {uom}',
     alertThreshold: 'Min: {threshold}',
+    // BC-1604: Revenue widget
+    revenueWidget: 'Revenue',
+    revenueToday: 'Today',
+    revenueWeek: 'This Week',
+    revenueMonth: 'This Month',
   },
 
   // ── Orders ─────────────────────────────────────────────────────────────────
@@ -433,6 +438,26 @@ const en = {
     completeSale: 'Complete Sale — {total}',
     totalItems: 'Total ({count} items)',
     saleComplete: '✅ Sale complete — #{id}',
+    // BC-1601: Receipt modal
+    receiptTitle: 'Sale Receipt',
+    receiptSaleId: 'Sale',
+    receiptCashier: 'Cashier',
+    receiptItem: 'Item',
+    receiptGrandTotal: 'GRAND TOTAL',
+    printReceipt: '🖨 Print',
+    newSale: 'New Sale',
+    // BC-1602: Card terminal reference
+    terminalRef: 'Terminal Reference',
+    terminalRefPlaceholder: 'e.g. TXN-482910',
+    // BC-1603: End-of-day reconciliation
+    endOfDay: '📊 End of Day',
+    eodTitle: 'End-of-Day Reconciliation',
+    eodTotalTransactions: 'Total Transactions',
+    eodCashTotal: 'Cash Sales',
+    eodCardTotal: 'Card Sales',
+    eodRefunds: 'Refunds',
+    eodNetSales: 'Net Sales',
+    eodExpectedCash: 'Expected Cash in Drawer',
   },
 
   // ── Production Plans ───────────────────────────────────────────────────────

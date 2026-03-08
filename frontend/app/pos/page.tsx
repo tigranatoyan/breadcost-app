@@ -1,8 +1,9 @@
 'use client';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Alert } from '@/components/ui';
 import { useT } from '@/lib/i18n';
+import { getUsername } from '@/lib/auth';
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -29,6 +30,36 @@ interface CartLine {
   qty: number;
   uom: string;
   unitPrice: number;
+}
+
+interface SaleLine {
+  productName: string;
+  quantity: number;
+  unit: string;
+  unitPrice: number;
+  lineTotal: number;
+}
+
+interface SaleResult {
+  saleId: string;
+  cashierName: string;
+  paymentMethod: 'CASH' | 'CARD';
+  totalAmount: number;
+  cashReceived: number | null;
+  changeGiven: number | null;
+  cardReference: string | null;
+  completedAt: string;
+  lines: SaleLine[];
+}
+
+interface ReconcileResult {
+  date: string;
+  totalTransactions: number;
+  cashTotal: number;
+  cardTotal: number;
+  refunds: number;
+  netSales: number;
+  expectedCashInDrawer: number;
 }
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -134,8 +165,18 @@ export default function POSPage() {
   const [customerName, setCustomerName] = useState('Walk-In');
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CARD'>('CASH');
   const [cashReceived, setCashReceived] = useState('');
+  const [cardReference, setCardReference] = useState('');
   const [notes, setNotes] = useState('');
   const [checkingOut, setCheckingOut] = useState(false);
+
+  // receipt modal (BC-1601)
+  const [receiptData, setReceiptData] = useState<SaleResult | null>(null);
+  const receiptRef = useRef<HTMLDivElement>(null);
+
+  // EOD reconciliation (BC-1603)
+  const [eodData, setEodData] = useState<ReconcileResult | null>(null);
+  const [eodLoading, setEodLoading] = useState(false);
+  const eodRef = useRef<HTMLDivElement>(null);
 
   // ─── load ─────────────────────────────────────────────────────────────────
 
@@ -214,6 +255,7 @@ export default function POSPage() {
 
   const completeSale = async () => {
     if (cart.length === 0) return;
+    if (paymentMethod === 'CARD' && !cardReference.trim()) return;
     try {
       setCheckingOut(true);
       setError('');
@@ -233,23 +275,71 @@ export default function POSPage() {
       if (paymentMethod === 'CASH' && cashReceived) {
         body.cashReceived = parseFloat(cashReceived);
       }
+      if (paymentMethod === 'CARD' && cardReference.trim()) {
+        body.cardReference = cardReference.trim();
+      }
 
-      const sale = await apiFetch<{ saleId: string }>('/v1/pos/sales', {
+      const sale = await apiFetch<SaleResult>('/v1/pos/sales', {
         method: 'POST',
         body: JSON.stringify(body),
       });
 
-      const change = changeAmount !== null ? `  ${t('pos.change')}: ${fmt(changeAmount)}` : '';
-      setSuccess(`${t('pos.saleComplete', { id: sale.saleId.slice(0, 8).toUpperCase() })}${change}`);
-      setCart([]);
-      setCustomerName('Walk-In');
-      setCashReceived('');
-      setNotes('');
+      // Show receipt modal (BC-1601)
+      setReceiptData(sale);
+      setSuccess('');
     } catch (e) {
       setError(String(e));
     } finally {
       setCheckingOut(false);
     }
+  };
+
+  const resetAfterSale = () => {
+    setReceiptData(null);
+    setCart([]);
+    setCustomerName('Walk-In');
+    setCashReceived('');
+    setCardReference('');
+    setNotes('');
+  };
+
+  const printReceipt = () => {
+    if (!receiptRef.current) return;
+    const win = window.open('', '_blank', 'width=400,height=600');
+    if (!win) return;
+    win.document.write('<html><head><title>Receipt</title><style>body{font-family:monospace;padding:20px;font-size:12px}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:4px 0}th{border-bottom:1px dashed #000}.right{text-align:right}.total{border-top:2px solid #000;font-weight:bold}</style></head><body>');
+    win.document.write(receiptRef.current.innerHTML);
+    win.document.write('</body></html>');
+    win.document.close();
+    win.print();
+  };
+
+  // EOD reconciliation (BC-1603)
+  const runEod = async () => {
+    try {
+      setEodLoading(true);
+      setError('');
+      const result = await apiFetch<ReconcileResult>('/v1/pos/reconcile', {
+        method: 'POST',
+        body: JSON.stringify({ tenantId: TENANT_ID, siteId: 'MAIN', date: new Date().toISOString().substring(0, 10) }),
+      });
+      setEodData(result);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setEodLoading(false);
+    }
+  };
+
+  const printEod = () => {
+    if (!eodRef.current) return;
+    const win = window.open('', '_blank', 'width=400,height=500');
+    if (!win) return;
+    win.document.write('<html><head><title>End of Day</title><style>body{font-family:monospace;padding:20px;font-size:12px}table{width:100%;border-collapse:collapse}td{padding:4px 0}.right{text-align:right}.total{border-top:2px solid #000;font-weight:bold}</style></head><body>');
+    win.document.write(eodRef.current.innerHTML);
+    win.document.write('</body></html>');
+    win.document.close();
+    win.print();
   };
 
   // ─── render ───────────────────────────────────────────────────────────────
@@ -258,7 +348,16 @@ export default function POSPage() {
     <div className="h-[calc(100vh-64px)] flex flex-col">
       <div className="flex items-center justify-between mb-3 shrink-0">
         <h1 className="text-2xl font-semibold">{t('pos.title')}</h1>
-        <span className="text-sm text-gray-400">{t('pos.subtitle')}</span>
+        <div className="flex items-center gap-2">
+          <button
+            className="btn-secondary text-xs"
+            disabled={eodLoading}
+            onClick={runEod}
+          >
+            {eodLoading ? t('pos.processing') : t('pos.endOfDay')}
+          </button>
+          <span className="text-sm text-gray-400">{t('pos.subtitle')}</span>
+        </div>
       </div>
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
@@ -465,6 +564,19 @@ export default function POSPage() {
               </div>
             )}
 
+            {paymentMethod === 'CARD' && (
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">{t('pos.terminalRef')} *</label>
+                <input
+                  className="input w-full"
+                  placeholder={t('pos.terminalRefPlaceholder')}
+                  value={cardReference}
+                  onChange={(e) => setCardReference(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+
             <div>
               <label className="text-xs text-gray-500 mb-1 block">{t('pos.notesOptional')}</label>
               <input
@@ -477,7 +589,7 @@ export default function POSPage() {
 
             <button
               className="w-full btn-primary py-3 text-base font-semibold disabled:opacity-50"
-              disabled={cart.length === 0 || checkingOut}
+              disabled={cart.length === 0 || checkingOut || (paymentMethod === 'CARD' && !cardReference.trim())}
               onClick={completeSale}
             >
               {checkingOut ? t('pos.processing') : t('pos.completeSale', { total: fmt(cartTotal) })}
@@ -485,6 +597,97 @@ export default function POSPage() {
           </div>
         </div>
       </div>
+
+      {/* ── Receipt Modal (BC-1601) ───────────────────────────────────── */}
+      {receiptData && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col">
+            <div className="px-6 py-4 border-b flex items-center justify-between">
+              <h2 className="font-semibold text-lg">{t('pos.receiptTitle')}</h2>
+              <button className="text-gray-400 hover:text-gray-600 text-xl" onClick={resetAfterSale}>×</button>
+            </div>
+            <div className="px-6 py-4 overflow-y-auto flex-1" ref={receiptRef}>
+              <div style={{ textAlign: 'center', marginBottom: 16 }}>
+                <div style={{ fontWeight: 'bold', fontSize: 16 }}>BreadCost POS</div>
+                <div style={{ fontSize: 12 }}>{t('pos.receiptSaleId')}: #{receiptData.saleId.slice(0, 8).toUpperCase()}</div>
+                <div style={{ fontSize: 12 }}>{new Date(receiptData.completedAt).toLocaleString()}</div>
+                <div style={{ fontSize: 12 }}>{t('pos.receiptCashier')}: {receiptData.cashierName || getUsername() || '—'}</div>
+              </div>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px dashed #000' }}>
+                    <th style={{ textAlign: 'left', padding: '4px 0' }}>{t('pos.receiptItem')}</th>
+                    <th style={{ textAlign: 'right', padding: '4px 0' }}>{t('orders.qty')}</th>
+                    <th style={{ textAlign: 'right', padding: '4px 0' }}>{t('pos.unitPrice')}</th>
+                    <th style={{ textAlign: 'right', padding: '4px 0' }}>{t('common.total')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {receiptData.lines.map((line, i) => (
+                    <tr key={i}>
+                      <td style={{ padding: '3px 0' }}>{line.productName}</td>
+                      <td style={{ textAlign: 'right', padding: '3px 0' }}>{line.quantity}</td>
+                      <td style={{ textAlign: 'right', padding: '3px 0' }}>{fmt(line.unitPrice)}</td>
+                      <td style={{ textAlign: 'right', padding: '3px 0' }}>{fmt(line.lineTotal)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div style={{ borderTop: '2px solid #000', marginTop: 8, paddingTop: 8, fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                <span>{t('pos.receiptGrandTotal')}</span>
+                <span>{fmt(receiptData.totalAmount)}</span>
+              </div>
+              <div style={{ marginTop: 8, fontSize: 12 }}>
+                <div>{t('pos.paymentMethod')}: {receiptData.paymentMethod === 'CASH' ? t('pos.cash') : t('pos.card')}</div>
+                {receiptData.paymentMethod === 'CASH' && receiptData.cashReceived != null && (
+                  <>
+                    <div>{t('pos.cashReceived')}: {fmt(receiptData.cashReceived)}</div>
+                    <div>{t('pos.change')}: {fmt(receiptData.changeGiven ?? 0)}</div>
+                  </>
+                )}
+                {receiptData.paymentMethod === 'CARD' && receiptData.cardReference && (
+                  <div>{t('pos.terminalRef')}: {receiptData.cardReference}</div>
+                )}
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t flex gap-3">
+              <button className="flex-1 btn-secondary" onClick={printReceipt}>{t('pos.printReceipt')}</button>
+              <button className="flex-1 btn-primary" onClick={resetAfterSale}>{t('pos.newSale')}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── EOD Reconciliation Panel (BC-1603) ────────────────────────── */}
+      {eodData && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
+            <div className="px-6 py-4 border-b flex items-center justify-between">
+              <h2 className="font-semibold text-lg">{t('pos.eodTitle')}</h2>
+              <button className="text-gray-400 hover:text-gray-600 text-xl" onClick={() => setEodData(null)}>×</button>
+            </div>
+            <div className="px-6 py-4" ref={eodRef}>
+              <div style={{ textAlign: 'center', marginBottom: 16, fontWeight: 'bold' }}>
+                {t('pos.eodTitle')} — {eodData.date}
+              </div>
+              <table style={{ width: '100%', fontSize: 13 }}>
+                <tbody>
+                  <tr><td style={{ padding: '4px 0' }}>{t('pos.eodTotalTransactions')}</td><td style={{ textAlign: 'right' }}>{eodData.totalTransactions}</td></tr>
+                  <tr><td style={{ padding: '4px 0' }}>{t('pos.eodCashTotal')}</td><td style={{ textAlign: 'right' }}>{fmt(eodData.cashTotal)}</td></tr>
+                  <tr><td style={{ padding: '4px 0' }}>{t('pos.eodCardTotal')}</td><td style={{ textAlign: 'right' }}>{fmt(eodData.cardTotal)}</td></tr>
+                  <tr><td style={{ padding: '4px 0' }}>{t('pos.eodRefunds')}</td><td style={{ textAlign: 'right' }}>{fmt(eodData.refunds)}</td></tr>
+                  <tr style={{ borderTop: '2px solid #000', fontWeight: 'bold' }}><td style={{ padding: '6px 0' }}>{t('pos.eodNetSales')}</td><td style={{ textAlign: 'right' }}>{fmt(eodData.netSales)}</td></tr>
+                  <tr style={{ fontWeight: 'bold' }}><td style={{ padding: '4px 0' }}>{t('pos.eodExpectedCash')}</td><td style={{ textAlign: 'right' }}>{fmt(eodData.expectedCashInDrawer)}</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="px-6 py-4 border-t flex gap-3">
+              <button className="flex-1 btn-secondary" onClick={printEod}>{t('pos.printReceipt')}</button>
+              <button className="flex-1 btn-primary" onClick={() => setEodData(null)}>{t('common.close')}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

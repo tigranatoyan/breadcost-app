@@ -85,6 +85,14 @@ interface Plan {
   workOrders: WorkOrderSummary[];
 }
 
+interface RevenueSummary {
+  today: number;
+  week: number;
+  month: number;
+  allTime: number;
+  currency: string;
+}
+
 interface StatCard {
   label: string;
   value: number | string;
@@ -125,6 +133,7 @@ export default function DashboardPage() {
   const [positions, setPositions] = useState<StockPosition[]>([]);
   const [stockItems, setStockItems] = useState<StockItem[]>([]);
   const [serverAlerts, setServerAlerts] = useState<StockAlert[]>([]);
+  const [revenue, setRevenue] = useState<RevenueSummary | null>(null);
   const [tick, setTick] = useState(0);
   const today = new Date().toISOString().substring(0, 10);
 
@@ -137,6 +146,7 @@ export default function DashboardPage() {
       apiFetch<StockPosition[]>(`/v1/inventory/positions?tenantId=${TENANT_ID}`).then(setPositions).catch(() => {}),
       apiFetch<StockItem[]>(`/v1/items?tenantId=${TENANT_ID}`).then(setStockItems).catch(() => {}),
       apiFetch<StockAlert[]>(`/v1/inventory/alerts?tenantId=${TENANT_ID}`).then(setServerAlerts).catch(() => {}),
+      apiFetch<RevenueSummary>(`/v1/reports/revenue-summary?tenantId=${TENANT_ID}`).then(setRevenue).catch(() => {}),
     ])
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -371,6 +381,26 @@ export default function DashboardPage() {
               ))}
             </div>
           </Card>
+        </div>
+      )}
+
+      {/* Revenue Widget (BC-1604) */}
+      {revenue && (
+        <div className="space-y-4">
+          <SectionTitle>{t('dashboard.revenueWidget')}</SectionTitle>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {([
+              { label: t('dashboard.revenueToday'), value: revenue.today },
+              { label: t('dashboard.revenueWeek'), value: revenue.week },
+              { label: t('dashboard.revenueMonth'), value: revenue.month },
+            ] as const).map((r) => (
+              <Card key={r.label} className="p-4 text-center">
+                <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">{r.label}</div>
+                <div className="text-2xl font-bold text-gray-800">{fmtMoney(r.value)}</div>
+                <div className="text-xs text-gray-400 mt-1">{revenue.currency || 'AMD'}</div>
+              </Card>
+            ))}
+          </div>
         </div>
       )}
 
