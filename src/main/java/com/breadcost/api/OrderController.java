@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -26,7 +27,7 @@ public class OrderController {
     // ─── GET ALL ─────────────────────────────────────────────────────────────────
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('Admin','ProductionUser','FinanceUser','Viewer')")
+    @PreAuthorize("hasAnyRole('Admin','Manager','ProductionUser','FinanceUser','Viewer')")
     public ResponseEntity<List<OrderEntity>> getOrders(
             @RequestParam String tenantId,
             @RequestParam(required = false) String status,
@@ -44,7 +45,7 @@ public class OrderController {
     // ─── GET ONE ─────────────────────────────────────────────────────────────────
 
     @GetMapping("/{orderId}")
-    @PreAuthorize("hasAnyRole('Admin','ProductionUser','FinanceUser','Viewer')")
+    @PreAuthorize("hasAnyRole('Admin','Manager','ProductionUser','FinanceUser','Viewer')")
     public ResponseEntity<OrderEntity> getOrder(
             @PathVariable String orderId,
             @RequestParam String tenantId) {
@@ -119,7 +120,7 @@ public class OrderController {
     // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
     private String getPrincipalName() {
-        return "system"; // TODO: replace with real Spring Security principal
+        return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 
     // ─── REQUEST DTO ─────────────────────────────────────────────────────────────

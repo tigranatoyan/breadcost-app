@@ -95,7 +95,8 @@ public class AuthController {
                 new DemoUser("viewer",     "viewer",     List.of("Viewer")),
                 new DemoUser("cashier",    "cashier",    List.of("Cashier")),
                 new DemoUser("warehouse",  "warehouse",  List.of("Warehouse")),
-                new DemoUser("technologist","technologist", List.of("Technologist"))
+                new DemoUser("technologist","technologist", List.of("Technologist")),
+                new DemoUser("manager",    "manager",    List.of("Manager"))
         );
         for (DemoUser d : demos) {
             if (d.username().equals(req.getUsername()) && d.password().equals(req.getPassword())) {

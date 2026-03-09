@@ -83,7 +83,9 @@ public class SecurityConfig {
                 .username("warehouse").password(passwordEncoder.encode("warehouse")).roles("Warehouse").build();
         UserDetails technologist = User.builder()
                 .username("technologist").password(passwordEncoder.encode("technologist")).roles("Technologist").build();
-        return new InMemoryUserDetailsManager(admin, production, finance, viewer, cashier, warehouse, technologist);
+        UserDetails manager = User.builder()
+                .username("manager").password(passwordEncoder.encode("manager")).roles("Manager").build();
+        return new InMemoryUserDetailsManager(admin, production, finance, viewer, cashier, warehouse, technologist, manager);
     }
 
     @Bean

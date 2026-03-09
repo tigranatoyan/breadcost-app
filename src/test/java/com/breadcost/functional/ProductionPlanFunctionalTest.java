@@ -140,16 +140,16 @@ class ProductionPlanFunctionalTest extends FunctionalTestBase {
     }
 
     @Test
-    @DisplayName("FE-PP-6 ✓ Floor worker (ProductionUser) can approve plan — BE allows ProductionUser")
-    void floorWorker_approvePlan_200() throws Exception {
-        // BE @PreAuthorize includes ProductionUser; spec gap vs FE-PP-6 management-only restriction
+    @DisplayName("FE-PP-6 ✓ Floor worker (ProductionUser) cannot approve plan — only Admin/Manager can")
+    void floorWorker_approvePlan_403() throws Exception {
+        // GAP-03 fix: approve restricted to Admin/Manager per FE spec
         String planId = createPlanReturningId("admin1");
 
         POST(BASE + "/" + planId + "/generate?tenantId=" + TENANT, null, bearer("admin1"))
                 .andExpect(status().isOk());
 
         POST(BASE + "/" + planId + "/approve?tenantId=" + TENANT, null, bearer("floor1"))
-                .andExpect(status().isOk());
+                .andExpect(status().isForbidden());
     }
 
     // ── FE-PP-5: Plan detail ──────────────────────────────────────────────────

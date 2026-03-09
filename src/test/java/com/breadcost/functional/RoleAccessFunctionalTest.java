@@ -99,11 +99,11 @@ class RoleAccessFunctionalTest extends FunctionalTestBase {
     // ── Inventory access matrix ───────────────────────────────────────────────
 
     @Test
-    @DisplayName("FE-SHELL-2 ✓ Manager: /inventory/positions is not in BE allowlist — returns 403")
+    @DisplayName("FE-SHELL-2 ✓ Manager: /inventory/positions is accessible (GAP-04 fix)")
     void manager_inventoryPositions_readable() throws Exception {
-        // BE @PreAuthorize: Admin,ProductionUser,FinanceUser,Viewer,Warehouse — Manager not listed
+        // GAP-04 fix: Manager added to inventory read endpoints
         GET("/v1/inventory/positions?tenantId=" + TENANT, bearer("manager1"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isOk());
     }
 
     @Test

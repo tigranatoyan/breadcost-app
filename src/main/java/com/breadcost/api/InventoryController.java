@@ -34,7 +34,7 @@ public class InventoryController {
     // ─── POSITIONS ───────────────────────────────────────────────────────────
 
     @GetMapping("/positions")
-    @PreAuthorize("hasAnyRole('Admin','ProductionUser','FinanceUser','Viewer','Warehouse')")
+    @PreAuthorize("hasAnyRole('Admin','Manager','ProductionUser','FinanceUser','Viewer','Warehouse')")
     public ResponseEntity<List<InventoryProjection.InventoryPosition>> getPositions(
             @RequestParam String tenantId,
             @RequestParam(required = false) String siteId) {
@@ -124,7 +124,7 @@ public class InventoryController {
     }
 
     @GetMapping("/alerts")
-    @PreAuthorize("hasAnyRole('Admin','ProductionUser','FinanceUser','Viewer','Warehouse')")
+    @PreAuthorize("hasAnyRole('Admin','Manager','ProductionUser','FinanceUser','Viewer','Warehouse')")
     public ResponseEntity<List<StockAlert>> getAlerts(@RequestParam String tenantId) {
         List<ItemEntity> items = itemRepository.findByTenantId(tenantId).stream()
                 .filter(i -> i.getMinStockThreshold() > 0)

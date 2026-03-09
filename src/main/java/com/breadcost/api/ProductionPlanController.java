@@ -12,6 +12,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -27,7 +28,7 @@ public class ProductionPlanController {
     // ─── PLANS ───────────────────────────────────────────────────────────────
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('Admin','ProductionUser','FinanceUser','Viewer')")
+    @PreAuthorize("hasAnyRole('Admin','Manager','ProductionUser','FinanceUser','Viewer')")
     public ResponseEntity<List<ProductionPlanEntity>> getPlans(
             @RequestParam String tenantId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
@@ -36,7 +37,7 @@ public class ProductionPlanController {
     }
 
     @GetMapping("/{planId}")
-    @PreAuthorize("hasAnyRole('Admin','ProductionUser','FinanceUser','Viewer')")
+    @PreAuthorize("hasAnyRole('Admin','Manager','ProductionUser','FinanceUser','Viewer')")
     public ResponseEntity<ProductionPlanEntity> getPlan(
             @PathVariable String planId,
             @RequestParam String tenantId) {
@@ -70,7 +71,7 @@ public class ProductionPlanController {
     }
 
     @PostMapping("/{planId}/approve")
-    @PreAuthorize("hasAnyRole('Admin','ProductionUser')")
+    @PreAuthorize("hasAnyRole('Admin','Manager')")
     public ResponseEntity<ProductionPlanEntity> approvePlan(
             @PathVariable String planId,
             @RequestParam String tenantId) {
@@ -78,7 +79,7 @@ public class ProductionPlanController {
     }
 
     @PostMapping("/{planId}/publish")
-    @PreAuthorize("hasAnyRole('Admin','ProductionUser')")
+    @PreAuthorize("hasAnyRole('Admin','Manager')")
     public ResponseEntity<ProductionPlanEntity> publishPlan(
             @PathVariable String planId,
             @RequestParam String tenantId) {
@@ -167,7 +168,7 @@ public class ProductionPlanController {
     // ─── HELPERS ─────────────────────────────────────────────────────────────
 
     private String getPrincipalName() {
-        return "system"; // TODO: replace with real Spring Security principal
+        return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 
     // ─── REQUEST DTO ─────────────────────────────────────────────────────────
