@@ -47,13 +47,21 @@ interface POLine {
   unitPrice: number;
   currency?: string;
 }
+interface SupplierApiConfig {
+  id: string;
+  supplierId: string;
+  apiUrl: string;
+  apiKeyRef: string;
+  format: string;
+  enabled: boolean;
+}
 
 /* ── page ──────────────────────────────────────────────── */
 export default function SuppliersPage() {
   const t = useT();
 
   /* tabs */
-  const [tab, setTab] = useState<'suppliers' | 'purchase-orders'>('suppliers');
+  const [tab, setTab] = useState<'suppliers' | 'purchase-orders' | 'api-config'>('suppliers');
 
   /* ── supplier state ─────────────────────────────────── */
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -83,6 +91,13 @@ export default function SuppliersPage() {
   const [poDetail, setPoDetail] = useState<{ po: PO; lines: POLine[] } | null>(null);
   const [poDetailLoading, setPoDetailLoading] = useState(false);
 
+  /* ── API Config state ───────────────────────────────── */
+  const [apiConfigs, setApiConfigs] = useState<SupplierApiConfig[]>([]);
+  const [apiLoading, setApiLoading] = useState(false);
+  const [showApiForm, setShowApiForm] = useState(false);
+  const [apiForm, setApiForm] = useState({ supplierId: '', apiUrl: '', apiKeyRef: '', format: 'JSON', enabled: true });
+  const [apiSaving, setApiSaving] = useState(false);
+
   /* ── loaders ────────────────────────────────────────── */
   const loadSuppliers = useCallback(async () => {
     try {
@@ -102,6 +117,35 @@ export default function SuppliersPage() {
 
   useEffect(() => { loadSuppliers(); }, [loadSuppliers]);
   useEffect(() => { if (tab === 'purchase-orders') loadPOs(); }, [tab, loadPOs]);
+
+  /* ── API Config CRUD ────────────────────────────────── */
+  const loadApiConfigs = useCallback(async () => {
+    try {
+      setApiLoading(true);
+      setApiConfigs(await apiFetch<SupplierApiConfig[]>(`/v3/supplier-api/configs?tenantId=${TENANT_ID}`));
+    } catch (e) { setError(String(e)); } finally { setApiLoading(false); }
+  }, []);
+
+  const saveApiConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setApiSaving(true);
+      await apiFetch('/v3/supplier-api/configs', { method: 'POST', body: JSON.stringify({ tenantId: TENANT_ID, ...apiForm }) });
+      setSuccess(t('supplierApi.saved'));
+      setShowApiForm(false);
+      setApiForm({ supplierId: '', apiUrl: '', apiKeyRef: '', format: 'JSON', enabled: true });
+      loadApiConfigs();
+    } catch (e) { setError(String(e)); } finally { setApiSaving(false); }
+  };
+
+  const sendPO = async (poId: string) => {
+    try {
+      await apiFetch('/v3/supplier-api/send-po', { method: 'POST', body: JSON.stringify({ tenantId: TENANT_ID, poId }) });
+      setSuccess(t('supplierApi.poSent'));
+    } catch (e) { setError(String(e)); }
+  };
+
+  useEffect(() => { if (tab === 'api-config') loadApiConfigs(); }, [tab, loadApiConfigs]);
 
   /* ── supplier CRUD ──────────────────────────────────── */
   const createSupplier = async (e: React.FormEvent) => {
@@ -242,7 +286,7 @@ export default function SuppliersPage() {
 
       {/* tabs */}
       <div className="flex gap-2 mb-6 border-b border-gray-200">
-        {(['suppliers', 'purchase-orders'] as const).map(k => (
+        {(['suppliers', 'purchase-orders', 'api-config'] as const).map(k => (
           <button key={k} onClick={() => setTab(k)}
             className={`px-4 py-2 text-sm font-medium -mb-px ${tab === k ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}>
             {t(`suppliers.tab_${k.replace('-', '_')}`)}
@@ -297,6 +341,32 @@ export default function SuppliersPage() {
                 </div>,
               ])}
               empty={t('suppliers.poEmpty')}
+            />
+          )}
+        </>
+      )}
+
+      {/* ───────── API CONFIG TAB ───────── */}
+      {tab === 'api-config' && (
+        <>
+          <div className="flex justify-end mb-4">
+            <button className="btn btn-primary text-sm" onClick={() => setShowApiForm(true)}>+ {t('supplierApi.addConfig')}</button>
+          </div>
+          {apiLoading ? <Spinner /> : (
+            <Table
+              cols={[t('supplierApi.supplier'), t('supplierApi.apiUrl'), t('supplierApi.format'), t('supplierApi.enabled'), '']}
+              rows={apiConfigs.map(c => [
+                suppliers.find(s => s.supplierId === c.supplierId)?.name || c.supplierId.slice(0, 8),
+                <span key={c.id + 'u'} className="text-sm max-w-xs truncate block">{c.apiUrl}</span>,
+                c.format,
+                c.enabled ? '✅' : '❌',
+                <button key={c.id} onClick={() => {
+                  const po = pos.find(p => p.supplierId === c.supplierId && p.status === 'APPROVED');
+                  if (po) sendPO(po.poId);
+                  else setError(t('supplierApi.noApprovedPO'));
+                }} className="text-blue-600 hover:underline text-sm">{t('supplierApi.sendPO')}</button>,
+              ])}
+              empty={t('supplierApi.noConfigs')}
             />
           )}
         </>
@@ -409,6 +479,37 @@ export default function SuppliersPage() {
               />
             </>
           )}
+        </Modal>
+      )}
+
+      {/* ───────── API CONFIG FORM MODAL ───────── */}
+      {showApiForm && (
+        <Modal title={t('supplierApi.addConfig')} onClose={() => setShowApiForm(false)}>
+          <form onSubmit={saveApiConfig} className="space-y-4">
+            <Field label={t('supplierApi.supplier')}>
+              <select className="input w-full" required value={apiForm.supplierId} onChange={e => setApiForm({ ...apiForm, supplierId: e.target.value })}>
+                <option value="">— {t('common.select')} —</option>
+                {suppliers.map(s => <option key={s.supplierId} value={s.supplierId}>{s.name}</option>)}
+              </select>
+            </Field>
+            <Field label={t('supplierApi.apiUrl')}><input className="input w-full" required value={apiForm.apiUrl} onChange={e => setApiForm({ ...apiForm, apiUrl: e.target.value })} /></Field>
+            <Field label={t('supplierApi.apiKeyRef')}><input className="input w-full" required value={apiForm.apiKeyRef} onChange={e => setApiForm({ ...apiForm, apiKeyRef: e.target.value })} /></Field>
+            <Field label={t('supplierApi.format')}>
+              <select className="input w-full" value={apiForm.format} onChange={e => setApiForm({ ...apiForm, format: e.target.value })}>
+                <option value="JSON">JSON</option>
+                <option value="XML">XML</option>
+                <option value="EDI">EDI</option>
+              </select>
+            </Field>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={apiForm.enabled} onChange={e => setApiForm({ ...apiForm, enabled: e.target.checked })} />
+              {t('supplierApi.enabled')}
+            </label>
+            <div className="flex justify-end gap-2">
+              <button type="button" className="btn btn-secondary" onClick={() => setShowApiForm(false)}>{t('common.cancel')}</button>
+              <button type="submit" className="btn btn-primary" disabled={apiSaving}>{apiSaving ? t('common.saving') : t('common.save')}</button>
+            </div>
+          </form>
         </Modal>
       )}
     </div>

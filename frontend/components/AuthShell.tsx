@@ -98,8 +98,26 @@ const SECTIONS: NavSection[] = [
     roles: ['admin', 'management', 'finance'],
   },
   {
+    titleKey: 'nav.aiSection',
+    items: [
+      { href: '/ai-whatsapp', labelKey: 'nav.aiWhatsapp' },
+      { href: '/ai-suggestions', labelKey: 'nav.aiSuggestions' },
+      { href: '/ai-pricing', labelKey: 'nav.aiPricing' },
+    ],
+    roles: ['admin', 'management'],
+  },
+  {
+    titleKey: 'nav.driverSection',
+    items: [{ href: '/driver', labelKey: 'nav.driver' }],
+    roles: ['admin', 'management'],
+  },
+  {
     titleKey: 'nav.platform',
-    items: [{ href: '/subscriptions', labelKey: 'nav.subscriptions' }],
+    items: [
+      { href: '/subscriptions', labelKey: 'nav.subscriptions' },
+      { href: '/exchange-rates', labelKey: 'nav.exchangeRates' },
+      { href: '/mobile-admin', labelKey: 'nav.mobileAdmin' },
+    ],
     roles: ['admin'],
   },
   {

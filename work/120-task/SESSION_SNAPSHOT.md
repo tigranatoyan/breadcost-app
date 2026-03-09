@@ -1,5 +1,5 @@
 # BreadCost App — Work Session Snapshot
-**Last Updated:** 2026-03-09 (R3 complete — all 15 stories Done, Jira synced, pushed to main)
+**Last Updated:** 2026-03-09 (R3-FE complete — 7 stories, 4 new pages + 1 modified, Jira synced, pushed to main)
 **Purpose:** Handoff context for continuing development in a new chat session
 
 > **Frontend Requirements:** See `work/120-task/FE_REQUIREMENTS.md` — APPROVED.
@@ -19,6 +19,7 @@
 | **R3-S1 Backend** | ✅ Done — 6 stories (exchange rate, supplier API, AI WhatsApp), V2 migration (6 tables), 283 tests |
 | **R3-S2 Backend** | ✅ Done — 6 stories (AI suggestions, driver mobile), V3 migration (7 tables), 309 tests |
 | **R3-S3 Backend** | ✅ Done — 3 stories (AI pricing, AI anomaly, mobile customer app), V4 migration (4 tables), 328 tests |
+| **R3-FE Frontend** | ✅ Done — 7 stories, 4 new pages + 1 modified (ai-pricing, ai-whatsapp, ai-suggestions, driver, mobile-admin, exchange-rates, supplier API tab) |
 
 **Repo:** `https://github.com/tigranatoyan/breadcost-app.git`
 
@@ -40,7 +41,7 @@
 
 **Run backend:** `.\gradlew bootRun` (port 8080)
 **Run frontend:** `cd frontend && npm run dev` (port 3000)
-**Build frontend:** `cd frontend && npm run build` (24 routes, 0 errors)
+**Build frontend:** `cd frontend && npm run build` (28 routes, 0 errors)
 
 ---
 
@@ -50,13 +51,13 @@
 |----------|-------|
 | Backend Java (src/main) | ~195 files |
 | Backend Tests (src/test) | ~51 files, 328 tests passing |
-| Frontend pages (app/**/page.tsx) | 22 files (21 routes + layout) |
-| Frontend total (tsx/ts/css/mjs) | 34 files |
+| Frontend pages (app/**/page.tsx) | 28 files (27 routes + layout) |
+| Frontend total (tsx/ts/css/mjs) | 40 files |
 | Backend packages | 23 (api, ai, commands, customers, delivery, domain, driver, events, eventstore, finance, invoice, loyalty, masterdata, mobile, multitenancy, projections, purchaseorder, reporting, security, subscription, supplier, validation, whatsapp) |
 
 ---
 
-## Frontend Pages (21 routes)
+## Frontend Pages (27 routes)
 
 ### R1/R1.5 Pages (14)
 | Route | Purpose |
@@ -86,6 +87,17 @@
 | `/subscriptions` | Subscription tier management | Tabs: Plans / Current. Card grid, assign/change plan, feature access checker |
 | `/customers` | Customer portal | Tabs: Customers / Catalog / Orders. Registration, order creation with product selection |
 
+### R3-FE Pages (6 new routes + 1 modified) — Added 2026-03-09
+| Route | Purpose | Key Features |
+|-------|---------|-------------|
+| `/exchange-rates` | Exchange rate management | Rate table, add rate, lookup, converter, fetch from API |
+| `/ai-whatsapp` | AI WhatsApp dashboard | Tabs: All/Escalated. Conversation list, message threads, draft orders, resolve |
+| `/ai-suggestions` | AI suggestions | Tabs: Replenishment/Forecast/Production. Generate, list, dismiss, pending filter |
+| `/ai-pricing` | AI pricing & anomalies | Tabs: Pricing Suggestions/Anomaly Alerts. Generate, accept/dismiss, severity badges |
+| `/driver` | Driver sessions | Tabs: Active Sessions/Packaging/Payments. Manifest view, end session, lookup |
+| `/mobile-admin` | Mobile device admin | Tabs: Devices/Notifications. Device list, remove, send notification |
+| `/suppliers` *(modified)* | + API Config tab | New tab: supplier API configs, add config modal, send PO via API |
+
 ### Navigation Sections (AuthShell.tsx)
 | Section | Routes | Roles |
 |---------|--------|-------|
@@ -97,7 +109,9 @@
 | Finance | invoices, customers | admin, management, finance |
 | Loyalty | loyalty | admin, management |
 | Analytics | reports, report-builder | admin, management, finance |
-| Platform | subscriptions | admin |
+| AI & Automation | ai-whatsapp, ai-suggestions, ai-pricing | admin, management |
+| Driver | driver | admin, management |
+| Platform | subscriptions, exchange-rates, mobile-admin | admin |
 | Configuration | admin | admin |
 
 ---
@@ -165,14 +179,15 @@
 | R3-S1 | 6 | ✅ Done (exchange rate, supplier API, AI WhatsApp) |
 | R3-S2 | 6 | ✅ Done (AI suggestions, driver mobile) |
 | R3-S3 | 3 | ✅ Done (AI pricing, AI anomaly, mobile customer app) |
+| R3-FE | 7 | ✅ All Done (2 epics, 2 sprints, BC-247–BC-253) |
 
 ---
 
 ## What's Next (Priority Order)
 
-1. **R3 Frontend** — Build R3 frontend pages for AI dashboards, driver mobile, customer mobile
-2. **Testing** — End-to-end integration tests, load testing
-3. **Deployment** — Production Docker setup, CI/CD pipeline
+1. **Testing** — End-to-end integration tests, load testing
+2. **Deployment** — Production Docker setup, CI/CD pipeline
+3. **Polish** — UX refinements, accessibility, mobile responsiveness
 
 ---
 

@@ -205,7 +205,7 @@ def cmd_list(filter_arg):
     """List stories filtered by release (r1/r2/r3) or epic (BC-E01 etc.)."""
     filt = filter_arg.lower()
 
-    if filt in ("r1", "r2", "r3"):
+    if filt in ("r1", "r1.5", "r2", "r3", "r3-fe"):
         release_upper = filt.upper()
         epic_release = {e["id"]: e.get("release", "R1").split(",")[0].strip() for e in EPICS}
         subset = [
@@ -232,7 +232,7 @@ def cmd_status():
     # Build a release map: story_id → effective release (story.release overrides epic.release)
     epic_release = {e["id"]: e.get("release", "R1").split(",")[0].strip() for e in EPICS}
     print("\n  BreadCost -- Release Progress\n")
-    for release in ("R1", "R2", "R3"):
+    for release in ("R1", "R1.5", "R2", "R3", "R3-FE"):
         stories = [
             s for s in STORIES
             if (s.get("release") or epic_release.get(s.get("epic_id", ""), "R1")) == release

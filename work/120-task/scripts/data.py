@@ -256,6 +256,23 @@ EPICS = [
         "release": "R3",
         "labels": ["mobile", "customer-app", "r3"],
     },
+    # ── Release 3 FE — Frontend for R3 Backend ───────────
+    {
+        "id": "BC-E30",
+        "title": "R3 FE — AI Dashboards & Exchange Rates (Sprint 8)",
+        "goal": "Frontend pages for AI WhatsApp conversations, AI suggestions, AI pricing/anomaly dashboards, and exchange rate management.",
+        "requirements": "FR-12.1–FR-12.7, FR-9.7",
+        "release": "R3-FE",
+        "labels": ["ai", "frontend", "r3-fe", "sprint-8"],
+    },
+    {
+        "id": "BC-E31",
+        "title": "R3 FE — Driver, Mobile Admin & Supplier API (Sprint 9)",
+        "goal": "Frontend pages for driver delivery sessions, mobile device admin, supplier API config integration.",
+        "requirements": "FR-7.7, FR-8.7, FR-8.8, FR-6.7, FR-2.1",
+        "release": "R3-FE",
+        "labels": ["driver", "mobile", "frontend", "r3-fe", "sprint-9"],
+    },
 ]
 
 # ── STORIES ──────────────────────────────────────────────────
@@ -2219,5 +2236,139 @@ STORIES = [
         "priority": "P2",
         "status": "✅ Done",
         "labels": ["mobile", "customer-app"],
+    },
+
+    # ══════════════════════════════════════════════════════
+    # R3 FE — Sprint 8: AI Dashboards & Exchange Rates
+    # ══════════════════════════════════════════════════════
+
+    # ── BC-E30: AI Dashboards & Exchange Rates ────────────
+    {
+        "id": "BC-2401",
+        "epic_id": "BC-E30",
+        "release": "R3-FE",
+        "sprint": "Sprint 8",
+        "title": "FE /exchange-rates — Exchange rate management page",
+        "acceptance_criteria": [
+            "Table of all exchange rates with currency, rate, date columns",
+            "Add rate modal: base currency, target currency, rate, date",
+            "Lookup rate for a specific currency+date",
+            "Currency converter: from/to/amount → converted value",
+            "Fetch from external API button",
+            "Admin/management roles only",
+        ],
+        "priority": "P1",
+        "status": "✅ Done",
+        "labels": ["exchange-rates", "frontend", "r3-fe"],
+    },
+    {
+        "id": "BC-2402",
+        "epic_id": "BC-E30",
+        "release": "R3-FE",
+        "sprint": "Sprint 8",
+        "title": "FE /ai-whatsapp — AI WhatsApp conversations dashboard",
+        "acceptance_criteria": [
+            "Tabs: All Conversations | Escalated",
+            "Conversation list with customer phone, status, message count, created date",
+            "Click conversation → message thread view with bot/customer indicators",
+            "Draft orders panel showing order intents from conversation",
+            "Resolve escalation button with close option",
+            "Admin/management roles only",
+        ],
+        "priority": "P0",
+        "status": "✅ Done",
+        "labels": ["ai", "whatsapp", "frontend", "r3-fe"],
+    },
+    {
+        "id": "BC-2403",
+        "epic_id": "BC-E30",
+        "release": "R3-FE",
+        "sprint": "Sprint 8",
+        "title": "FE /ai-suggestions — AI replenishment, forecast & production suggestions",
+        "acceptance_criteria": [
+            "Tabs: Replenishment | Demand Forecast | Production",
+            "Replenishment: generate button (WEEKLY/MONTHLY), list hints, pending filter, dismiss action",
+            "Forecast: generate with forecast days selector (7/14/30), list forecasts with product/predicted qty",
+            "Production: generate for date picker, list suggestions for selected date",
+            "Admin/management roles only",
+        ],
+        "priority": "P0",
+        "status": "✅ Done",
+        "labels": ["ai", "suggestions", "frontend", "r3-fe"],
+    },
+    {
+        "id": "BC-2404",
+        "epic_id": "BC-E30",
+        "release": "R3-FE",
+        "sprint": "Sprint 8",
+        "title": "FE /ai-pricing — AI pricing suggestions & anomaly alerts",
+        "acceptance_criteria": [
+            "Tabs: Pricing Suggestions | Anomaly Alerts",
+            "Pricing: generate button, list with product/suggested price/reasoning, pending filter, dismiss/accept actions",
+            "Anomalies: generate button, list with type/severity/deviation %/explanation, active filter, acknowledge/dismiss actions",
+            "Severity badges (LOW/MEDIUM/HIGH/CRITICAL) with color coding",
+            "Admin/management roles only",
+        ],
+        "priority": "P0",
+        "status": "✅ Done",
+        "labels": ["ai", "pricing", "anomaly", "frontend", "r3-fe"],
+    },
+
+    # ══════════════════════════════════════════════════════
+    # R3 FE — Sprint 9: Driver, Mobile Admin & Supplier API
+    # ══════════════════════════════════════════════════════
+
+    # ── BC-E31: Driver, Mobile Admin & Supplier API ───────
+    {
+        "id": "BC-2501",
+        "epic_id": "BC-E31",
+        "release": "R3-FE",
+        "sprint": "Sprint 9",
+        "title": "FE /driver — Driver delivery session management",
+        "acceptance_criteria": [
+            "Tabs: Active Sessions | Packaging | Payments",
+            "Sessions: start new session (driverId, driverName, runId), list active, view manifest, end session",
+            "Session detail: stop updates list with action/status, location tracking",
+            "Packaging: confirm packaging for run, view confirmation details",
+            "Payments: collect on-spot payment modal (amount, method, reference), session/order payment views",
+            "Admin/management roles only",
+        ],
+        "priority": "P1",
+        "status": "✅ Done",
+        "labels": ["driver", "mobile", "frontend", "r3-fe"],
+    },
+    {
+        "id": "BC-2502",
+        "epic_id": "BC-E31",
+        "release": "R3-FE",
+        "sprint": "Sprint 9",
+        "title": "FE /mobile-admin — Mobile device & notification admin",
+        "acceptance_criteria": [
+            "Tabs: Devices | Notifications",
+            "Devices: list registered devices by customerId, register new device modal (customerId, token, platform, name), unregister button",
+            "Notifications: send notification modal (customerId, title, body, type), notify order status change, list notifications by customer",
+            "Platform badges (IOS/ANDROID)",
+            "Admin roles only",
+        ],
+        "priority": "P1",
+        "status": "✅ Done",
+        "labels": ["mobile", "notifications", "frontend", "r3-fe"],
+    },
+    {
+        "id": "BC-2503",
+        "epic_id": "BC-E31",
+        "release": "R3-FE",
+        "sprint": "Sprint 9",
+        "title": "FE /suppliers — Supplier API config tab integration",
+        "acceptance_criteria": [
+            "New 'API Config' tab added to existing /suppliers page",
+            "List all supplier API configs with supplier name, API URL, format, enabled status",
+            "Add/edit config modal: supplier select, API URL, API key reference, format (JSON/XML), enabled toggle",
+            "Send PO button on purchase orders tab for suppliers with active API config",
+            "Admin/management roles only",
+        ],
+        "priority": "P2",
+        "status": "✅ Done",
+        "labels": ["suppliers", "api", "frontend", "r3-fe"],
     },
 ]
