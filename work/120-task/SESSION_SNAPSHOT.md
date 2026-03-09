@@ -13,7 +13,7 @@
 |-------|--------|
 | **R1 Backend** | ✅ Done — 60 stories, all core domains |
 | **R1.5 Frontend** | ✅ Done — 14 pages (login thru technologist) |
-| **R2 Backend** | ✅ Done — 33 stories, 7 epics, ~130 tests, 67 endpoints across 10 controllers |
+| **R2 Backend** | ✅ Done — 37 stories, 7 epics, ~130 tests, 67 endpoints across 10 controllers |
 | **R2 Frontend** | ✅ Done — 7 new pages (suppliers, deliveries, invoices, report-builder, loyalty, subscriptions, customers) |
 | **Phase 3a Infra** | ✅ Done — PostgreSQL, Docker, Flyway V1, TenantContext, multi-tenancy foundation |
 | **R3-S1 Backend** | ✅ Done — 6 stories (exchange rate, supplier API, AI WhatsApp), V2 migration (6 tables), 283 tests |
@@ -161,7 +161,7 @@
 |---------|---------|--------|
 | R1 | 60 | ✅ All Done |
 | R1.5 | 23 | ✅ All Done (4 epics, Sprints 4-7) |
-| R2 | 33 + FE | ✅ Backend Done, FE Done |
+| R2 | 37 | ✅ All Done |
 | R3-S1 | 6 | ✅ Done (exchange rate, supplier API, AI WhatsApp) |
 | R3-S2 | 6 | ✅ Done (AI suggestions, driver mobile) |
 | R3-S3 | 3 | ✅ Done (AI pricing, AI anomaly, mobile customer app) |

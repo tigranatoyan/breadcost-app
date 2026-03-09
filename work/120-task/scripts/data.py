@@ -1435,7 +1435,7 @@ STORIES = [
             "FR-1.2 satisfied",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["orders", "whatsapp"],
     },
     {
@@ -1450,7 +1450,7 @@ STORIES = [
             "FR-1.3 and FR-1.4 satisfied",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["orders", "whatsapp", "ai"],
     },
     {
@@ -1464,7 +1464,7 @@ STORIES = [
             "FR-1.5 satisfied",
         ],
         "priority": "P2",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["orders", "whatsapp"],
     },
 
