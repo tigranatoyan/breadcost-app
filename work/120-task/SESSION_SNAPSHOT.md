@@ -1,394 +1,234 @@
 # BreadCost App — Work Session Snapshot
-**Last Updated:** 2026-03-08 (R1.5 Jira updated, Sprint 4 implementation starting)
+**Last Updated:** 2026-03-09 (R2 Frontend complete, all pushed to main)
 **Purpose:** Handoff context for continuing development in a new chat session
 
-> **Frontend Requirements:** See `work/120-task/FE_REQUIREMENTS.md` — APPROVED, implementation in progress.
-> **Frontend Spec:** See `work/120-task/FRONTEND_SPEC.md` — frozen implementation reference for what is already built.
+> **Frontend Requirements:** See `work/120-task/FE_REQUIREMENTS.md` — APPROVED.
+> **Frontend Spec:** See `work/120-task/FRONTEND_SPEC.md` — frozen reference for R1/R1.5 pages.
 
 ---
 
-## 🔄 IN PROGRESS — R1.5 Sprint 4: Inventory & Warehouse FE
+## Current State Summary
 
-### Release Progression: R1.5 → R2 → R3
+| Layer | Status |
+|-------|--------|
+| **R1 Backend** | ✅ Done — 60 stories, all core domains |
+| **R1.5 Frontend** | ✅ Done — 14 pages (login thru technologist) |
+| **R2 Backend** | ✅ Done — 33 stories, 7 epics, ~130 tests, 67 endpoints across 10 controllers |
+| **R2 Frontend** | ✅ Done — 7 new pages (suppliers, deliveries, invoices, report-builder, loyalty, subscriptions, customers) |
+| **Phase 3a Infra** | ✅ Done — PostgreSQL, Docker, Flyway V1, TenantContext, multi-tenancy foundation |
+| **R3** | 🔲 Not started — 15 stories, 6 epics, 3 sprints |
 
-### Jira State (as of 2026-03-08)
-- **R1**: 60 stories Done (Sprint 1 closed)
-- **R1.5**: 23 stories To Do, 4 epics (BC-218..221), 4 sprints (4-7, ids=40-43), version id=10035
-- **R2**: 37 stories To Do (reverted from incorrectly Done), 6 sprints (8-13, ids=44-49)
-- **R3**: 15 stories To Do, 6 epics, 3 sprints (ids=83-85)
-
-### Sprint 4 — Inventory & Warehouse FE (5 stories)
-| Story | Title | Status |
-|-------|-------|--------|
-| BC-1501 | Adjustment modal (waste/spoilage/correction) | 📋 Planned |
-| BC-1502 | Lot detail expand with FIFO cost layers | 📋 Planned |
-| BC-1503 | Department/site filter + last receipt date | 📋 Planned |
-| BC-1504 | Receive Lot: currency + exchange rate fields | 📋 Planned |
-| BC-1505 | Dashboard stock alert widget + 60s auto-refresh | 📋 Planned |
-
-### Backend endpoints available for Sprint 4
-- `POST /v1/inventory/adjust` — AdjustRequest{tenantId, siteId, itemId, adjustmentQty, unit, reasonCode, notes} → AdjustResponse
-- `GET /v1/inventory/positions?tenantId=&siteId=` — List<InventoryPosition> (id, tenantId, siteId, itemId, lotId, locationId, onHandQty, uom, avgUnitCost, valuationAmount)
-- `GET /v1/inventory/alerts?tenantId=` — List<StockAlert> (itemId, itemName, onHandQty, minThreshold, severity, uom)
-- `POST /v1/inventory/receipts` — ReceiveLotCommand{tenantId, siteId, receiptId, itemId, lotId, uom, qty, unitCostBase, idempotencyKey}
-- `GET /v1/departments?tenantId=` — List<DepartmentEntity>
-
-### Next recommended work
-1. **Implement Sprint 4 stories** in `frontend/app/inventory/page.tsx` and `frontend/app/dashboard/page.tsx`
-2. After Sprint 4: Sprint 5 (POS), Sprint 6 (Admin/Catalog), Sprint 7 (Reports/Dashboard)
+**HEAD:** `1b391f3` on `main` (92 commits total)
+**Repo:** `https://github.com/tigranatoyan/breadcost-app.git`
 
 ---
 
-## Session History — 2026-03-07
+## Tech Stack
 
-### Session 5 — Full i18n Implementation (English + Armenian)
-**Infrastructure created:**
-- `frontend/lib/i18n.tsx` — React Context-based i18n system (I18nProvider, useT, useI18n hooks, localStorage persistence under `breadcost_locale`, dot-notation key access, `{placeholder}` interpolation)
-- `frontend/locales/en.ts` — ~550+ English translation strings across 17 sections
-- `frontend/locales/hy.ts` — Full Armenian translations using Unicode escape sequences (avoids encoding issues)
+| Component | Version / Detail |
+|-----------|-----------------|
+| Java | 21 (Spring Boot 3.4.2) |
+| Build | Gradle 8.11 (build.gradle.kts) |
+| DB (dev) | H2 file-based (`./data/breadcost`) |
+| DB (prod) | PostgreSQL 16 via Docker Compose |
+| Migration | Flyway V1 (37 tables) |
+| Frontend | Next.js 14.2.18, React 18, TypeScript 5, Tailwind CSS 3.4 |
+| i18n | Custom React Context (EN + HY, ~750 keys each) |
+| Auth | Spring Security basic auth (admin/admin) |
+| Multi-tenancy | TenantContext ThreadLocal + TenantFilter (JWT tenant extraction) |
 
-**Layout & shell:**
-- `frontend/app/layout.tsx` — Wrapped app with `<I18nProvider>`
-- `frontend/components/AuthShell.tsx` — Refactored nav labels to use translation keys (`labelKey`), added EN/HY language switcher in sidebar footer, role labels via `t('roles.${role}')`
-
-**All pages translated (useT + t() calls for all UI strings):**
-- login, dashboard, orders, products, recipes, departments, floor, inventory, pos, production-plans, reports, admin, technologist
-
-**Key decisions:**
-- No external i18n library — lightweight React Context + nested dictionaries
-- Armenian text encoded as Unicode escapes in source to avoid file encoding issues
-- `dictionaries` type relaxed to `Record<string, unknown>` so hy.ts doesn't need identical literal types as en.ts
-- Variable renames where loop vars conflicted with `t` function (e.g., `t` → `tb`, `tp`, `tabKey`)
-
-### Session 4 — Gradle Migration
-- Migrated build from Maven to Gradle (build.gradle.kts, settings.gradle.kts, gradlew)
-- start.bat updated for Gradle
-- Backend runs via `.\gradlew bootRun`
-
-## Session History — 2026-03-04
-
-### Session 3 — Orders Screen Complete
-**File:** `frontend/app/orders/page.tsx`
-
-What was built / improved:
-1. **Status filter dropdown** — filter by All / DRAFT / CONFIRMED / IN_PRODUCTION / READY / OUT_FOR_DELIVERY / DELIVERED / CANCELLED
-2. **Customer search** — live filter by customer name
-3. **Fixed `rushOrder` field** — was `isRushOrder` (wrong); corrected to match `OrderEntity` shape
-4. **Rush order in create form** — checkbox to mark rush order + optional custom premium % field
-5. **Full status advance flow** — buttons: CONFIRMED→▶ Start Production / IN_PROGRESS→✓ Mark Ready / READY→🚚 Out for Delivery / OUT_FOR_DELIVERY→✅ Mark Delivered
-6. **Cancel with reason dialog** — modal with optional reason textarea before confirming cancel
-7. **Optimistic list update** — actions update the single mutated order in state (no full reload)
-8. **Order detail expand** — meta row (orderId, placed at, delivery, notes) + line table with totals row + lead time indicators
-9. **Order count display** — "{N} orders" counter in filter bar
-
-API calls:
-- `GET /v1/orders?tenantId=` — list
-- `POST /v1/orders?tenantId=` — create (with forceRush, customRushPremiumPct)
-- `POST /v1/orders/{id}/confirm?tenantId=` — confirm
-- `POST /v1/orders/{id}/cancel?tenantId=&reason=` — cancel with optional reason
-- `POST /v1/orders/{id}/status?tenantId=&targetStatus=` — status advance
-
-### Session 2 — FE Requirements Definition
-- Generated `work/120-task/FE_REQUIREMENTS.md` — full frontend requirements document covering all 13 screens, 7 roles, 9 principles, FE NFRs, and R1 coverage analysis
-- R1 FE completion assessed at **~30–35%**
-- Key gaps identified: `/orders` (0%), `/inventory` (0%), `/pos` (0%), `/reports` (0%), `/admin` (~10%)
-
-### Session 1 — Technology Steps + Floor Worker + Nav Fix
-1. **TechnologyStep backend** — 4 new files: `TechnologyStepEntity`, `TechnologyStepRepository`, `TechnologyStepService`, `TechnologyStepController`
-   - CRUD endpoints at `/v1/technology-steps` (GET by recipeId, POST, PUT, DELETE)
-2. **recipes/page.tsx** — Technology Steps tab in recipe expand panel. Add/edit/delete steps per recipe.
-3. **floor/page.tsx** — Full rewrite. Shift plan cards → click → WOPanel (tech steps with localStorage checkboxes + recipe ingredients). WO actions: Start / Complete / Cancel.
-4. **AuthShell.tsx** — Floor workers see "My Shift" first, auto-redirect /dashboard → /floor, spinner on load.
-5. **ProductionPlanService** — generateWorkOrders falls back to all confirmed orders if none match by date.
-
-### Current build state
-- Backend: Gradle build, runs via `.\gradlew bootRun` on :8080
-- Frontend: Next.js dev server on :3000, `npx next build` passes cleanly, no TypeScript errors
-- To restart backend: `.\gradlew bootRun`
-- To restart frontend: `cd frontend && npm run dev`
-
-
+**Run backend:** `.\gradlew bootRun` (port 8080)
+**Run frontend:** `cd frontend && npm run dev` (port 3000)
+**Build frontend:** `cd frontend && npm run build` (24 routes, 0 errors)
 
 ---
 
-## 1. What This Project Is
+## File Counts
 
-A Spring Boot (Java 25 / JDK 25) event-sourced CQRS application for managing a bread factory.
-- Multi-tenant SaaS
-- Pattern: Command → Handler → Event → EventStore → Projection (read model)
-- Database: H2 file-based (dev, stored in `./data/breadcost`). PostgreSQL planned for production.
-- Auth: Spring Security basic auth (admin/admin) — real user management is a future task
-- Build: Gradle (build.gradle.kts) with Lombok
-
-**Workspace:** `C:\Users\tigra\breadcost-app`  
-**Run backend:** `.\gradlew bootRun`  
-**Run frontend:** `cd frontend && npm run dev`  
+| Category | Count |
+|----------|-------|
+| Backend Java (src/main) | 163 files |
+| Backend Tests (src/test) | 44 files, 265 tests passing |
+| Frontend pages (app/**/page.tsx) | 22 files (21 routes + layout) |
+| Frontend total (tsx/ts/css/mjs) | 34 files |
+| Backend packages | 20 (api, commands, customers, delivery, domain, events, eventstore, finance, invoice, loyalty, masterdata, multitenancy, projections, purchaseorder, reporting, security, subscription, supplier, validation) |
 
 ---
 
-## 2. Requirements Documents (already written)
+## Frontend Pages (21 routes)
+
+### R1/R1.5 Pages (14)
+| Route | Purpose |
+|-------|---------|
+| `/login` | Auth login form |
+| `/dashboard` | KPI widgets, stock alerts, production snapshot |
+| `/orders` | Order CRUD, status flow, cancel w/ reason |
+| `/products` | Product CRUD, pricing, VAT |
+| `/recipes` | Recipe versioning, ingredients, technology steps |
+| `/departments` | Department CRUD, lead times, warehouse mode |
+| `/floor` | Floor worker shift plan, WO panel, tech step checkboxes |
+| `/inventory` | Positions, adjustments, lot detail, receive lot, FIFO |
+| `/pos` | Point of sale, receipt modal, EOD reconciliation |
+| `/production-plans` | Plan CRUD, work orders, auto-generate, status flow |
+| `/reports` | Revenue, COGS, waste, margins, work order analytics |
+| `/admin` | User CRUD, config editor, password reset |
+| `/technologist` | Recipe overview, cost analysis, production stats |
+
+### R2 Pages (7) — Added 2026-03-09
+| Route | Purpose | Key Features |
+|-------|---------|-------------|
+| `/suppliers` | Supplier CRUD + Purchase Orders | Tabs: Suppliers / POs. Catalog viewer, PO line items, approve, export XLSX, auto-suggest |
+| `/deliveries` | Delivery run management | Create runs, assign orders, manifest view, complete/fail/redeliver/waive |
+| `/invoices` | B2B invoicing + discount rules | Tabs: Invoices / Discount Rules. Status filter, payment recording, credit check/limit, void |
+| `/report-builder` | KPI block catalog + custom reports | Tabs: My Reports / KPI Catalog. Block picker, run reports, dynamic result table, export |
+| `/loyalty` | Loyalty program admin | Tabs: Tiers / Balance / History. Award/redeem points, transaction history |
+| `/subscriptions` | Subscription tier management | Tabs: Plans / Current. Card grid, assign/change plan, feature access checker |
+| `/customers` | Customer portal | Tabs: Customers / Catalog / Orders. Registration, order creation with product selection |
+
+### Navigation Sections (AuthShell.tsx)
+| Section | Routes | Roles |
+|---------|--------|-------|
+| Main | dashboard | all |
+| Operations | orders, production-plans, floor, technologist | varies |
+| Catalog | products, recipes, departments, inventory | varies |
+| Sales | pos | admin, management, cashier |
+| Supply Chain | suppliers, deliveries | admin, management |
+| Finance | invoices, customers | admin, management, finance |
+| Loyalty | loyalty | admin, management |
+| Analytics | reports, report-builder | admin, management, finance |
+| Platform | subscriptions | admin |
+| Configuration | admin | admin |
+
+---
+
+## R2 Backend Endpoints (67 total)
+
+| Controller | Prefix | Endpoints |
+|------------|--------|-----------|
+| SupplierController | `/v2/suppliers` | CRUD + catalog items |
+| PurchaseOrderController | `/v2/purchase-orders` | CRUD + approve + suggest + export |
+| DeliveryRunController | `/v2/delivery-runs` | CRUD + assign + complete + fail + redeliver + waive + manifest |
+| InvoiceController | `/v2/invoices` | List + detail + payments + void |
+| CustomerController | `/v2/customers` | CRUD + credit-check + credit-limit + discount-rules |
+| LoyaltyController | `/v2/loyalty` | Tiers CRUD + balance + award + redeem + history |
+| SubscriptionController | `/v2/subscriptions` | Tiers + tenant assignment + feature check |
+| ReportController | `/v2/reports` | KPI blocks + custom reports CRUD + run + export |
+| ProductController | `/v2/products` | Product catalog (customer-facing) |
+| OrderController | `/v2/orders` | Customer order CRUD |
+
+---
+
+## Database Schema (Flyway V1)
+
+37 tables covering: tenants, users, roles, departments, products, recipes, recipe_ingredients, technology_steps, orders, order_lines, inventory_positions, inventory_adjustments, lots, batches, work_orders, production_plans, pos_sessions, pos_transactions, suppliers, supplier_catalog_items, purchase_orders, purchase_order_lines, delivery_runs, delivery_run_orders, invoices, invoice_lines, invoice_payments, customers, customer_discount_rules, loyalty_tiers, loyalty_balances, loyalty_transactions, subscription_tiers, tenant_subscriptions, kpi_blocks, custom_reports, custom_report_blocks.
+
+---
+
+## Frontend Patterns & Conventions
+
+- **SFC pattern:** `'use client'` → imports → `TENANT_ID='tenant1'` → component function → `apiFetch` calls → `useState` only → JSX with Tailwind
+- **UI kit:** `components/ui.tsx` exports: Modal, Table, Spinner, Alert, Badge, Field, Success
+- **i18n:** `useT()` hook → `t('section.key')` dot notation, EN + HY locales
+- **API:** `lib/api.ts` → `apiFetch(url)` with auth header, all calls include `?tenantId=TENANT_ID`
+- **Auth:** `lib/auth.ts` → role guard, `AuthShell` sidebar with role-based nav filtering
+- **Tabs:** Multi-tab pages use `useState<string>` tab selector with button group
+- **No external state:** No Redux/Zustand — all local useState
+
+---
+
+## Jira State
+
+| Release | Stories | Status |
+|---------|---------|--------|
+| R1 | 60 | ✅ All Done |
+| R1.5 | 23 | ✅ All Done (4 epics, Sprints 4-7) |
+| R2 | 33 + FE | ✅ Backend Done, FE Done |
+| R3 | 15 | 🔲 To Do (6 epics, Sprints 14-16) |
+
+---
+
+## What's Next (Priority Order)
+
+1. **Update JIRA** — Mark R2 FE stories as Done, update data.py
+2. **R3 Planning** — Review R3 stories (15 stories, 6 epics: Advanced Analytics, AI/ML, Mobile, Webhooks, Audit, Performance)
+3. **R3 Backend** — Implement R3 backend features
+4. **R3 Frontend** — Build R3 frontend pages
+5. **Testing** — End-to-end integration tests, load testing
+6. **Deployment** — Production Docker setup, CI/CD pipeline
+
+---
+
+## Session History
+
+### 2026-03-09 — R2 Frontend (7 pages) + i18n + nav
+
+**Created 7 new pages:**
+- `frontend/app/suppliers/page.tsx` (~416 lines) — Suppliers CRUD + catalog + Purchase Orders with tabs
+- `frontend/app/deliveries/page.tsx` (~247 lines) — Delivery runs CRUD, assign orders, manifest
+- `frontend/app/invoices/page.tsx` (~335 lines) — Invoice list, payments, credit, discount rules
+- `frontend/app/report-builder/page.tsx` (~283 lines) — KPI blocks + custom reports + run/export
+- `frontend/app/loyalty/page.tsx` (~304 lines) — Tier CRUD, balance, award/redeem, history
+- `frontend/app/subscriptions/page.tsx` (~177 lines) — Subscription plans, assignment, feature check
+- `frontend/app/customers/page.tsx` (~285 lines) — Customer registration, catalog, order creation
+
+**Updated AuthShell.tsx:** 5 new nav sections (Supply Chain, Finance, Loyalty, Analytics, Platform)
+**Updated EN locale:** +11 nav keys, +200 page-level keys across 7 sections, +4 common keys
+**Updated HY locale:** +11 nav keys, +200 page-level Armenian translations, +4 common keys
+**Build:** 24 routes, 0 errors. Committed as `1b391f3`.
+
+### 2026-03-08 — Phase 3a Infrastructure + R2 Backend
+
+- PostgreSQL 16 Docker Compose + Flyway V1 migration (37 tables)
+- TenantContext ThreadLocal + TenantFilter for JWT tenant extraction
+- Multi-tenancy foundation for all entities
+- 265 tests passing
+- R2 backend: 33 stories, 7 epics, 67 endpoints, ~130 tests
+
+### 2026-03-07 — R1.5 Frontend (Sprints 4-7)
+
+- Sprint 4: Inventory adjustments, lot detail, department filter, currency fields, dashboard alerts
+- Sprint 5: POS receipt modal, card terminal ref, EOD reconciliation, dashboard revenue widget
+- Sprint 6: Admin user CRUD, config editor, catalog FE polish
+- Sprint 7: Reports dashboard, production analytics, technologist page
+
+### 2026-03-07 — i18n + AuthShell
+
+- Custom React Context i18n system (EN + HY, ~550 keys each at that time)
+- AuthShell refactored with translation keys + language switcher
+- All 14 R1/R1.5 pages translated
+
+### 2026-03-04 — Orders Screen + Gradle Migration
+
+- Orders page: status filter, customer search, rush order, cancel w/ reason, status advance, order detail
+- Migrated build from Maven to Gradle
+
+### Earlier Sessions — R1 Backend
+
+- Domain 1 (Orders), Domain 4 (Recipes/Products), inventory, events, projections, security
+
+---
+
+## Key Design Decisions
+
+- **Recipes versioned** — editing creates new DRAFT version, activating archives previous ACTIVE
+- **Order statuses** — DRAFT → CONFIRMED → IN_PRODUCTION → READY → OUT_FOR_DELIVERY → DELIVERED | CANCELLED
+- **Rush orders** — detected by cutoff hour (22:00 Asia/Tashkent), configurable premium (default 15%)
+- **i18n** — no external library, React Context + nested dictionaries, Armenian as Unicode escapes
+- **Multi-tenancy** — ThreadLocal TenantContext, all queries filtered by tenantId
+- **API versioning** — R1 endpoints at `/v1/*`, R2 at `/v2/*`
+
+---
+
+## Requirements Documents
 
 All in `work/120-task/`:
 
 | File | Contents |
 |---|---|
 | `REQUIREMENTS.md` | Full FR + NFR for all 12 domains + Release mapping (R1/R2/R3) |
-| `ARCHITECTURE_REVIEW.md` | Existing codebase analysis vs R1 requirements — what exists, what's partially built, what's missing |
-
----
-
-## 3. Completed Work
-
-### R1 Domain 4 — Recipe & Product Management ✅ DONE
-**New packages:**
-- `com.breadcost.domain` — added `Department`, `Product`, `Recipe`, `RecipeIngredient`
-- `com.breadcost.masterdata` — JPA entities + repositories + services:
-  - `DepartmentEntity`, `DepartmentRepository`, `DepartmentService`
-  - `ProductEntity`, `ProductRepository`, `ProductService`
-  - `RecipeEntity`, `RecipeIngredientEntity`, `RecipeRepository`, `RecipeService`
-- `com.breadcost.api` — added:
-  - `DepartmentController` → `GET/POST/PUT /v1/departments`
-  - `ProductController` → `GET/POST/PUT /v1/products`
-  - `RecipeController` → `GET/POST /v1/recipes`, `POST /v1/recipes/{id}/activate`, `GET /v1/recipes/{id}/material-requirements`
-
-**Key design decisions made:**
-- Recipes are versioned — editing creates a new version (DRAFT). Activating a version archives the previous ACTIVE one and updates `product.activeRecipeId`
-- Ingredients support 3 unit modes: WEIGHT, PIECE, COMBO — with purchasing unit conversion and per-ingredient waste factor
-- Material requirements calculation: `totalWeight * (1 + wasteFactor) / purchasingUnitSize` → purchasing units needed per batch
-- Departments have configurable lead times (hours) and warehouse mode (SHARED or ISOLATED)
-
-**Tested and working** — all 3 POST endpoints verified with live API calls.
-
----
-
-### R1 Domain 1 — Order Management ✅ DONE
-**New files:**
-- `domain/Order.java`, `domain/OrderLine.java`
-- `events/OrderCreatedEvent.java`, `OrderConfirmedEvent.java`, `OrderCancelledEvent.java`
-- `masterdata/OrderEntity.java`, `OrderLineEntity.java`, `OrderRepository.java`, `OrderService.java`
-- `api/OrderController.java`
-
-**Key design decisions:**
-- Statuses: DRAFT → CONFIRMED → IN_PRODUCTION → READY → OUT_FOR_DELIVERY → DELIVERED | CANCELLED
-- Rush order detection: `isAfterCutoff()` based on configurable hour (default 22 = 10 PM, Asia/Tashkent)
-- Rush premium configurable via `breadcost.order.rush-premium-pct` (default 15%)
-- Lead time conflict detection per line: department.leadTimeHours checked against requestedDeliveryTime
-- Conflict is informational (does not block order) — `leadTimeConflict=true/false` per line
-- `@JsonIgnore` on `OrderLineEntity.order` to prevent Jackson circular reference
-
-**Tested and working** — create/confirm/cancel all verified with live API calls.
-
----
-
-## 4. Existing Codebase (pre-session)
-
-Already implemented before this session:
-
-| Package | Contents |
-|---|---|
-| `domain` | `Batch`, `Item`, `Lot`, `Location`, `Site`, `Period`, `LedgerEntry`, `CommandIdempotency`, `ExceptionCase`, `RecognitionOutputSet` |
-| `commands` | `ReceiveLotCommand/Handler`, `IssueToBatchCommand/Handler`, `TransferInventoryCommand/Handler`, `CloseBatchCommand`, `ClosePeriodCommand`, `CommandResult` |
-| `events` | `DomainEvent` (interface), `ReceiveLotEvent`, `IssueToBatchEvent`, `TransferInventoryEvent`, `CloseBatchEvent`, `BackflushConsumptionEvent`, `FGValueAdjustmentEvent`, `LateEntryNotEligibleForFGAdjEvent`, `RecognizeProductionEvent` |
-| `eventstore` | `EventStore` (in-memory, append-only, ledgerSeq ordered), `IdempotencyService`, `StoredEvent` |
-| `finance` | `FinanceService` (posting rules: RM→WIP, WIP→FG) |
-| `projections` | `InventoryProjection` (⚠️ uses weighted avg cost, needs FIFO), `BatchCostView`, `InventoryValuationView`, `ProjectionEngine` |
-| `api` | `BatchController`, `InventoryController`, `ViewController`, `GlobalExceptionHandler` |
-| `security` | `SecurityConfig` |
-| `validation` | `ValidationService` |
-
----
-
-## 5. Known Issues / Technical Debt
-
-| Issue | Details |
-|---|---|
-| EventStore is in-memory | All data lost on restart. Replace with PostgreSQL for production. |
-| H2 in-memory for JPA | All projection data lost on restart. Replace with PostgreSQL. |
-| Inventory projection uses weighted average cost | Must be replaced with FIFO cost layers (projection-only change, no event model change needed) |
-| Single hardcoded user (admin/admin) | No real user/role management yet |
-| `getPrincipalName()` returns "system" | Needs real Spring Security principal injection |
-| No tenant isolation at API layer | `tenantId` comes from request param — needs JWT claim enforcement |
-
----
-
-## 6. Next Tasks (R1 Build Order)
-
-### ✅ DONE: Order Management Domain
-**Files created:**
-- `domain/Order.java`, `domain/OrderLine.java`
-- `events/OrderCreatedEvent.java`, `OrderConfirmedEvent.java`, `OrderCancelledEvent.java`
-- `masterdata/OrderEntity.java`, `OrderLineEntity.java`, `OrderRepository.java`, `OrderService.java`
-- `api/OrderController.java`
-
-**Tested and working:**
-- `POST /v1/orders` → DRAFT, total calculated, leadTimeConflict detected
-- `POST /v1/orders/{id}/confirm` → CONFIRMED
-- `POST /v1/orders/{id}/cancel` → CANCELLED
-- `POST /v1/orders/{id}/status?targetStatus=X` → state machine transitions
-
-**Key fixes applied:**
-- `@JsonIgnore` on `OrderLineEntity.order` to break circular reference
-- Role names in `@PreAuthorize` must match SecurityConfig exactly: `'Admin'`, `'ProductionUser'`, `'FinanceUser'`, `'Viewer'` — NOT all-caps
-
-### ✅ DONE: Production Planning Domain
-**Files created:**
-- `domain/ProductionPlan.java` — Status enum (DRAFT/PUBLISHED/IN_PROGRESS/COMPLETED), Shift enum (MORNING/AFTERNOON/NIGHT)
-- `domain/WorkOrder.java` — Status enum (PENDING/STARTED/COMPLETED/CANCELLED)
-- `masterdata/ProductionPlanEntity.java` — JPA entity, `@OneToMany(fetch=EAGER)` to WorkOrderEntity
-- `masterdata/WorkOrderEntity.java` — `@JsonIgnore @ManyToOne` back-ref prevents circular Jackson serialization
-- `masterdata/ProductionPlanRepository.java` — `findByTenantIdAndStatus` accepts `ProductionPlan.Status` enum (not String)
-- `masterdata/WorkOrderRepository.java`
-- `masterdata/ProductionPlanService.java` — generateWorkOrders, plan/WO lifecycle, getMaterialRequirements
-- `api/ProductionPlanController.java` — full REST API
-
-**Key design decisions:**
-- `generateWorkOrders()` scans all CONFIRMED orders whose `requestedDeliveryTime` falls on `planDate` (UTC)
-- Groups order lines by (departmentId + productId), calculates `batchCount = ceil(targetQty / batchSize)`
-- Idempotent: `forceRegenerate=false` skips products already in the plan
-- `completeWorkOrder()` auto-completes the plan when all WOs are COMPLETED or CANCELLED
-- Material requirements: `batchCount × ingredientQtyPerBatch × (1 + wasteFactor)` → purchasing units
-- `findByTenantIdAndStatus` repository method MUST take `ProductionPlan.Status` enum, not String; service converts via `.valueOf()`
-
-**Live test results (2026-03-04):**
-```
-Plan: ddd7adb2-468a-4be8-8c83-f8102ca57d26
-  Created: DRAFT
-  generateWorkOrders: 1 WO — White Bread 300.0 PCS, 6 batches (2 confirmed orders × 150 PCS)
-  DRAFT → PUBLISHED → IN_PROGRESS: OK
-  WO f55d789f-...: PENDING → STARTED → COMPLETED
-  Plan auto-completed: COMPLETED ✅
-  Material requirements: [{Wheat Flour: 0.3672 G}] ✅
-```
-
-**Build state:** `mvn clean package -DskipTests` → BUILD SUCCESS (79 source files)
-
-### R1 status — ALL DOMAINS COMPLETE ✅
-
-### Next Tasks (R2):
-1. **FIFO fix** in `InventoryProjection` — replace weighted avg with per-lot cost layers
-2. **POS domain** — point-of-sale transactions
-3. **Min-stock alerts**
-4. **Period close enforcement**
-5. **Basic reporting / dashboard**
-**Files to create:**
-- `domain/Order.java` — Order aggregate with status machine
-- `domain/OrderLine.java` — Line items with product, qty, price
-- `masterdata/OrderEntity.java`, `OrderLineEntity.java`
-- `masterdata/OrderRepository.java`, `OrderLineRepository.java`
-- `masterdata/OrderService.java` — create, confirm, modify, cancel order; cutoff enforcement; rush order flagging
-- `events/OrderCreatedEvent.java`, `OrderConfirmedEvent.java`, `OrderCancelledEvent.java`
-- `api/OrderController.java` — REST API
-
-**Key business rules for Order domain:**
-- Orders are for B2B customers (by operator on their behalf)
-- Statuses: DRAFT → CONFIRMED → IN_PRODUCTION → READY → DELIVERED → CANCELLED
-- Cutoff time configurable (default 8–10 PM). After cutoff: standard orders blocked.
-- Rush orders allowed after cutoff: configurable premium % applied, manually overridable
-- Lead time per department — if product can't meet delivery time, customer notified (flag on order line)
-- Orders can contain products from multiple departments with different lead times
-- Order lines have: productId, departmentId, qty, unitPrice, requestedDeliveryTime, leadTimeConflict flag
-
-### After Order Management:
-1. **Production Planning** — `ProductionPlan`, `WorkOrder` generated from confirmed orders + recipes
-2. **FIFO fix** in `InventoryProjection` — replace weighted avg with per-lot cost layers
-3. **POS domain**
-4. **Min-stock alerts**
-5. **Period close enforcement**
-6. **Basic reporting / dashboard**
-
----
-
-## 7. Architecture Pattern to Follow (for all new domains)
-
-Every new domain MUST follow this exact pattern:
-```
-Command (DTO with validation) 
-  → CommandHandler (validate, idempotency check, emit event)
-    → DomainEvent (implements DomainEvent interface)
-      → EventStore.appendEvent(event, EntryClass.FINANCIAL or OPERATIONAL)
-        → Projection (listens via registerListener, rebuilds on startup)
-          → JPA Entity (read model, stored in H2/PostgreSQL)
-
-Separately:
-  → REST Controller (@PreAuthorize with role check)
-    → Service (business logic, calls repository)
-      → JPA Repository (Spring Data)
-```
-
-Key rules:
-- Every command has an `idempotencyKey` field
-- Every event implements `DomainEvent` interface (tenantId, siteId, occurredAtUtc, idempotencyKey, getEventType())
-- `FinanceService.applyPostingRule()` must have a case for each new financial event type
-- All entities have `tenantId` for multi-tenancy
-- `@PreAuthorize` on all controller methods
-
----
-
-## 8. pom.xml Key Settings
-
-```xml
-<java.version>21</java.version>
-<maven.compiler.release>21</maven.compiler.release>  <!-- compiles to Java 21 bytecode, runs on JDK 25 -->
-<lombok.version>edge-SNAPSHOT</lombok.version>        <!-- required for JDK 25 annotation processing -->
-
-<repositories>
-  <repository>
-    <id>lombok-edge</id>
-    <url>https://projectlombok.org/edge-releases</url>
-  </repository>
-</repositories>
-```
-
-`.mvn/jvm.config` — has 10 `--add-opens` flags for Lombok/javac on Java 25.
-
----
-
-## 9. API Test Examples (working)
-
-```powershell
-# Auth header helper
-$cred = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes("admin:admin"))
-
-# Create department
-$body = '{"tenantId":"tenant1","name":"Bakery","leadTimeHours":8,"warehouseMode":"ISOLATED"}'
-Invoke-RestMethod -Uri "http://localhost:8080/v1/departments" -Method POST -Body $body -ContentType "application/json" -Headers @{Authorization="Basic $cred"}
-
-# Create product
-$body = '{"tenantId":"tenant1","departmentId":"<deptId>","name":"Sourdough Loaf 400g","saleUnit":"PIECE","baseUom":"PCS"}'
-Invoke-RestMethod -Uri "http://localhost:8080/v1/products" -Method POST -Body $body -ContentType "application/json" -Headers @{Authorization="Basic $cred"}
-
-# Create recipe (DRAFT)
-Invoke-RestMethod -Uri "http://localhost:8080/v1/recipes" -Method POST -Body $body -ContentType "application/json" -Headers @{Authorization="Basic $cred"}
-
-# Activate recipe
-Invoke-RestMethod -Uri "http://localhost:8080/v1/recipes/<recipeId>/activate?tenantId=tenant1" -Method POST -Headers @{Authorization="Basic $cred"}
-
-# Get material requirements for 3 batches
-Invoke-RestMethod -Uri "http://localhost:8080/v1/recipes/<recipeId>/material-requirements?tenantId=tenant1&batchMultiplier=3" -Headers @{Authorization="Basic $cred"}
-
-# ── PRODUCTION PLANNING ──────────────────────────────────────────────────────
-# Create plan (DRAFT)
-$body = '{"tenantId":"tenant1","siteId":"s1","planDate":"2026-03-04","shift":"MORNING","notes":"Daily plan"}'
-$plan = Invoke-RestMethod -Uri "http://localhost:8080/v1/production-plans" -Method POST -Body $body -ContentType "application/json" -Headers @{Authorization="Basic $cred"}
-$planId = $plan.planId
-
-# Generate work orders from CONFIRMED orders on that date
-Invoke-RestMethod -Uri "http://localhost:8080/v1/production-plans/$planId/generate?tenantId=tenant1" -Method POST -Headers @{Authorization="Basic $cred"}
-
-# Publish → Start → Complete plan
-Invoke-RestMethod -Uri "http://localhost:8080/v1/production-plans/$planId/publish?tenantId=tenant1" -Method POST -Headers @{Authorization="Basic $cred"}
-Invoke-RestMethod -Uri "http://localhost:8080/v1/production-plans/$planId/start?tenantId=tenant1" -Method POST -Headers @{Authorization="Basic $cred"}
-
-# Work order lifecycle
-Invoke-RestMethod -Uri "http://localhost:8080/v1/production-plans/work-orders/<woId>/start?tenantId=tenant1" -Method POST -Headers @{Authorization="Basic $cred"}
-Invoke-RestMethod -Uri "http://localhost:8080/v1/production-plans/work-orders/<woId>/complete?tenantId=tenant1" -Method POST -Headers @{Authorization="Basic $cred"}
-
-# Material requirements (purchasing shopping list)
-Invoke-RestMethod -Uri "http://localhost:8080/v1/production-plans/$planId/material-requirements?tenantId=tenant1" -Headers @{Authorization="Basic $cred"}
-
-# List work orders by department
-Invoke-RestMethod -Uri "http://localhost:8080/v1/production-plans/work-orders?tenantId=tenant1&departmentId=<deptId>" -Headers @{Authorization="Basic $cred"}
-
-# GET plan by ID — MUST include tenantId param or returns 500
-Invoke-RestMethod -Uri "http://localhost:8080/v1/production-plans/$planId`?tenantId=tenant1" -Headers @{Authorization="Basic $cred"}
-```
+| `ARCHITECTURE_REVIEW.md` | Existing codebase analysis vs R1 requirements |
+| `FE_REQUIREMENTS.md` | Frontend requirements for all screens, roles, principles |
+| `FRONTEND_SPEC.md` | Frozen implementation reference for R1/R1.5 pages |
+| `JIRA.md` | Jira project structure, epics, stories, sprints |
+| `GUI_TEST_PLAN.md` | Manual GUI test plan |
+| `MANUAL_TEST_PLAN.md` | End-to-end manual test scenarios |
