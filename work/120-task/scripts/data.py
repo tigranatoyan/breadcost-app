@@ -1998,7 +1998,7 @@ STORIES = [
             "FR-12.1 and FR-1.2 (full AI) satisfied",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["ai", "whatsapp"],
     },
     {
@@ -2013,7 +2013,7 @@ STORIES = [
             "FR-12.2 and FR-1.3 (full AI) satisfied",
         ],
         "priority": "P0",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["ai", "whatsapp"],
     },
     {
@@ -2028,7 +2028,7 @@ STORIES = [
             "FR-12.1 and FR-1.4 satisfied",
         ],
         "priority": "P2",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["ai", "whatsapp"],
     },
     {
@@ -2043,7 +2043,7 @@ STORIES = [
             "FR-1.5 (full AI) satisfied",
         ],
         "priority": "P2",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["ai", "whatsapp"],
     },
 
@@ -2060,7 +2060,7 @@ STORIES = [
             "FR-12.3 satisfied",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["ai", "inventory"],
     },
     {
@@ -2075,7 +2075,7 @@ STORIES = [
             "FR-12.4 satisfied",
         ],
         "priority": "P2",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["ai", "production"],
     },
     {
@@ -2090,7 +2090,7 @@ STORIES = [
             "FR-12.7 satisfied",
         ],
         "priority": "P2",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["ai", "forecasting"],
     },
 
@@ -2139,7 +2139,7 @@ STORIES = [
             "FR-7.7 satisfied",
         ],
         "priority": "P1",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["mobile", "delivery"],
     },
     {
@@ -2153,7 +2153,7 @@ STORIES = [
             "FR-8.7 satisfied",
         ],
         "priority": "P2",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["mobile", "delivery"],
     },
     {
@@ -2168,7 +2168,7 @@ STORIES = [
             "FR-8.7 and FR-8.8 satisfied",
         ],
         "priority": "P2",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["mobile", "pos", "delivery"],
     },
 
@@ -2185,7 +2185,7 @@ STORIES = [
             "FR-6.7 and FR-9.7 (API part) satisfied",
         ],
         "priority": "P2",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["integrations", "finance"],
     },
     {
@@ -2200,7 +2200,7 @@ STORIES = [
             "FR-6.4 (API part) satisfied",
         ],
         "priority": "P2",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["integrations", "suppliers"],
     },
 

@@ -1,5 +1,5 @@
 # BreadCost App — Work Session Snapshot
-**Last Updated:** 2026-03-09 (R2 Frontend complete, all pushed to main)
+**Last Updated:** 2026-03-09 (R3-S2 backend complete, all pushed to main)
 **Purpose:** Handoff context for continuing development in a new chat session
 
 > **Frontend Requirements:** See `work/120-task/FE_REQUIREMENTS.md` — APPROVED.
@@ -16,9 +16,10 @@
 | **R2 Backend** | ✅ Done — 33 stories, 7 epics, ~130 tests, 67 endpoints across 10 controllers |
 | **R2 Frontend** | ✅ Done — 7 new pages (suppliers, deliveries, invoices, report-builder, loyalty, subscriptions, customers) |
 | **Phase 3a Infra** | ✅ Done — PostgreSQL, Docker, Flyway V1, TenantContext, multi-tenancy foundation |
-| **R3** | 🔲 Not started — 15 stories, 6 epics, 3 sprints |
+| **R3-S1 Backend** | ✅ Done — 6 stories (exchange rate, supplier API, AI WhatsApp), V2 migration (6 tables), 283 tests |
+| **R3-S2 Backend** | ✅ Done — 6 stories (AI suggestions, driver mobile), V3 migration (7 tables), 309 tests |
+| **R3-S3** | 🔲 Not started — 3 stories remaining (AI pricing, AI anomaly, mobile customer app) |
 
-**HEAD:** `1b391f3` on `main` (92 commits total)
 **Repo:** `https://github.com/tigranatoyan/breadcost-app.git`
 
 ---
@@ -31,7 +32,7 @@
 | Build | Gradle 8.11 (build.gradle.kts) |
 | DB (dev) | H2 file-based (`./data/breadcost`) |
 | DB (prod) | PostgreSQL 16 via Docker Compose |
-| Migration | Flyway V1 (37 tables) |
+| Migration | Flyway V1 (37 tables), V2 (6 tables), V3 (7 tables) |
 | Frontend | Next.js 14.2.18, React 18, TypeScript 5, Tailwind CSS 3.4 |
 | i18n | Custom React Context (EN + HY, ~750 keys each) |
 | Auth | Spring Security basic auth (admin/admin) |
@@ -47,11 +48,11 @@
 
 | Category | Count |
 |----------|-------|
-| Backend Java (src/main) | 163 files |
-| Backend Tests (src/test) | 44 files, 265 tests passing |
+| Backend Java (src/main) | ~185 files |
+| Backend Tests (src/test) | ~48 files, 309 tests passing |
 | Frontend pages (app/**/page.tsx) | 22 files (21 routes + layout) |
 | Frontend total (tsx/ts/css/mjs) | 34 files |
-| Backend packages | 20 (api, commands, customers, delivery, domain, events, eventstore, finance, invoice, loyalty, masterdata, multitenancy, projections, purchaseorder, reporting, security, subscription, supplier, validation) |
+| Backend packages | 22 (api, ai, commands, customers, delivery, domain, driver, events, eventstore, finance, invoice, loyalty, masterdata, multitenancy, projections, purchaseorder, reporting, security, subscription, supplier, validation, whatsapp) |
 
 ---
 
@@ -116,11 +117,25 @@
 | ProductController | `/v2/products` | Product catalog (customer-facing) |
 | OrderController | `/v2/orders` | Customer order CRUD |
 
+## R3 Backend Endpoints
+
+| Controller | Prefix | Endpoints |
+|------------|--------|-----------|
+| ExchangeRateController | `/v3/exchange-rates` | CRUD + latest rate |
+| SupplierApiConfigController | `/v3/supplier-api-configs` | CRUD |
+| AiWhatsAppController | `/v3/ai/whatsapp` | Conversations CRUD + messages + resolve |
+| AiSuggestionController | `/v3/ai/suggestions` | Replenishment generate/list/dismiss + forecast generate/list + production generate/list |
+| DriverController | `/v3/driver` | Sessions start/end/location + manifest + stop updates + packaging confirm + payment collect |
+
 ---
 
-## Database Schema (Flyway V1)
+## Database Schema
 
-37 tables covering: tenants, users, roles, departments, products, recipes, recipe_ingredients, technology_steps, orders, order_lines, inventory_positions, inventory_adjustments, lots, batches, work_orders, production_plans, pos_sessions, pos_transactions, suppliers, supplier_catalog_items, purchase_orders, purchase_order_lines, delivery_runs, delivery_run_orders, invoices, invoice_lines, invoice_payments, customers, customer_discount_rules, loyalty_tiers, loyalty_balances, loyalty_transactions, subscription_tiers, tenant_subscriptions, kpi_blocks, custom_reports, custom_report_blocks.
+**Flyway V1** — 37 tables covering: tenants, users, roles, departments, products, recipes, recipe_ingredients, technology_steps, orders, order_lines, inventory_positions, inventory_adjustments, lots, batches, work_orders, production_plans, pos_sessions, pos_transactions, suppliers, supplier_catalog_items, purchase_orders, purchase_order_lines, delivery_runs, delivery_run_orders, invoices, invoice_lines, invoice_payments, customers, customer_discount_rules, loyalty_tiers, loyalty_balances, loyalty_transactions, subscription_tiers, tenant_subscriptions, kpi_blocks, custom_reports, custom_report_blocks.
+
+**Flyway V2** (R3-S1) — 6 tables: exchange_rates, supplier_api_configs, ai_whatsapp_conversations, ai_whatsapp_messages, ai_whatsapp_order_intents, ai_whatsapp_templates.
+
+**Flyway V3** (R3-S2) — 7 tables: ai_replenishment_hints, ai_demand_forecasts, ai_production_suggestions, driver_sessions, driver_stop_updates, packaging_confirmations, driver_payments.
 
 ---
 
@@ -143,22 +158,52 @@
 | R1 | 60 | ✅ All Done |
 | R1.5 | 23 | ✅ All Done (4 epics, Sprints 4-7) |
 | R2 | 33 + FE | ✅ Backend Done, FE Done |
-| R3 | 15 | 🔲 To Do (6 epics, Sprints 14-16) |
+| R3-S1 | 6 | ✅ Done (exchange rate, supplier API, AI WhatsApp) |
+| R3-S2 | 6 | ✅ Done (AI suggestions, driver mobile) |
+| R3-S3 | 3 | 🔲 To Do (AI pricing, AI anomaly, mobile customer app) |
 
 ---
 
 ## What's Next (Priority Order)
 
-1. **Update JIRA** — Mark R2 FE stories as Done, update data.py
-2. **R3 Planning** — Review R3 stories (15 stories, 6 epics: Advanced Analytics, AI/ML, Mobile, Webhooks, Audit, Performance)
-3. **R3 Backend** — Implement R3 backend features
-4. **R3 Frontend** — Build R3 frontend pages
-5. **Testing** — End-to-end integration tests, load testing
-6. **Deployment** — Production Docker setup, CI/CD pipeline
+1. **R3-S3 Backend** — Implement BC-2001 (AI pricing suggestions), BC-2002 (AI anomaly alerts), BC-2301 (mobile customer app)
+2. **R3 Frontend** — Build R3 frontend pages
+3. **Testing** — End-to-end integration tests, load testing
+4. **Deployment** — Production Docker setup, CI/CD pipeline
 
 ---
 
 ## Session History
+
+### 2026-03-09 — R3-S2 Backend (AI Suggestions + Driver Mobile)
+
+**Stories:** BC-1901, BC-1902, BC-1903, BC-2101, BC-2102, BC-2103
+**V3 migration:** 7 new tables (ai_replenishment_hints, ai_demand_forecasts, ai_production_suggestions, driver_sessions, driver_stop_updates, packaging_confirmations, driver_payments)
+
+**AI Suggestions (BC-1901/1902/1903):**
+- `AiReplenishmentHintEntity` — per-item restock hints from consumption rates vs stock
+- `AiDemandForecastEntity` — per-product demand forecast with confidence score
+- `AiProductionSuggestionEntity` — batch count suggestions from forecasts + recipe sizes
+- `AiSuggestionService` — computes from EventStore IssueToBatchEvents + InventoryProjection + order history
+- `AiSuggestionController` — 8 endpoints at `/v3/ai/suggestions/**`
+
+**Driver Mobile (BC-2101/2102/2103):**
+- `DriverSessionEntity` — session tracking with GPS
+- `DriverStopUpdateEntity` — per-stop delivery/fail actions
+- `PackagingConfirmationEntity` — pre-departure checklist with discrepancies
+- `DriverPaymentEntity` — on-spot cash/card payment collection
+- `DriverService` — session lifecycle, stop updates, packaging, payment with auto-invoice-PAID
+- `DriverController` — 11 endpoints at `/v3/driver/**`
+
+**Tests:** 26 new tests (10 AI + 16 driver). Total: 309 tests, 0 failures.
+
+### 2026-03-09 — R3-S1 Backend (Exchange Rate, Supplier API, AI WhatsApp)
+
+**Stories:** BC-1801, BC-1802, BC-1803, BC-1804, BC-2201, BC-2202
+**V2 migration:** 6 new tables (exchange_rates, supplier_api_configs, ai_whatsapp_conversations, ai_whatsapp_messages, ai_whatsapp_order_intents, ai_whatsapp_templates)
+**New packages:** whatsapp (7 files), ai (6 files)
+**Controllers:** ExchangeRateController, SupplierApiConfigController, AiWhatsAppController
+**Tests:** 18 new tests. Total: 283 tests, 0 failures.
 
 ### 2026-03-09 — R2 Frontend (7 pages) + i18n + nav
 
@@ -215,7 +260,7 @@
 - **Rush orders** — detected by cutoff hour (22:00 Asia/Tashkent), configurable premium (default 15%)
 - **i18n** — no external library, React Context + nested dictionaries, Armenian as Unicode escapes
 - **Multi-tenancy** — ThreadLocal TenantContext, all queries filtered by tenantId
-- **API versioning** — R1 endpoints at `/v1/*`, R2 at `/v2/*`
+- **API versioning** — R1 endpoints at `/v1/*`, R2 at `/v2/*`, R3 at `/v3/*`
 
 ---
 
