@@ -1,5 +1,5 @@
 # BreadCost App — Work Session Snapshot
-**Last Updated:** 2026-03-09 (R3-S2 backend complete, all pushed to main)
+**Last Updated:** 2026-03-09 (R3 complete — all 15 stories Done, pushed to main)
 **Purpose:** Handoff context for continuing development in a new chat session
 
 > **Frontend Requirements:** See `work/120-task/FE_REQUIREMENTS.md` — APPROVED.
@@ -18,7 +18,7 @@
 | **Phase 3a Infra** | ✅ Done — PostgreSQL, Docker, Flyway V1, TenantContext, multi-tenancy foundation |
 | **R3-S1 Backend** | ✅ Done — 6 stories (exchange rate, supplier API, AI WhatsApp), V2 migration (6 tables), 283 tests |
 | **R3-S2 Backend** | ✅ Done — 6 stories (AI suggestions, driver mobile), V3 migration (7 tables), 309 tests |
-| **R3-S3** | 🔲 Not started — 3 stories remaining (AI pricing, AI anomaly, mobile customer app) |
+| **R3-S3 Backend** | ✅ Done — 3 stories (AI pricing, AI anomaly, mobile customer app), V4 migration (4 tables), 328 tests |
 
 **Repo:** `https://github.com/tigranatoyan/breadcost-app.git`
 
@@ -32,7 +32,7 @@
 | Build | Gradle 8.11 (build.gradle.kts) |
 | DB (dev) | H2 file-based (`./data/breadcost`) |
 | DB (prod) | PostgreSQL 16 via Docker Compose |
-| Migration | Flyway V1 (37 tables), V2 (6 tables), V3 (7 tables) |
+| Migration | Flyway V1 (37 tables), V2 (6 tables), V3 (7 tables), V4 (4 tables) |
 | Frontend | Next.js 14.2.18, React 18, TypeScript 5, Tailwind CSS 3.4 |
 | i18n | Custom React Context (EN + HY, ~750 keys each) |
 | Auth | Spring Security basic auth (admin/admin) |
@@ -48,11 +48,11 @@
 
 | Category | Count |
 |----------|-------|
-| Backend Java (src/main) | ~185 files |
-| Backend Tests (src/test) | ~48 files, 309 tests passing |
+| Backend Java (src/main) | ~195 files |
+| Backend Tests (src/test) | ~51 files, 328 tests passing |
 | Frontend pages (app/**/page.tsx) | 22 files (21 routes + layout) |
 | Frontend total (tsx/ts/css/mjs) | 34 files |
-| Backend packages | 22 (api, ai, commands, customers, delivery, domain, driver, events, eventstore, finance, invoice, loyalty, masterdata, multitenancy, projections, purchaseorder, reporting, security, subscription, supplier, validation, whatsapp) |
+| Backend packages | 23 (api, ai, commands, customers, delivery, domain, driver, events, eventstore, finance, invoice, loyalty, masterdata, mobile, multitenancy, projections, purchaseorder, reporting, security, subscription, supplier, validation, whatsapp) |
 
 ---
 
@@ -125,7 +125,9 @@
 | SupplierApiConfigController | `/v3/supplier-api-configs` | CRUD |
 | AiWhatsAppController | `/v3/ai/whatsapp` | Conversations CRUD + messages + resolve |
 | AiSuggestionController | `/v3/ai/suggestions` | Replenishment generate/list/dismiss + forecast generate/list + production generate/list |
+| AiPricingAnomalyController | `/v3/ai` | Pricing generate/list/dismiss/accept + anomaly generate/list/acknowledge/dismiss |
 | DriverController | `/v3/driver` | Sessions start/end/location + manifest + stop updates + packaging confirm + payment collect |
+| MobileAppController | `/v3/mobile` | Device registration + push notifications + order status notifications |
 
 ---
 
@@ -136,6 +138,8 @@
 **Flyway V2** (R3-S1) — 6 tables: exchange_rates, supplier_api_configs, ai_whatsapp_conversations, ai_whatsapp_messages, ai_whatsapp_order_intents, ai_whatsapp_templates.
 
 **Flyway V3** (R3-S2) — 7 tables: ai_replenishment_hints, ai_demand_forecasts, ai_production_suggestions, driver_sessions, driver_stop_updates, packaging_confirmations, driver_payments.
+
+**Flyway V4** (R3-S3) — 4 tables: ai_pricing_suggestions, ai_anomaly_alerts, mobile_device_registrations, push_notifications.
 
 ---
 
@@ -160,20 +164,43 @@
 | R2 | 33 + FE | ✅ Backend Done, FE Done |
 | R3-S1 | 6 | ✅ Done (exchange rate, supplier API, AI WhatsApp) |
 | R3-S2 | 6 | ✅ Done (AI suggestions, driver mobile) |
-| R3-S3 | 3 | 🔲 To Do (AI pricing, AI anomaly, mobile customer app) |
+| R3-S3 | 3 | ✅ Done (AI pricing, AI anomaly, mobile customer app) |
 
 ---
 
 ## What's Next (Priority Order)
 
-1. **R3-S3 Backend** — Implement BC-2001 (AI pricing suggestions), BC-2002 (AI anomaly alerts), BC-2301 (mobile customer app)
-2. **R3 Frontend** — Build R3 frontend pages
-3. **Testing** — End-to-end integration tests, load testing
-4. **Deployment** — Production Docker setup, CI/CD pipeline
+1. **R3 Frontend** — Build R3 frontend pages for AI dashboards, driver mobile, customer mobile
+2. **Testing** — End-to-end integration tests, load testing
+3. **Deployment** — Production Docker setup, CI/CD pipeline
 
 ---
 
 ## Session History
+
+### 2026-03-09 — R3-S3 Backend (AI Pricing, Anomaly, Mobile App)
+
+**Stories:** BC-2001, BC-2002, BC-2301
+**V4 migration:** 4 new tables (ai_pricing_suggestions, ai_anomaly_alerts, mobile_device_registrations, push_notifications)
+
+**AI Pricing (BC-2001 / FR-12.5):**
+- `AiPricingSuggestionEntity` — per-product price adjustment suggestions with reasoning
+- `AiPricingAnomalyService.generatePricingSuggestions()` — analyzes 90-day order history, suggests volume discounts (high demand) or markups (low demand)
+- Endpoints: generate, list, pending, dismiss, accept
+
+**AI Anomaly (BC-2002 / FR-12.6):**
+- `AiAnomalyAlertEntity` — anomaly alerts with severity, deviation %, explanation, suggested action
+- `AiPricingAnomalyService.generateAnomalyAlerts()` — compares recent week vs 4-week baseline ‒ detects revenue drops/spikes, order volume changes, AOV shifts
+- Endpoints: generate, list, active, acknowledge, dismiss
+
+**Mobile Customer App (BC-2301 / FR-2.1):**
+- `MobileDeviceRegistrationEntity` — iOS/Android device token registration
+- `PushNotificationEntity` — push notification queue with order status, loyalty, promo types
+- `MobileAppService` — device register/unregister, send notifications, order status change handler
+- `MobileAppController` — 6 endpoints at `/v3/mobile/**`
+
+**Tests:** 19 new tests (12 pricing/anomaly + 7 mobile). Total: 328 tests, 0 failures.
+**R3 COMPLETE** — all 15 stories Done across 3 sprints.
 
 ### 2026-03-09 — R3-S2 Backend (AI Suggestions + Driver Mobile)
 

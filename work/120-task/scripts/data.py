@@ -2107,7 +2107,7 @@ STORIES = [
             "FR-12.5 satisfied",
         ],
         "priority": "P2",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["ai", "pricing"],
     },
     {
@@ -2122,7 +2122,7 @@ STORIES = [
             "FR-12.6 satisfied",
         ],
         "priority": "P2",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["ai", "reports"],
     },
 
@@ -2217,7 +2217,7 @@ STORIES = [
             "FR-2.1 (mobile) satisfied",
         ],
         "priority": "P2",
-        "status": "📋 Planned",
+        "status": "✅ Done",
         "labels": ["mobile", "customer-app"],
     },
 ]
