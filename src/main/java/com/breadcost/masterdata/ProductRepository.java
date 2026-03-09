@@ -12,4 +12,6 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
     List<ProductEntity> findByTenantIdAndDepartmentId(String tenantId, String departmentId);
     List<ProductEntity> findByTenantIdAndStatus(String tenantId, Product.ProductStatus status);
     boolean existsByTenantIdAndNameAndDepartmentId(String tenantId, String name, String departmentId);
+
+    List<ProductEntity> findByTenantIdAndNameContainingIgnoreCase(String tenantId, String name);
 }

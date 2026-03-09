@@ -9,6 +9,9 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.NoSuchElementException;
 
 /**
  * Global exception handler for REST API
@@ -79,6 +82,30 @@ public class GlobalExceptionHandler {
                         .success(false)
                         .errorCode("ERR_CONFLICT")
                         .message("A record with this identifier already exists")
+                        .build());
+    }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    public ResponseEntity<CommandResult> handleNotFound(NoSuchElementException ex) {
+        log.warn("Not found: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(CommandResult.builder()
+                        .success(false)
+                        .errorCode("ERR_NOT_FOUND")
+                        .message(ex.getMessage())
+                        .build());
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<CommandResult> handleResponseStatus(ResponseStatusException ex) {
+        log.warn("Response status: {} {}", ex.getStatusCode(), ex.getReason());
+        return ResponseEntity
+                .status(ex.getStatusCode())
+                .body(CommandResult.builder()
+                        .success(false)
+                        .errorCode("ERR_" + ex.getStatusCode().value())
+                        .message(ex.getReason())
                         .build());
     }
 
