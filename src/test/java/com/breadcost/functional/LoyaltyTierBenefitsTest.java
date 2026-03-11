@@ -22,7 +22,7 @@ class LoyaltyTierBenefitsTest extends FunctionalTestBase {
         POST("/v2/loyalty/tiers", Map.of(
                 "tenantId", TENANT, "name", "Discount-" + UUID.randomUUID(),
                 "minPoints", 500, "discountPct", 10.0
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.discountPct", is(10.0)));
     }
@@ -33,7 +33,7 @@ class LoyaltyTierBenefitsTest extends FunctionalTestBase {
         POST("/v2/loyalty/tiers", Map.of(
                 "tenantId", TENANT, "name", "Desc-" + UUID.randomUUID(),
                 "minPoints", 200, "benefitsDescription", "Free delivery + priority support"
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.benefitsDescription", is("Free delivery + priority support")));
     }
@@ -43,10 +43,10 @@ class LoyaltyTierBenefitsTest extends FunctionalTestBase {
     void updateTier_changesDiscountPct() throws Exception {
         String name = "Updatable-" + UUID.randomUUID();
         POST("/v2/loyalty/tiers", Map.of("tenantId", TENANT, "name", name,
-                "minPoints", 1000, "discountPct", 5.0), "").andExpect(status().isCreated());
+                "minPoints", 1000, "discountPct", 5.0), bearer("admin1")).andExpect(status().isCreated());
 
         String body = POST("/v2/loyalty/tiers", Map.of("tenantId", TENANT, "name", name,
-                "minPoints", 1000, "discountPct", 15.0), "")
+                "minPoints", 1000, "discountPct", 15.0), bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
 
@@ -62,9 +62,9 @@ class LoyaltyTierBenefitsTest extends FunctionalTestBase {
                 "tenantId", TENANT, "name", "BenefitsFull-" + UUID.randomUUID(),
                 "minPoints", 3000, "discountPct", 7.5,
                 "pointsPerDollar", 1.5, "benefitsDescription", "VIP benefits"
-        ), "");
+        ), bearer("admin1"));
 
-        GET("/v2/loyalty/tiers?tenantId=" + TENANT, "")
+        GET("/v2/loyalty/tiers?tenantId=" + TENANT, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].discountPct").exists())
                 .andExpect(jsonPath("$[*].pointsPerDollar").exists());
@@ -79,12 +79,12 @@ class LoyaltyTierBenefitsTest extends FunctionalTestBase {
         // Create Silver tier at 50 points
         POST("/v2/loyalty/tiers", Map.of(
                 "tenantId", TENANT, "name", "Silver50-" + suffix, "minPoints", 50
-        ), "").andExpect(status().isCreated());
+        ), bearer("admin1")).andExpect(status().isCreated());
 
         // Award 60 points (order = $60)
         POST("/v2/loyalty/award", Map.of(
                 "tenantId", TENANT, "customerId", cid, "orderId", "o1", "orderTotal", 60.0
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tierName", is("Silver50-" + suffix)));
     }
@@ -92,7 +92,7 @@ class LoyaltyTierBenefitsTest extends FunctionalTestBase {
     @Test
     @DisplayName("BC-1203 ✓ Missing tenantId → 400")
     void createTier_missingTenantId_returns400() throws Exception {
-        POST("/v2/loyalty/tiers", Map.of("name", "NoTenant", "minPoints", 0), "")
+        POST("/v2/loyalty/tiers", Map.of("name", "NoTenant", "minPoints", 0), bearer("admin1"))
                 .andExpect(status().isBadRequest());
     }
 }

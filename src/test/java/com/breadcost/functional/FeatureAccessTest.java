@@ -12,7 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class FeatureAccessTest extends FunctionalTestBase {
 
-    String adminToken() { return token("admin1"); }
+    String adminToken() { return bearer("admin1"); }
 
     private void assignTier(String tenantId, String tier) throws Exception {
         PUT("/v2/subscriptions/tenants/" + tenantId, Map.of(

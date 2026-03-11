@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * Reporting REST controller.
@@ -19,6 +20,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/v2/reports")
+@PreAuthorize("hasAnyRole('Admin','Manager','FinanceUser','Viewer')")
 public class ReportingController {
 
     private final ReportService reportService;

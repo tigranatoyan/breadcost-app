@@ -17,14 +17,14 @@ class DeliveryCompleteTest extends FunctionalTestBase {
     private String[] createRunWithOrder() throws Exception {
         String runBody = POST("/v2/delivery-runs", Map.of(
                 "tenantId", TENANT, "driverName", "Dave"
-        ), "").andExpect(status().isCreated())
+        ), bearer("admin1")).andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         String runId = om.readTree(runBody).get("runId").asText();
         String orderId = "cmp-ord-" + UUID.randomUUID();
 
         POST("/v2/delivery-runs/" + runId + "/orders", Map.of(
                 "tenantId", TENANT, "orderId", orderId
-        ), "").andExpect(status().isCreated());
+        ), bearer("admin1")).andExpect(status().isCreated());
 
         return new String[]{runId, orderId};
     }
@@ -35,7 +35,7 @@ class DeliveryCompleteTest extends FunctionalTestBase {
         String[] pair = createRunWithOrder();
 
         PUT("/v2/delivery-runs/" + pair[0] + "/orders/" + pair[1] + "/complete?tenantId=" + TENANT,
-                Map.of(), "")
+                Map.of(), bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("COMPLETED"))
                 .andExpect(jsonPath("$.completedAt").isNotEmpty());
@@ -46,19 +46,19 @@ class DeliveryCompleteTest extends FunctionalTestBase {
     void allOrdersComplete_runStatusBecomesCompleted() throws Exception {
         String runBody = POST("/v2/delivery-runs", Map.of(
                 "tenantId", TENANT, "driverName", "Eve"
-        ), "").andExpect(status().isCreated())
+        ), bearer("admin1")).andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         String runId = om.readTree(runBody).get("runId").asText();
         String orderId1 = "ord-" + UUID.randomUUID();
         String orderId2 = "ord-" + UUID.randomUUID();
 
-        POST("/v2/delivery-runs/" + runId + "/orders", Map.of("tenantId", TENANT, "orderId", orderId1), "");
-        POST("/v2/delivery-runs/" + runId + "/orders", Map.of("tenantId", TENANT, "orderId", orderId2), "");
+        POST("/v2/delivery-runs/" + runId + "/orders", Map.of("tenantId", TENANT, "orderId", orderId1), bearer("admin1"));
+        POST("/v2/delivery-runs/" + runId + "/orders", Map.of("tenantId", TENANT, "orderId", orderId2), bearer("admin1"));
 
-        PUT("/v2/delivery-runs/" + runId + "/orders/" + orderId1 + "/complete?tenantId=" + TENANT, Map.of(), "");
-        PUT("/v2/delivery-runs/" + runId + "/orders/" + orderId2 + "/complete?tenantId=" + TENANT, Map.of(), "");
+        PUT("/v2/delivery-runs/" + runId + "/orders/" + orderId1 + "/complete?tenantId=" + TENANT, Map.of(), bearer("admin1"));
+        PUT("/v2/delivery-runs/" + runId + "/orders/" + orderId2 + "/complete?tenantId=" + TENANT, Map.of(), bearer("admin1"));
 
-        GET("/v2/delivery-runs/" + runId + "?tenantId=" + TENANT, "")
+        GET("/v2/delivery-runs/" + runId + "?tenantId=" + TENANT, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("COMPLETED"));
     }
@@ -66,13 +66,13 @@ class DeliveryCompleteTest extends FunctionalTestBase {
     @Test
     @DisplayName("BC-1403 ✓ Mark non-existent order completed returns 400")
     void markComplete_notFound_returns400() throws Exception {
-        String runBody = POST("/v2/delivery-runs", Map.of("tenantId", TENANT), "")
+        String runBody = POST("/v2/delivery-runs", Map.of("tenantId", TENANT), bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         String runId = om.readTree(runBody).get("runId").asText();
 
         PUT("/v2/delivery-runs/" + runId + "/orders/nonexistent/complete?tenantId=" + TENANT,
-                Map.of(), "")
+                Map.of(), bearer("admin1"))
                 .andExpect(status().isBadRequest());
     }
 }

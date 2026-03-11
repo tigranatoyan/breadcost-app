@@ -1,9 +1,11 @@
 # BreadCost App — Work Session Snapshot
-**Last Updated:** 2026-03-09 (R3-FE complete — 7 stories, 4 new pages + 1 modified, Jira synced, pushed to main)
+**Last Updated:** 2026-03-11 (R4-S1 complete — 8 stories: 4 security BE + 4 design system FE, 404 tests, pushed to main)
 **Purpose:** Handoff context for continuing development in a new chat session
 
 > **Frontend Requirements:** See `work/120-task/FE_REQUIREMENTS.md` — APPROVED.
 > **Frontend Spec:** See `work/120-task/FRONTEND_SPEC.md` — frozen reference for R1/R1.5 pages.
+> **Release 4 Plan:** See `work/120-task/JIRA_R4.md` — 41 stories, 7 epics, 6 sprints.
+> **Architecture:** See `ARCMAP.md` — 8 arcs, 11 actors, cross-arc dependency map.
 
 ---
 
@@ -20,6 +22,8 @@
 | **R3-S2 Backend** | ✅ Done — 6 stories (AI suggestions, driver mobile), V3 migration (7 tables), 309 tests |
 | **R3-S3 Backend** | ✅ Done — 3 stories (AI pricing, AI anomaly, mobile customer app), V4 migration (4 tables), 328 tests |
 | **R3-FE Frontend** | ✅ Done — 7 stories, 4 new pages + 1 modified (ai-pricing, ai-whatsapp, ai-suggestions, driver, mobile-admin, exchange-rates, supplier API tab) |
+| **R4-S1 BE (Security)** | ✅ Done — 4 stories (SecurityConfig, @PreAuthorize, own-data enforcement, /me endpoint), 404 tests |
+| **R4-S1 FE (Design System)** | ✅ Done — 4 stories (component library, sidebar rework, top nav, 404 page) |
 
 **Repo:** `https://github.com/tigranatoyan/breadcost-app.git`
 
@@ -36,7 +40,7 @@
 | Migration | Flyway V1 (37 tables), V2 (6 tables), V3 (7 tables), V4 (4 tables) |
 | Frontend | Next.js 14.2.18, React 18, TypeScript 5, Tailwind CSS 3.4 |
 | i18n | Custom React Context (EN + HY, ~750 keys each) |
-| Auth | Spring Security basic auth (admin/admin) |
+| Auth | JWT (JwtUtil + JwtAuthFilter), Spring Security, @PreAuthorize RBAC |
 | Multi-tenancy | TenantContext ThreadLocal + TenantFilter (JWT tenant extraction) |
 
 **Run backend:** `.\gradlew bootRun` (port 8080)
@@ -49,10 +53,10 @@
 
 | Category | Count |
 |----------|-------|
-| Backend Java (src/main) | ~195 files |
-| Backend Tests (src/test) | ~51 files, 328 tests passing |
+| Backend Java (src/main) | ~198 files |
+| Backend Tests (src/test) | ~54 files, 404 tests passing |
 | Frontend pages (app/**/page.tsx) | 28 files (27 routes + layout) |
-| Frontend total (tsx/ts/css/mjs) | 40 files |
+| Frontend total (tsx/ts/css/mjs) | 43 files |
 | Backend packages | 23 (api, ai, commands, customers, delivery, domain, driver, events, eventstore, finance, invoice, loyalty, masterdata, mobile, multitenancy, projections, purchaseorder, reporting, security, subscription, supplier, validation, whatsapp) |
 
 ---
@@ -98,21 +102,26 @@
 | `/mobile-admin` | Mobile device admin | Tabs: Devices/Notifications. Device list, remove, send notification |
 | `/suppliers` *(modified)* | + API Config tab | New tab: supplier API configs, add config modal, send PO via API |
 
-### Navigation Sections (AuthShell.tsx)
+### Navigation Sections (AuthShell.tsx — reworked R4-S1)
 | Section | Routes | Roles |
 |---------|--------|-------|
 | Main | dashboard | all |
-| Operations | orders, production-plans, floor, technologist | varies |
-| Catalog | products, recipes, departments, inventory | varies |
+| Operations | orders, production-plans | admin, management |
+| Warehouse | inventory | admin, management, warehouse |
 | Sales | pos | admin, management, cashier |
+| Reports | reports | admin, management, viewer, finance |
+| My Shift | floor | floor |
+| Workshop | recipes, products | technologist |
+| Analysis | technologist | technologist, admin |
+| Floor | floor | admin |
 | Supply Chain | suppliers, deliveries | admin, management |
 | Finance | invoices, customers | admin, management, finance |
 | Loyalty | loyalty | admin, management |
-| Analytics | reports, report-builder | admin, management, finance |
+| Analytics | report-builder | admin, management, finance |
 | AI & Automation | ai-whatsapp, ai-suggestions, ai-pricing | admin, management |
 | Driver | driver | admin, management |
 | Platform | subscriptions, exchange-rates, mobile-admin | admin |
-| Configuration | admin | admin |
+| Configuration | admin, departments, products, recipes | admin |
 
 ---
 
@@ -161,7 +170,8 @@
 
 - **SFC pattern:** `'use client'` → imports → `TENANT_ID='tenant1'` → component function → `apiFetch` calls → `useState` only → JSX with Tailwind
 - **UI kit:** `components/ui.tsx` exports: Modal, Table, Spinner, Alert, Badge, Field, Success
-- **i18n:** `useT()` hook → `t('section.key')` dot notation, EN + HY locales
+- **Design system:** `components/design-system.tsx` exports: cn, Button, Card, StatCard, SectionTitle, InputField, SelectField, Progress, Badge, SidebarItem, Table (trial-matching)
+- **i18n:** `useI18n()` hook → `t('section.key')` dot notation, EN + HY locales (~1150 keys each)
 - **API:** `lib/api.ts` → `apiFetch(url)` with auth header, all calls include `?tenantId=TENANT_ID`
 - **Auth:** `lib/auth.ts` → role guard, `AuthShell` sidebar with role-based nav filtering
 - **Tabs:** Multi-tab pages use `useState<string>` tab selector with button group
@@ -180,18 +190,44 @@
 | R3-S2 | 6 | ✅ Done (AI suggestions, driver mobile) |
 | R3-S3 | 3 | ✅ Done (AI pricing, AI anomaly, mobile customer app) |
 | R3-FE | 7 | ✅ All Done (2 epics, 2 sprints, BC-247–BC-253) |
+| R4-S1 | 8 | ✅ Done (security hardening: 4 BE + design system: 4 FE) |
 
 ---
 
 ## What's Next (Priority Order)
 
-1. **Testing** — End-to-end integration tests, load testing
-2. **Deployment** — Production Docker setup, CI/CD pipeline
-3. **Polish** — UX refinements, accessibility, mobile responsiveness
+1. **R4-S2** — Customer Portal: Auth & Catalog (5 stories, 23 SP: BC-2801–2803, BC-2901–2902)
+2. **R4-S3** — Customer Portal: Commerce (5 stories, 23 SP: BC-2804–2806, BC-2903–2904)
+3. **R4-S4** — Customer Account + Notifications (8 stories, 31 SP: BC-2807–2809, BC-2905, BC-3001–3004)
+4. **R4-S5** — Visual Rework P1 + Subscription Enforcement (8 stories, 29 SP: BC-3101–3103, BC-3201–3205)
+5. **R4-S6** — Visual Rework P2 + QA (7 stories, 27 SP: BC-3206–3212)
 
 ---
 
 ## Session History
+
+### 2026-03-11 — R4-S1: Security Hardening + Design System
+
+**Stories:** BC-2601, BC-2602, BC-2603, BC-2604, BC-2701, BC-2702, BC-2703, BC-2704
+**Epics:** BC-E24 (Security Hardening), BC-E25 (Design System Refresh)
+**Tests:** 404 total (76 new/fixed), 0 failures
+
+**Security Hardening (BC-E24 — 4 stories):**
+
+- **BC-2601 (Secure SecurityConfig):** `/v2/**` and `/v3/**` now require authentication. Public exceptions: `POST /v2/customers/register`, `POST /v2/customers/login`, `GET /v2/products/**`, `POST /v3/ai/webhook/whatsapp`.
+- **BC-2602 (@PreAuthorize on v2/v3 controllers):** 14 controllers with class-level `@PreAuthorize`, 3 controllers with method-level annotations. Role combos per controller (e.g., DeliveryController = Admin+Manager, LoyaltyController = per-method roles). AiConversationController has `permitAll()` override on webhook.
+- **BC-2603 (Customer own-data enforcement):** New `CustomerSecurityUtil.java` with `assertOwner(customerId)` — checks JWT principal vs customerId, Admin/Manager bypass. Wired into CustomerController (getProfile, updateProfile) and CustomerOrderController (placeOrder, getOrderStatus, getOrderHistory). JwtAuthFilter now stores tenantId in `auth.setDetails()`. 5 new tests in `CustomerOwnDataTest.java`.
+- **BC-2604 (Customer /me endpoint):** `GET /v2/customers/me` reads customerId from JWT principal. `@PreAuthorize("hasRole('Customer')")`. 3 new tests in `CustomerMeEndpointTest.java`.
+- **Token fixes:** 26 test files updated — empty bearer tokens → `bearer("admin1")`, `adminToken()` → `bearer("admin1")`.
+
+**Design System Refresh (BC-E25 — 4 stories):**
+
+- **BC-2701 (Component library):** New `frontend/components/design-system.tsx` — 11 typed components: `cn`, `Button` (5 variants × 3 sizes), `Card`, `StatCard`, `SectionTitle`, `InputField`, `SelectField`, `Progress`, `Badge` (19 status variants), `SidebarItem`, `Table`.
+- **BC-2702 (Sidebar rework):** AuthShell sidebar: `bg-slate-900 rounded-[28px]`, brand block (ChefHat icon + BreadCost + ERP subtitle), `SidebarItem` components with lucide-react icons per nav item, section grouping, mobile hamburger with overlay.
+- **BC-2703 (Top nav rework):** White header bar with `max-w-[1800px]`, ChefHat logo, language toggle (EN/HY), notification bell, user avatar, logout. Responsive hamburger below `lg`.
+- **BC-2704 (Custom 404):** `app/not-found.tsx` — large "404" text, "This tray came out empty", dashboard + catalog CTA buttons. EN/HY translations added.
+
+**Files changed:** 21 backend (2 security, 17 controllers, 2 new test files), 26 test token fixes, 4 frontend (design-system.tsx, AuthShell.tsx, not-found.tsx, locales).
 
 ### 2026-03-09 — R3-S3 Backend (AI Pricing, Anomaly, Mobile App)
 

@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * Subscription REST controller.
@@ -18,6 +19,7 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping("/v2/subscriptions")
+@PreAuthorize("hasAnyRole('Admin')")
 public class SubscriptionController {
 
     private final SubscriptionService subscriptionService;

@@ -3,6 +3,7 @@ package com.breadcost.api;
 import com.breadcost.customers.CustomerAddress;
 import com.breadcost.customers.CustomerEntity;
 import com.breadcost.customers.CustomerService;
+import com.breadcost.security.CustomerSecurityUtil;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -12,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.Map;
@@ -125,10 +128,12 @@ public class CustomerController {
      * GET /v2/customers/{id}/profile?tenantId=...
      */
     @GetMapping("/{id}/profile")
+    @PreAuthorize("hasAnyRole('Customer','Admin','Manager')")
     public ResponseEntity<CustomerEntity> getProfile(
             @PathVariable("id") String customerId,
             @RequestParam String tenantId) {
 
+        CustomerSecurityUtil.assertOwner(customerId);
         return ResponseEntity.ok(customerService.getProfile(tenantId, customerId));
     }
 
@@ -136,11 +141,13 @@ public class CustomerController {
      * PUT /v2/customers/{id}/profile?tenantId=...
      */
     @PutMapping("/{id}/profile")
+    @PreAuthorize("hasAnyRole('Customer','Admin','Manager')")
     public ResponseEntity<CustomerEntity> updateProfile(
             @PathVariable("id") String customerId,
             @RequestParam String tenantId,
             @RequestBody UpdateProfileRequest req) {
 
+        CustomerSecurityUtil.assertOwner(customerId);
         CustomerEntity updated = customerService.updateProfile(
                 tenantId, customerId,
                 req.getName(), req.getPhone(),
@@ -149,10 +156,26 @@ public class CustomerController {
         return ResponseEntity.ok(updated);
     }
 
+    // ── "Me" endpoint (BC-2604) ─────────────────────────────────────────────
+
+    /**
+     * GET /v2/customers/me → returns the authenticated customer's profile.
+     * Reads customerId from JWT subject.
+     */
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('Customer')")
+    public ResponseEntity<CustomerEntity> me() {
+        String customerId = org.springframework.security.core.context.SecurityContextHolder
+                .getContext().getAuthentication().getName();
+        String tenantId = CustomerSecurityUtil.getTenantId();
+        return ResponseEntity.ok(customerService.getProfile(tenantId, customerId));
+    }
+
     // ── Admin list ────────────────────────────────────────────────────────────
 
     /** GET /v2/customers?tenantId=... */
     @GetMapping
+    @PreAuthorize("hasAnyRole('Admin','Manager')")
     public ResponseEntity<List<CustomerEntity>> listCustomers(@RequestParam String tenantId) {
         return ResponseEntity.ok(customerService.listCustomers(tenantId));
     }

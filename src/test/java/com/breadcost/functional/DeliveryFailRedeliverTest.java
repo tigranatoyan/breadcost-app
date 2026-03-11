@@ -18,13 +18,13 @@ class DeliveryFailRedeliverTest extends FunctionalTestBase {
     private String createRunWithOrder(String suffix) throws Exception {
         String runBody = POST("/v2/delivery-runs", Map.of(
                 "tenantId", TENANT, "driverName", "FailDriver-" + suffix
-        ), "").andExpect(status().isCreated())
+        ), bearer("admin1")).andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         String runId = om.readTree(runBody).get("runId").asText();
         String orderId = "fail-ord-" + suffix;
         POST("/v2/delivery-runs/" + runId + "/orders", Map.of(
                 "tenantId", TENANT, "orderId", orderId
-        ), "").andExpect(status().isCreated());
+        ), bearer("admin1")).andExpect(status().isCreated());
         return runId;
     }
 
@@ -32,16 +32,16 @@ class DeliveryFailRedeliverTest extends FunctionalTestBase {
     @DisplayName("BC-1404 ✓ Mark order failed records failure reason")
     void markFailed_recordsReason() throws Exception {
         String suffix = UUID.randomUUID().toString().substring(0, 8);
-        String runBody = POST("/v2/delivery-runs", Map.of("tenantId", TENANT, "driverName", "F-" + suffix), "")
+        String runBody = POST("/v2/delivery-runs", Map.of("tenantId", TENANT, "driverName", "F-" + suffix), bearer("admin1"))
                 .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
         String runId = om.readTree(runBody).get("runId").asText();
         String orderId = "f-ord-" + suffix;
-        POST("/v2/delivery-runs/" + runId + "/orders", Map.of("tenantId", TENANT, "orderId", orderId), "");
+        POST("/v2/delivery-runs/" + runId + "/orders", Map.of("tenantId", TENANT, "orderId", orderId), bearer("admin1"));
 
         PUT("/v2/delivery-runs/" + runId + "/orders/" + orderId + "/fail", Map.of(
                 "tenantId", TENANT,
                 "failureReason", "Customer not home"
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("FAILED"))
                 .andExpect(jsonPath("$.failureReason").value("Customer not home"));
@@ -51,18 +51,18 @@ class DeliveryFailRedeliverTest extends FunctionalTestBase {
     @DisplayName("BC-1404 ✓ Re-delivery assigns to new run")
     void redeliver_assignsToNewRun() throws Exception {
         String suffix = UUID.randomUUID().toString().substring(0, 8);
-        String run1Body = POST("/v2/delivery-runs", Map.of("tenantId", TENANT, "driverName", "R1-" + suffix), "")
+        String run1Body = POST("/v2/delivery-runs", Map.of("tenantId", TENANT, "driverName", "R1-" + suffix), bearer("admin1"))
                 .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
         String run1Id = om.readTree(run1Body).get("runId").asText();
         String orderId = "r-ord-" + suffix;
-        POST("/v2/delivery-runs/" + run1Id + "/orders", Map.of("tenantId", TENANT, "orderId", orderId), "");
+        POST("/v2/delivery-runs/" + run1Id + "/orders", Map.of("tenantId", TENANT, "orderId", orderId), bearer("admin1"));
 
         // Fail first
         PUT("/v2/delivery-runs/" + run1Id + "/orders/" + orderId + "/fail",
-                Map.of("tenantId", TENANT, "failureReason", "Road closed"), "");
+                Map.of("tenantId", TENANT, "failureReason", "Road closed"), bearer("admin1"));
 
         // Create new run
-        String run2Body = POST("/v2/delivery-runs", Map.of("tenantId", TENANT, "driverName", "R2-" + suffix), "")
+        String run2Body = POST("/v2/delivery-runs", Map.of("tenantId", TENANT, "driverName", "R2-" + suffix), bearer("admin1"))
                 .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
         String run2Id = om.readTree(run2Body).get("runId").asText();
 
@@ -70,7 +70,7 @@ class DeliveryFailRedeliverTest extends FunctionalTestBase {
         POST("/v2/delivery-runs/" + run1Id + "/orders/" + orderId + "/redeliver", Map.of(
                 "tenantId", TENANT,
                 "newRunId", run2Id
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.runId").value(run2Id))
                 .andExpect(jsonPath("$.orderId").value(orderId));
@@ -79,12 +79,12 @@ class DeliveryFailRedeliverTest extends FunctionalTestBase {
     @Test
     @DisplayName("BC-1404 ✓ Fail non-existent order in run returns 400")
     void markFailed_notFound_returns400() throws Exception {
-        String runBody = POST("/v2/delivery-runs", Map.of("tenantId", TENANT), "")
+        String runBody = POST("/v2/delivery-runs", Map.of("tenantId", TENANT), bearer("admin1"))
                 .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
         String runId = om.readTree(runBody).get("runId").asText();
 
         PUT("/v2/delivery-runs/" + runId + "/orders/nosuchorder/fail",
-                Map.of("tenantId", TENANT, "failureReason", "oops"), "")
+                Map.of("tenantId", TENANT, "failureReason", "oops"), bearer("admin1"))
                 .andExpect(status().isBadRequest());
     }
 }

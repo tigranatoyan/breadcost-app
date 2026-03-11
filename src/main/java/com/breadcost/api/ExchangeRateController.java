@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * Exchange rate endpoints — BC-2201 (FR-6.7, FR-9.7)
@@ -20,6 +21,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/v3/exchange-rates")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('Admin','Manager','FinanceUser')")
 public class ExchangeRateController {
 
     private final ExchangeRateService service;

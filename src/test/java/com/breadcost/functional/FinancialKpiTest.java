@@ -14,7 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class FinancialKpiTest extends FunctionalTestBase {
 
-    String adminToken() { return token("admin1"); }
+    String adminToken() { return bearer("admin1"); }
 
     private String createReport() throws Exception {
         ResultActions ra = POST("/v2/reports", Map.of(

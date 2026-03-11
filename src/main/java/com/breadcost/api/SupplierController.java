@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * Supplier REST API — BC-1301: Supplier catalog CRUD
@@ -26,6 +27,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/v2/suppliers")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('Admin','Manager','Warehouse')")
 public class SupplierController {
 
     private final SupplierService supplierService;

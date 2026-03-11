@@ -10,12 +10,14 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * REST controller for BC-E15 Invoicing, Credit Limits and Customer Pricing.
  */
 @RestController
 @RequestMapping("/v2")
+@PreAuthorize("hasAnyRole('Admin','Manager','FinanceUser')")
 public class InvoiceController {
 
     private final InvoiceService invoiceService;

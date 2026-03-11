@@ -13,7 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class CreditLimitTest extends FunctionalTestBase {
 
-    String adminToken() { return token("admin1"); }
+    String adminToken() { return bearer("admin1"); }
 
     String createCustomer(String suffix) throws Exception {
         ResultActions ra = POST("/v2/customers/register", Map.of(

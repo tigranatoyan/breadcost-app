@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * Mobile customer app endpoints — BC-2301 (FR-2.1 mobile)
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/v3/mobile")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('Admin','Manager','Cashier','ProductionUser')")
 public class MobileAppController {
 
     private final MobileAppService service;

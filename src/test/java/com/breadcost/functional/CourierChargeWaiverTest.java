@@ -19,13 +19,13 @@ class CourierChargeWaiverTest extends FunctionalTestBase {
                 "tenantId", TENANT,
                 "driverName", "Waiver-Driver",
                 "courierCharge", 30.00
-        ), "").andExpect(status().isCreated())
+        ), bearer("admin1")).andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         String runId = om.readTree(runBody).get("runId").asText();
         String orderId = "wvr-" + UUID.randomUUID();
         POST("/v2/delivery-runs/" + runId + "/orders", Map.of(
                 "tenantId", TENANT, "orderId", orderId
-        ), "").andExpect(status().isCreated());
+        ), bearer("admin1")).andExpect(status().isCreated());
         return new String[]{runId, orderId};
     }
 
@@ -37,7 +37,7 @@ class CourierChargeWaiverTest extends FunctionalTestBase {
         PUT("/v2/delivery-runs/" + pair[0] + "/orders/" + pair[1] + "/waive", Map.of(
                 "tenantId", TENANT,
                 "waivedBy", "manager@breadcost.com"
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.courierChargeWaived").value(true))
                 .andExpect(jsonPath("$.courierCharge").value(0))
@@ -51,7 +51,7 @@ class CourierChargeWaiverTest extends FunctionalTestBase {
 
         PUT("/v2/delivery-runs/" + pair[0] + "/orders/" + pair[1] + "/waive", Map.of(
                 "tenantId", TENANT
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -61,24 +61,24 @@ class CourierChargeWaiverTest extends FunctionalTestBase {
         String runBody = POST("/v2/delivery-runs", Map.of(
                 "tenantId", TENANT,
                 "courierCharge", 20.00
-        ), "").andExpect(status().isCreated())
+        ), bearer("admin1")).andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         String runId = om.readTree(runBody).get("runId").asText();
         String ord1 = "wvr-a-" + UUID.randomUUID();
         String ord2 = "wvr-b-" + UUID.randomUUID();
 
-        POST("/v2/delivery-runs/" + runId + "/orders", Map.of("tenantId", TENANT, "orderId", ord1), "");
-        POST("/v2/delivery-runs/" + runId + "/orders", Map.of("tenantId", TENANT, "orderId", ord2), "");
+        POST("/v2/delivery-runs/" + runId + "/orders", Map.of("tenantId", TENANT, "orderId", ord1), bearer("admin1"));
+        POST("/v2/delivery-runs/" + runId + "/orders", Map.of("tenantId", TENANT, "orderId", ord2), bearer("admin1"));
 
         // Waive ord1
         PUT("/v2/delivery-runs/" + runId + "/orders/" + ord1 + "/waive", Map.of(
                 "tenantId", TENANT, "waivedBy", "admin"
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.courierChargeWaived").value(true));
 
         // Both orders still in the run
-        GET("/v2/delivery-runs/" + runId + "/orders", "")
+        GET("/v2/delivery-runs/" + runId + "/orders", bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
     }

@@ -19,7 +19,7 @@ class DeliveryMatchingTest extends FunctionalTestBase {
     private String createApprovedPO(String ingredientId, double qty) throws Exception {
         String supplierBody = POST("/v2/suppliers", Map.of(
                 "tenantId", TENANT, "name", "DelivSupplier-" + UUID.randomUUID()
-        ), "").andExpect(status().isCreated())
+        ), bearer("admin1")).andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         String supplierId = om.readTree(supplierBody).get("supplierId").asText();
 
@@ -31,11 +31,11 @@ class DeliveryMatchingTest extends FunctionalTestBase {
                                 "qty", qty, "unit", "kg",
                                 "unitPrice", 3.0, "currency", "USD")
                 )
-        ), "").andExpect(status().isCreated())
+        ), bearer("admin1")).andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         String poId = om.readTree(poBody).get("po").get("poId").asText();
 
-        PUT("/v2/purchase-orders/" + poId + "/approve?tenantId=" + TENANT, Map.of(), "");
+        PUT("/v2/purchase-orders/" + poId + "/approve?tenantId=" + TENANT, Map.of(), bearer("admin1"));
         return poId;
     }
 
@@ -52,7 +52,7 @@ class DeliveryMatchingTest extends FunctionalTestBase {
                         Map.of("ingredientId", ingId, "ingredientName", "Test Ingredient",
                                 "qtyReceived", 100.0, "unit", "kg")
                 )
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.delivery.deliveryId").isNotEmpty());
     }
@@ -68,7 +68,7 @@ class DeliveryMatchingTest extends FunctionalTestBase {
                 "lines", List.of(
                         Map.of("ingredientId", ingId, "qtyReceived", 50.0, "unit", "kg")
                 )
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.delivery.hasDiscrepancy").value(false))
                 .andExpect(jsonPath("$.delivery.status").value("MATCHED"));
@@ -85,7 +85,7 @@ class DeliveryMatchingTest extends FunctionalTestBase {
                 "lines", List.of(
                         Map.of("ingredientId", ingId, "qtyReceived", 75.0, "unit", "kg")
                 )
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.delivery.hasDiscrepancy").value(true))
                 .andExpect(jsonPath("$.delivery.status").value("DISCREPANCY"));
@@ -102,9 +102,9 @@ class DeliveryMatchingTest extends FunctionalTestBase {
                 "lines", List.of(
                         Map.of("ingredientId", ingId, "qtyReceived", 30.0)
                 )
-        ), "").andExpect(status().isCreated());
+        ), bearer("admin1")).andExpect(status().isCreated());
 
-        GET("/v2/purchase-orders/" + poId + "?tenantId=" + TENANT, "")
+        GET("/v2/purchase-orders/" + poId + "?tenantId=" + TENANT, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.po.status").value("RECEIVED"));
     }
@@ -120,7 +120,7 @@ class DeliveryMatchingTest extends FunctionalTestBase {
                 "lines", List.of(
                         Map.of("ingredientId", ingId, "qtyReceived", 150.0)
                 )
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.lines[0].discrepancy").value(true))
                 .andExpect(jsonPath("$.lines[0].discrepancyNote").isNotEmpty());

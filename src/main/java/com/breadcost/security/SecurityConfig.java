@@ -42,8 +42,19 @@ public class SecurityConfig {
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/h2-console/**").permitAll()
+                // v1 public
                 .requestMatchers(HttpMethod.POST, "/v1/auth/login").permitAll()
+                // v2 public: customer register, login, catalog browse
+                .requestMatchers(HttpMethod.POST, "/v2/customers/register").permitAll()
+                .requestMatchers(HttpMethod.POST, "/v2/customers/login").permitAll()
+                .requestMatchers(HttpMethod.GET, "/v2/products/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/v2/products").permitAll()
+                // v3 public: WhatsApp webhook
+                .requestMatchers(HttpMethod.POST, "/v3/ai/webhook/whatsapp").permitAll()
+                // everything else under v1, v2, v3 requires authentication
                 .requestMatchers("/v1/**").authenticated()
+                .requestMatchers("/v2/**").authenticated()
+                .requestMatchers("/v3/**").authenticated()
                 .anyRequest().permitAll()
             )
             .httpBasic(basic -> {})

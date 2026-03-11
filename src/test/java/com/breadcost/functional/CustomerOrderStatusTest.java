@@ -77,7 +77,7 @@ class CustomerOrderStatusTest extends FunctionalTestBase {
                 "customerId", customerId,
                 "items",      List.of(Map.of("productId", productId, "qty", 1))
         );
-        String body = POST("/v2/orders", req, "")
+        String body = POST("/v2/orders", req, bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         JsonNode json = om.readTree(body);
@@ -91,7 +91,7 @@ class CustomerOrderStatusTest extends FunctionalTestBase {
     void getOrderStatus_existingOrder_returns200() throws Exception {
         String orderId = placeOrder();
 
-        GET("/v2/orders/" + orderId + "?tenantId=" + TENANT + "&customerId=" + customerId, "")
+        GET("/v2/orders/" + orderId + "?tenantId=" + TENANT + "&customerId=" + customerId, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.orderId", is(orderId)))
                 .andExpect(jsonPath("$.status").isNotEmpty());
@@ -102,7 +102,7 @@ class CustomerOrderStatusTest extends FunctionalTestBase {
     void getOrderStatus_statusField_present() throws Exception {
         String orderId = placeOrder();
 
-        GET("/v2/orders/" + orderId + "?tenantId=" + TENANT + "&customerId=" + customerId, "")
+        GET("/v2/orders/" + orderId + "?tenantId=" + TENANT + "&customerId=" + customerId, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status", not(emptyOrNullString())));
     }
@@ -110,7 +110,7 @@ class CustomerOrderStatusTest extends FunctionalTestBase {
     @Test
     @DisplayName("BC-1105 ✓ Unknown orderId → 400")
     void getOrderStatus_unknownId_returns400() throws Exception {
-        GET("/v2/orders/no-such-order?tenantId=" + TENANT + "&customerId=" + customerId, "")
+        GET("/v2/orders/no-such-order?tenantId=" + TENANT + "&customerId=" + customerId, bearer("admin1"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -119,7 +119,7 @@ class CustomerOrderStatusTest extends FunctionalTestBase {
     void getOrderStatus_wrongCustomer_returns400() throws Exception {
         String orderId = placeOrder();
 
-        GET("/v2/orders/" + orderId + "?tenantId=" + TENANT + "&customerId=wrong-customer", "")
+        GET("/v2/orders/" + orderId + "?tenantId=" + TENANT + "&customerId=wrong-customer", bearer("admin1"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -131,7 +131,7 @@ class CustomerOrderStatusTest extends FunctionalTestBase {
         String orderId1 = placeOrder();
         String orderId2 = placeOrder();
 
-        GET("/v2/orders?tenantId=" + TENANT + "&customerId=" + customerId, "")
+        GET("/v2/orders?tenantId=" + TENANT + "&customerId=" + customerId, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(2))))
                 .andExpect(jsonPath("$[*].orderId", hasItems(orderId1, orderId2)));
@@ -140,7 +140,7 @@ class CustomerOrderStatusTest extends FunctionalTestBase {
     @Test
     @DisplayName("BC-1105 ✓ Order history for unknown customer → 200 empty list")
     void getOrderHistory_unknownCustomer_returnsEmpty() throws Exception {
-        GET("/v2/orders?tenantId=" + TENANT + "&customerId=no-such-customer", "")
+        GET("/v2/orders?tenantId=" + TENANT + "&customerId=no-such-customer", bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
     }

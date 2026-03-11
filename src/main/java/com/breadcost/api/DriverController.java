@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * Driver mobile app endpoints — BC-2101..2103 (FR-7.7, FR-8.7, FR-8.8)
@@ -21,6 +22,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/v3/driver")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('Admin','Manager')")
 public class DriverController {
 
     private final DriverService service;

@@ -20,17 +20,17 @@ class DeliveryManifestTest extends FunctionalTestBase {
                 "driverName", "Bob",
                 "scheduledDate", "2026-04-02",
                 "courierCharge", 20.00
-        ), "").andExpect(status().isCreated())
+        ), bearer("admin1")).andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         String runId = om.readTree(runBody).get("runId").asText();
 
         POST("/v2/delivery-runs/" + runId + "/orders", Map.of(
                 "tenantId", TENANT, "orderId", "mfst-ord-" + UUID.randomUUID()
-        ), "").andExpect(status().isCreated());
+        ), bearer("admin1")).andExpect(status().isCreated());
 
         POST("/v2/delivery-runs/" + runId + "/orders", Map.of(
                 "tenantId", TENANT, "orderId", "mfst-ord-" + UUID.randomUUID()
-        ), "").andExpect(status().isCreated());
+        ), bearer("admin1")).andExpect(status().isCreated());
 
         return runId;
     }
@@ -40,7 +40,7 @@ class DeliveryManifestTest extends FunctionalTestBase {
     void getManifest_returns200() throws Exception {
         String runId = createRunWithOrders();
 
-        GET("/v2/delivery-runs/" + runId + "/manifest?tenantId=" + TENANT, "")
+        GET("/v2/delivery-runs/" + runId + "/manifest?tenantId=" + TENANT, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.run.runId").value(runId))
                 .andExpect(jsonPath("$.orders").isArray());
@@ -51,7 +51,7 @@ class DeliveryManifestTest extends FunctionalTestBase {
     void getManifest_includesOrders() throws Exception {
         String runId = createRunWithOrders();
 
-        GET("/v2/delivery-runs/" + runId + "/manifest?tenantId=" + TENANT, "")
+        GET("/v2/delivery-runs/" + runId + "/manifest?tenantId=" + TENANT, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.orders.length()").value(2));
     }
@@ -63,11 +63,11 @@ class DeliveryManifestTest extends FunctionalTestBase {
                 "tenantId", TENANT,
                 "driverId", "drv-42",
                 "driverName", "Carol Courier"
-        ), "").andExpect(status().isCreated())
+        ), bearer("admin1")).andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         String runId = om.readTree(runBody).get("runId").asText();
 
-        GET("/v2/delivery-runs/" + runId + "/manifest?tenantId=" + TENANT, "")
+        GET("/v2/delivery-runs/" + runId + "/manifest?tenantId=" + TENANT, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.run.driverName").value("Carol Courier"));
     }
@@ -75,7 +75,7 @@ class DeliveryManifestTest extends FunctionalTestBase {
     @Test
     @DisplayName("BC-1402 ✓ Manifest for non-existent run returns 400")
     void getManifest_notFound_returns400() throws Exception {
-        GET("/v2/delivery-runs/bad-run/manifest?tenantId=" + TENANT, "")
+        GET("/v2/delivery-runs/bad-run/manifest?tenantId=" + TENANT, bearer("admin1"))
                 .andExpect(status().isBadRequest());
     }
 }

@@ -31,7 +31,7 @@ class LoyaltyTiersTest extends FunctionalTestBase {
                 "discountPct", 5.0
         );
 
-        POST("/v2/loyalty/tiers", req, "")
+        POST("/v2/loyalty/tiers", req, bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.tierId").isNotEmpty())
                 .andExpect(jsonPath("$.name").isNotEmpty())
@@ -42,15 +42,15 @@ class LoyaltyTiersTest extends FunctionalTestBase {
     @DisplayName("BC-1202 ✓ GET /v2/loyalty/tiers → list ordered by minPoints")
     void listTiers_returnsOrderedList() throws Exception {
         String suffix = UUID.randomUUID().toString();
-        POST("/v2/loyalty/tiers", Map.of("tenantId", TENANT, "name", "Gold-" + suffix, "minPoints", 5000), "")
+        POST("/v2/loyalty/tiers", Map.of("tenantId", TENANT, "name", "Gold-" + suffix, "minPoints", 5000), bearer("admin1"))
                 .andExpect(status().isCreated());
-        POST("/v2/loyalty/tiers", Map.of("tenantId", TENANT, "name", "Bronze-" + suffix, "minPoints", 0), "")
+        POST("/v2/loyalty/tiers", Map.of("tenantId", TENANT, "name", "Bronze-" + suffix, "minPoints", 0), bearer("admin1"))
                 .andExpect(status().isCreated());
-        POST("/v2/loyalty/tiers", Map.of("tenantId", TENANT, "name", "Silver-" + suffix, "minPoints", 1000), "")
+        POST("/v2/loyalty/tiers", Map.of("tenantId", TENANT, "name", "Silver-" + suffix, "minPoints", 1000), bearer("admin1"))
                 .andExpect(status().isCreated());
 
         // List for a fresh tenant with those exact tiers (can't guarantee order with shared tenant)
-        GET("/v2/loyalty/tiers?tenantId=" + TENANT, "")
+        GET("/v2/loyalty/tiers?tenantId=" + TENANT, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
     }
@@ -59,12 +59,12 @@ class LoyaltyTiersTest extends FunctionalTestBase {
     @DisplayName("BC-1202 ✓ Same tier name upserts — updates minPoints")
     void createTier_sameName_updatesExisting() throws Exception {
         String name = "Platinum-" + UUID.randomUUID();
-        POST("/v2/loyalty/tiers", Map.of("tenantId", TENANT, "name", name, "minPoints", 10000), "")
+        POST("/v2/loyalty/tiers", Map.of("tenantId", TENANT, "name", name, "minPoints", 10000), bearer("admin1"))
                 .andExpect(status().isCreated());
 
         // Update: same name, different minPoints
         String body = POST("/v2/loyalty/tiers",
-                Map.of("tenantId", TENANT, "name", name, "minPoints", 15000), "")
+                Map.of("tenantId", TENANT, "name", name, "minPoints", 15000), bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
 
@@ -82,7 +82,7 @@ class LoyaltyTiersTest extends FunctionalTestBase {
                 "name",          name,
                 "minPoints",     8000,
                 "pointsPerDollar", 2.0
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.pointsPerDollar", is(2.0)));
     }
@@ -91,13 +91,13 @@ class LoyaltyTiersTest extends FunctionalTestBase {
     @DisplayName("BC-1202 ✓ DELETE /v2/loyalty/tiers/{id} → 204")
     void deleteTier_existing_returns204() throws Exception {
         String body = POST("/v2/loyalty/tiers", Map.of(
-                "tenantId", TENANT, "name", "Temp-" + UUID.randomUUID(), "minPoints", 500), "")
+                "tenantId", TENANT, "name", "Temp-" + UUID.randomUUID(), "minPoints", 500), bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
 
         String tierId = om.readTree(body).get("tierId").asText();
 
-        DELETE("/v2/loyalty/tiers/" + tierId, "")
+        DELETE("/v2/loyalty/tiers/" + tierId, bearer("admin1"))
                 .andExpect(status().isNoContent());
     }
 
@@ -111,12 +111,12 @@ class LoyaltyTiersTest extends FunctionalTestBase {
         // Create Silver tier with 2x earning in an isolated tenant
         POST("/v2/loyalty/tiers", Map.of(
                 "tenantId", isolatedTenant, "name", "Silver2x-" + suffix,
-                "minPoints", 0, "pointsPerDollar", 2.0), "")
+                "minPoints", 0, "pointsPerDollar", 2.0), bearer("admin1"))
                 .andExpect(status().isCreated());
 
         POST("/v2/loyalty/award", Map.of(
                 "tenantId", isolatedTenant, "customerId", cid,
-                "orderId", "o1", "orderTotal", 20.0), "")
+                "orderId", "o1", "orderTotal", 20.0), bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pointsBalance", is(40)));  // 20 × 2.0
     }

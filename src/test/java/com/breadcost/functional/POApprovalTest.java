@@ -20,7 +20,7 @@ class POApprovalTest extends FunctionalTestBase {
         String body = POST("/v2/suppliers", Map.of(
                 "tenantId", TENANT,
                 "name", "ApprovalSupplier-" + UUID.randomUUID()
-        ), "").andExpect(status().isCreated())
+        ), bearer("admin1")).andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         return om.readTree(body).get("supplierId").asText();
     }
@@ -37,7 +37,7 @@ class POApprovalTest extends FunctionalTestBase {
                                 "qty", 100.0, "unit", "kg",
                                 "unitPrice", 2.50, "currency", "USD")
                 )
-        ), "").andExpect(status().isCreated())
+        ), bearer("admin1")).andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         return om.readTree(body).get("po").get("poId").asText();
     }
@@ -54,7 +54,7 @@ class POApprovalTest extends FunctionalTestBase {
                         Map.of("ingredientId", "ing-001", "qty", 50.0,
                                 "unitPrice", 3.0, "currency", "USD")
                 )
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.po.status").value("PENDING_APPROVAL"))
                 .andExpect(jsonPath("$.po.poId").isNotEmpty());
@@ -67,7 +67,7 @@ class POApprovalTest extends FunctionalTestBase {
         String poId = createPO(supplierId);
 
         PUT("/v2/purchase-orders/" + poId + "/approve?tenantId=" + TENANT,
-                Map.of("approvedBy", "manager@breadcost.com"), "")
+                Map.of("approvedBy", "manager@breadcost.com"), bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("APPROVED"))
                 .andExpect(jsonPath("$.approvedBy").value("manager@breadcost.com"))
@@ -80,7 +80,7 @@ class POApprovalTest extends FunctionalTestBase {
         String supplierId = createSupplier();
         String poId = createPO(supplierId);
 
-        GET("/v2/purchase-orders/" + poId + "?tenantId=" + TENANT, "")
+        GET("/v2/purchase-orders/" + poId + "?tenantId=" + TENANT, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.po.poId").value(poId))
                 .andExpect(jsonPath("$.lines").isArray());
@@ -97,7 +97,7 @@ class POApprovalTest extends FunctionalTestBase {
                 "lines", List.of(
                         Map.of("ingredientId", "ing-a", "qty", 10.0, "unitPrice", 5.0, "currency", "USD")
                 )
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.po.totalAmount").value(50.0));
     }
@@ -108,7 +108,7 @@ class POApprovalTest extends FunctionalTestBase {
         String supplierId = createSupplier();
         createPO(supplierId);
 
-        GET("/v2/purchase-orders?tenantId=" + TENANT, "")
+        GET("/v2/purchase-orders?tenantId=" + TENANT, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
     }
@@ -117,7 +117,7 @@ class POApprovalTest extends FunctionalTestBase {
     @DisplayName("BC-1303 ✓ Approve non-existent PO returns 400")
     void approvePO_notFound_returns400() throws Exception {
         PUT("/v2/purchase-orders/nonexistent-po/approve?tenantId=" + TENANT,
-                Map.of(), "")
+                Map.of(), bearer("admin1"))
                 .andExpect(status().isBadRequest());
     }
 }

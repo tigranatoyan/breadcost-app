@@ -22,7 +22,7 @@ class DeliveryRunAssignTest extends FunctionalTestBase {
                 "driverName", "John Smith",
                 "scheduledDate", "2026-04-01",
                 "courierCharge", courierCharge
-        ), "").andExpect(status().isCreated())
+        ), bearer("admin1")).andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         return om.readTree(body).get("runId").asText();
     }
@@ -35,7 +35,7 @@ class DeliveryRunAssignTest extends FunctionalTestBase {
                 "driverId", "drv-001",
                 "driverName", "Alice",
                 "courierCharge", 25.00
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.runId").isNotEmpty())
                 .andExpect(jsonPath("$.status").value("PENDING"));
@@ -50,7 +50,7 @@ class DeliveryRunAssignTest extends FunctionalTestBase {
         POST("/v2/delivery-runs/" + runId + "/orders", Map.of(
                 "tenantId", TENANT,
                 "orderId", orderId
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.orderId").value(orderId))
                 .andExpect(jsonPath("$.status").value("PENDING"));
@@ -64,9 +64,9 @@ class DeliveryRunAssignTest extends FunctionalTestBase {
 
         POST("/v2/delivery-runs/" + runId + "/orders", Map.of(
                 "tenantId", TENANT, "orderId", orderId
-        ), "").andExpect(status().isCreated());
+        ), bearer("admin1")).andExpect(status().isCreated());
 
-        GET("/v2/delivery-runs/" + runId + "/orders", "")
+        GET("/v2/delivery-runs/" + runId + "/orders", bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].orderId", hasItem(orderId)));
     }
@@ -76,7 +76,7 @@ class DeliveryRunAssignTest extends FunctionalTestBase {
     void listRuns_returnsCreated() throws Exception {
         String runId = createRun(30.0);
 
-        GET("/v2/delivery-runs?tenantId=" + TENANT, "")
+        GET("/v2/delivery-runs?tenantId=" + TENANT, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].runId", hasItem(runId)));
     }
@@ -86,7 +86,7 @@ class DeliveryRunAssignTest extends FunctionalTestBase {
     void assignOrder_runNotFound_returns400() throws Exception {
         POST("/v2/delivery-runs/nonexistent/orders", Map.of(
                 "tenantId", TENANT, "orderId", "ord-123"
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isBadRequest());
     }
 }

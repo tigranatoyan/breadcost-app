@@ -19,7 +19,7 @@ class POFxRateTest extends FunctionalTestBase {
     private String createSupplier() throws Exception {
         String body = POST("/v2/suppliers", Map.of(
                 "tenantId", TENANT, "name", "FxSupplier-" + UUID.randomUUID()
-        ), "").andExpect(status().isCreated())
+        ), bearer("admin1")).andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         return om.readTree(body).get("supplierId").asText();
     }
@@ -35,7 +35,7 @@ class POFxRateTest extends FunctionalTestBase {
                 "fxRate", 1.35,
                 "fxCurrencyCode", "GBP",
                 "lines", List.of()
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.po.fxRate").value(1.35))
                 .andExpect(jsonPath("$.po.fxCurrencyCode").value("GBP"));
@@ -49,7 +49,7 @@ class POFxRateTest extends FunctionalTestBase {
         POST("/v2/purchase-orders", Map.of(
                 "tenantId", TENANT,
                 "supplierId", supplierId
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.po.fxRate").value(1.0));
     }
@@ -65,7 +65,7 @@ class POFxRateTest extends FunctionalTestBase {
                     "supplierId", supplierId,
                     "fxRate", Double.parseDouble(pair[0]),
                     "fxCurrencyCode", pair[1]
-            ), "")
+            ), bearer("admin1"))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.po.fxCurrencyCode").value(pair[1]));
         }
@@ -81,12 +81,12 @@ class POFxRateTest extends FunctionalTestBase {
                 "supplierId", supplierId,
                 "fxRate", 4.20,
                 "fxCurrencyCode", "PLN"
-        ), "").andExpect(status().isCreated())
+        ), bearer("admin1")).andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         String poId = om.readTree(body).get("po").get("poId").asText();
 
         PUT("/v2/purchase-orders/" + poId + "/approve?tenantId=" + TENANT,
-                Map.of("approvedBy", "mgr"), "")
+                Map.of("approvedBy", "mgr"), bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.fxRate").value(4.20))
                 .andExpect(jsonPath("$.fxCurrencyCode").value("PLN"));
@@ -102,9 +102,9 @@ class POFxRateTest extends FunctionalTestBase {
                 "supplierId", supplierId,
                 "fxRate", 2.50,
                 "fxCurrencyCode", "AED"
-        ), "").andExpect(status().isCreated());
+        ), bearer("admin1")).andExpect(status().isCreated());
 
-        GET("/v2/purchase-orders?tenantId=" + TENANT, "")
+        GET("/v2/purchase-orders?tenantId=" + TENANT, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].fxCurrencyCode", hasItem("AED")));
     }

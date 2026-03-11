@@ -1155,6 +1155,14 @@ const en = {
     poSent: 'PO sent to supplier API.'
   },
 
+  // ── 404 / Not Found ────────────────────────────────────────────────────────
+  notFound: {
+    title: 'This tray came out empty',
+    description: 'The page you are looking for does not exist or has been moved.',
+    backToDashboard: 'Back to Dashboard',
+    openCatalog: 'Open Catalog',
+  },
+
   // ── Language ───────────────────────────────────────────────────────────────
   language: {
     en: 'English',

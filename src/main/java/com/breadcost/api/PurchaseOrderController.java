@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * Purchase order REST API — BC-E13
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/v2/purchase-orders")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('Admin','Manager','Warehouse')")
 public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;

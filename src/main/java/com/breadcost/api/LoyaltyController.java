@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -68,6 +69,7 @@ public class LoyaltyController {
     // ── BC-1201: Award points ─────────────────────────────────────────────────
 
     @PostMapping("/award")
+    @PreAuthorize("hasAnyRole('Admin','Manager')")
     public ResponseEntity<LoyaltyAccountEntity> award(@Valid @RequestBody AwardPointsRequest req) {
         LoyaltyAccountEntity account = loyaltyService.awardPoints(
                 req.getTenantId(), req.getCustomerId(),
@@ -78,6 +80,7 @@ public class LoyaltyController {
     // ── BC-1204: Redeem points ────────────────────────────────────────────────
 
     @PostMapping("/redeem")
+    @PreAuthorize("hasAnyRole('Customer','Admin','Manager')")
     public ResponseEntity<LoyaltyAccountEntity> redeem(@Valid @RequestBody RedeemPointsRequest req) {
         LoyaltyAccountEntity account = loyaltyService.redeemPoints(
                 req.getTenantId(), req.getCustomerId(),
@@ -88,6 +91,7 @@ public class LoyaltyController {
     // ── BC-1205: Balance & history ────────────────────────────────────────────
 
     @GetMapping("/balance")
+    @PreAuthorize("hasAnyRole('Customer','Admin','Manager')")
     public ResponseEntity<LoyaltyAccountEntity> balance(
             @RequestParam String tenantId,
             @RequestParam String customerId) {
@@ -95,6 +99,7 @@ public class LoyaltyController {
     }
 
     @GetMapping("/history")
+    @PreAuthorize("hasAnyRole('Customer','Admin','Manager')")
     public ResponseEntity<List<LoyaltyTransactionEntity>> history(
             @RequestParam String tenantId,
             @RequestParam String customerId) {
@@ -104,6 +109,7 @@ public class LoyaltyController {
     // ── BC-1202/1203/1206: Tier management ────────────────────────────────────
 
     @PostMapping("/tiers")
+    @PreAuthorize("hasAnyRole('Admin','Manager')")
     public ResponseEntity<LoyaltyTierEntity> saveTier(@Valid @RequestBody SaveTierRequest req) {
         LoyaltyTierEntity tier = loyaltyService.saveTier(
                 req.getTenantId(), req.getName(),
@@ -113,11 +119,13 @@ public class LoyaltyController {
     }
 
     @GetMapping("/tiers")
+    @PreAuthorize("hasAnyRole('Admin','Manager')")
     public ResponseEntity<List<LoyaltyTierEntity>> listTiers(@RequestParam String tenantId) {
         return ResponseEntity.ok(loyaltyService.listTiers(tenantId));
     }
 
     @DeleteMapping("/tiers/{id}")
+    @PreAuthorize("hasAnyRole('Admin','Manager')")
     public ResponseEntity<Void> deleteTier(@PathVariable("id") String tierId) {
         loyaltyService.deleteTier(tierId);
         return ResponseEntity.noContent().build();

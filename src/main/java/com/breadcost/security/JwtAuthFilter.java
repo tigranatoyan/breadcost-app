@@ -15,6 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -39,6 +40,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         .map(r -> new SimpleGrantedAuthority("ROLE_" + r))
                         .toList();
                 var auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
+                String tenantId = jwtUtil.getTenantId(token);
+                auth.setDetails(Map.of("tenantId", tenantId != null ? tenantId : ""));
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
         }

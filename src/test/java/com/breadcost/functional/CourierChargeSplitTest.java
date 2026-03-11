@@ -21,16 +21,16 @@ class CourierChargeSplitTest extends FunctionalTestBase {
                 "tenantId", TENANT,
                 "driverName", "Split-Driver",
                 "courierCharge", 20.00
-        ), "").andExpect(status().isCreated())
+        ), bearer("admin1")).andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         String runId = om.readTree(runBody).get("runId").asText();
         String ord1 = "spl-1-" + UUID.randomUUID();
         String ord2 = "spl-2-" + UUID.randomUUID();
 
-        POST("/v2/delivery-runs/" + runId + "/orders", Map.of("tenantId", TENANT, "orderId", ord1), "");
-        POST("/v2/delivery-runs/" + runId + "/orders", Map.of("tenantId", TENANT, "orderId", ord2), "");
+        POST("/v2/delivery-runs/" + runId + "/orders", Map.of("tenantId", TENANT, "orderId", ord1), bearer("admin1"));
+        POST("/v2/delivery-runs/" + runId + "/orders", Map.of("tenantId", TENANT, "orderId", ord2), bearer("admin1"));
 
-        GET("/v2/delivery-runs/" + runId + "/orders", "")
+        GET("/v2/delivery-runs/" + runId + "/orders", bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].courierCharge").value(10.0))
                 .andExpect(jsonPath("$[1].courierCharge").value(10.0));
@@ -41,14 +41,14 @@ class CourierChargeSplitTest extends FunctionalTestBase {
     void courierCharge_singleOrderGetsAll() throws Exception {
         String runBody = POST("/v2/delivery-runs", Map.of(
                 "tenantId", TENANT, "courierCharge", 15.00
-        ), "").andExpect(status().isCreated())
+        ), bearer("admin1")).andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         String runId = om.readTree(runBody).get("runId").asText();
         String orderId = "single-" + UUID.randomUUID();
 
-        POST("/v2/delivery-runs/" + runId + "/orders", Map.of("tenantId", TENANT, "orderId", orderId), "");
+        POST("/v2/delivery-runs/" + runId + "/orders", Map.of("tenantId", TENANT, "orderId", orderId), bearer("admin1"));
 
-        GET("/v2/delivery-runs/" + runId + "/orders", "")
+        GET("/v2/delivery-runs/" + runId + "/orders", bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].courierCharge").value(15.0));
     }
@@ -58,15 +58,15 @@ class CourierChargeSplitTest extends FunctionalTestBase {
     void courierCharge_zeroCharge_noSplit() throws Exception {
         String runBody = POST("/v2/delivery-runs", Map.of(
                 "tenantId", TENANT, "courierCharge", 0.00
-        ), "").andExpect(status().isCreated())
+        ), bearer("admin1")).andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         String runId = om.readTree(runBody).get("runId").asText();
 
         POST("/v2/delivery-runs/" + runId + "/orders", Map.of(
                 "tenantId", TENANT, "orderId", "zero-" + UUID.randomUUID()
-        ), "");
+        ), bearer("admin1"));
 
-        GET("/v2/delivery-runs/" + runId + "/orders", "")
+        GET("/v2/delivery-runs/" + runId + "/orders", bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].courierCharge").value(0.0));
     }

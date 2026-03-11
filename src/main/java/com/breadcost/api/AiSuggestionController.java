@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * AI suggestion endpoints — BC-1901..1903 (FR-12.3, FR-12.4, FR-12.7)
@@ -17,6 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/v3/ai/suggestions")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('Admin','Manager')")
 public class AiSuggestionController {
 
     private final AiSuggestionService service;

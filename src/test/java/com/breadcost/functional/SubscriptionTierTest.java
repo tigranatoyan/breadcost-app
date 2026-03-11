@@ -13,7 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class SubscriptionTierTest extends FunctionalTestBase {
 
-    String adminToken() { return token("admin1"); }
+    String adminToken() { return bearer("admin1"); }
 
     @Test
     void listTiers_returnsThreeDefaultTiers() throws Exception {

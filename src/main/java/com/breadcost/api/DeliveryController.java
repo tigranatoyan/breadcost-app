@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * Delivery run REST API — BC-E14
@@ -30,6 +31,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/v2/delivery-runs")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('Admin','Manager')")
 public class DeliveryController {
 
     private final DeliveryService deliveryService;

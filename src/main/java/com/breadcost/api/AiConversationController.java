@@ -11,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * AI WhatsApp ordering endpoints — BC-1801..1804 (FR-12.x)
@@ -18,6 +19,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/v3/ai")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('Admin','Manager')")
 public class AiConversationController {
 
     private final AiConversationService service;
@@ -25,6 +27,7 @@ public class AiConversationController {
     // ── Webhook: inbound message from WhatsApp ───────────────────────────────
 
     @PostMapping("/webhook/whatsapp")
+    @PreAuthorize("permitAll()")
     public Map<String, String> receiveMessage(@RequestBody @Valid InboundMessage req) {
         String reply = service.handleIncomingMessage(req.tenantId, req.phone, req.text);
         return Map.of("reply", reply);

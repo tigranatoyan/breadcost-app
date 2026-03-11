@@ -33,7 +33,7 @@ class LoyaltyAwardTest extends FunctionalTestBase {
                 "orderTotal", 50.00
         );
 
-        POST(AWARD, req, "")
+        POST(AWARD, req, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pointsBalance").isNumber())
                 .andExpect(jsonPath("$.pointsEarned", greaterThan(0)));
@@ -50,7 +50,7 @@ class LoyaltyAwardTest extends FunctionalTestBase {
                 "orderTotal", 30.75
         );
 
-        POST(AWARD, req, "")
+        POST(AWARD, req, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pointsBalance", is(30)));  // floor(30.75)
     }
@@ -64,8 +64,8 @@ class LoyaltyAwardTest extends FunctionalTestBase {
         Map<String, Object> req2 = Map.of("tenantId", TENANT, "customerId", cid,
                 "orderId", "ord-a2", "orderTotal", 30.00);
 
-        POST(AWARD, req1, "").andExpect(status().isOk());
-        POST(AWARD, req2, "")
+        POST(AWARD, req1, bearer("admin1")).andExpect(status().isOk());
+        POST(AWARD, req2, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pointsBalance", is(50)));
     }
@@ -77,7 +77,7 @@ class LoyaltyAwardTest extends FunctionalTestBase {
         Map<String, Object> req = Map.of("tenantId", TENANT, "customerId", cid,
                 "orderId", "ord-b1", "orderTotal", 10.00);
 
-        POST(AWARD, req, "")
+        POST(AWARD, req, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tierName", is("Bronze")));
     }
@@ -89,7 +89,7 @@ class LoyaltyAwardTest extends FunctionalTestBase {
         Map<String, Object> req = Map.of("tenantId", TENANT, "customerId", cid,
                 "orderId", "ord-z1", "orderTotal", 0.00);
 
-        POST(AWARD, req, "")
+        POST(AWARD, req, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pointsBalance", is(0)));
     }
@@ -103,7 +103,7 @@ class LoyaltyAwardTest extends FunctionalTestBase {
                 "orderTotal", 10.00
         );
 
-        POST(AWARD, req, "")
+        POST(AWARD, req, bearer("admin1"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -114,9 +114,9 @@ class LoyaltyAwardTest extends FunctionalTestBase {
         Map<String, Object> req = Map.of("tenantId", TENANT, "customerId", cid,
                 "orderId", "ord-b", "orderTotal", 40.00);
 
-        POST(AWARD, req, "").andExpect(status().isOk());
+        POST(AWARD, req, bearer("admin1")).andExpect(status().isOk());
 
-        GET("/v2/loyalty/balance?tenantId=" + TENANT + "&customerId=" + cid, "")
+        GET("/v2/loyalty/balance?tenantId=" + TENANT + "&customerId=" + cid, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pointsBalance", is(40)));
     }

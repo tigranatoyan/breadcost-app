@@ -112,7 +112,7 @@ class CustomerLoginTest extends FunctionalTestBase {
     void getProfile_existingCustomer_returns200() throws Exception {
         String customerId = registerCustomer("Pavel Profile", "pavel@example.com", "prof99");
 
-        GET("/v2/customers/" + customerId + "/profile?tenantId=" + TENANT, "")
+        GET("/v2/customers/" + customerId + "/profile?tenantId=" + TENANT, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.customerId", is(customerId)))
                 .andExpect(jsonPath("$.name", is("Pavel Profile")))
@@ -122,7 +122,7 @@ class CustomerLoginTest extends FunctionalTestBase {
     @Test
     @DisplayName("BC-1102 ✓ GET profile with unknown customerId → 400")
     void getProfile_unknownId_returns400() throws Exception {
-        GET("/v2/customers/no-such-id/profile?tenantId=" + TENANT, "")
+        GET("/v2/customers/no-such-id/profile?tenantId=" + TENANT, bearer("admin1"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -138,7 +138,7 @@ class CustomerLoginTest extends FunctionalTestBase {
                 "phone", "+37499123456"
         );
 
-        PUT("/v2/customers/" + customerId + "/profile?tenantId=" + TENANT, update, "")
+        PUT("/v2/customers/" + customerId + "/profile?tenantId=" + TENANT, update, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name", is("New Name")))
                 .andExpect(jsonPath("$.phone", is("+37499123456")));

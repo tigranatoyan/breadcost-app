@@ -20,7 +20,7 @@ class LoyaltyBalanceHistoryTest extends FunctionalTestBase {
     void balance_newCustomer_returnsZeroBalance() throws Exception {
         String cid = "newbal-" + UUID.randomUUID();
 
-        GET("/v2/loyalty/balance?tenantId=" + TENANT + "&customerId=" + cid, "")
+        GET("/v2/loyalty/balance?tenantId=" + TENANT + "&customerId=" + cid, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pointsBalance", is(0)))
                 .andExpect(jsonPath("$.pointsEarned", is(0)));
@@ -35,10 +35,10 @@ class LoyaltyBalanceHistoryTest extends FunctionalTestBase {
             POST("/v2/loyalty/award", Map.of(
                     "tenantId", TENANT, "customerId", cid,
                     "orderId", "o" + i, "orderTotal", 10.0
-            ), "").andExpect(status().isOk());
+            ), bearer("admin1")).andExpect(status().isOk());
         }
 
-        GET("/v2/loyalty/balance?tenantId=" + TENANT + "&customerId=" + cid, "")
+        GET("/v2/loyalty/balance?tenantId=" + TENANT + "&customerId=" + cid, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pointsBalance", is(30)))
                 .andExpect(jsonPath("$.pointsEarned", is(30)));
@@ -52,14 +52,14 @@ class LoyaltyBalanceHistoryTest extends FunctionalTestBase {
         POST("/v2/loyalty/award", Map.of(
                 "tenantId", TENANT, "customerId", cid,
                 "orderId", "h1", "orderTotal", 25.0
-        ), "").andExpect(status().isOk());
+        ), bearer("admin1")).andExpect(status().isOk());
 
         POST("/v2/loyalty/award", Map.of(
                 "tenantId", TENANT, "customerId", cid,
                 "orderId", "h2", "orderTotal", 15.0
-        ), "").andExpect(status().isOk());
+        ), bearer("admin1")).andExpect(status().isOk());
 
-        GET("/v2/loyalty/history?tenantId=" + TENANT + "&customerId=" + cid, "")
+        GET("/v2/loyalty/history?tenantId=" + TENANT + "&customerId=" + cid, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(2))))
                 .andExpect(jsonPath("$[*].type", hasItem("EARN")));
@@ -70,7 +70,7 @@ class LoyaltyBalanceHistoryTest extends FunctionalTestBase {
     void history_newCustomer_returnsEmpty() throws Exception {
         String cid = "nohist-" + UUID.randomUUID();
 
-        GET("/v2/loyalty/history?tenantId=" + TENANT + "&customerId=" + cid, "")
+        GET("/v2/loyalty/history?tenantId=" + TENANT + "&customerId=" + cid, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
     }
@@ -80,7 +80,7 @@ class LoyaltyBalanceHistoryTest extends FunctionalTestBase {
     void balance_responseIncludesIdentityFields() throws Exception {
         String cid = "identity-" + UUID.randomUUID();
 
-        GET("/v2/loyalty/balance?tenantId=" + TENANT + "&customerId=" + cid, "")
+        GET("/v2/loyalty/balance?tenantId=" + TENANT + "&customerId=" + cid, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.customerId", is(cid)))
                 .andExpect(jsonPath("$.tenantId", is(TENANT)));
@@ -95,9 +95,9 @@ class LoyaltyBalanceHistoryTest extends FunctionalTestBase {
         POST("/v2/loyalty/award", Map.of(
                 "tenantId", TENANT, "customerId", cid,
                 "orderId", orderId, "orderTotal", 20.0
-        ), "").andExpect(status().isOk());
+        ), bearer("admin1")).andExpect(status().isOk());
 
-        GET("/v2/loyalty/history?tenantId=" + TENANT + "&customerId=" + cid, "")
+        GET("/v2/loyalty/history?tenantId=" + TENANT + "&customerId=" + cid, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].orderId", is(orderId)));
     }

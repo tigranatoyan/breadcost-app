@@ -19,7 +19,7 @@ class LoyaltyRedeemTest extends FunctionalTestBase {
         String cid = "redeem-" + UUID.randomUUID();
         POST("/v2/loyalty/award", Map.of(
                 "tenantId", TENANT, "customerId", cid, "orderId", "seed-", "orderTotal", total
-        ), "").andExpect(status().isOk());
+        ), bearer("admin1")).andExpect(status().isOk());
         return cid;
     }
 
@@ -31,7 +31,7 @@ class LoyaltyRedeemTest extends FunctionalTestBase {
         POST("/v2/loyalty/redeem", Map.of(
                 "tenantId", TENANT, "customerId", cid,
                 "points", 30, "orderId", "order-r1"
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pointsBalance", is(70)));
     }
@@ -44,7 +44,7 @@ class LoyaltyRedeemTest extends FunctionalTestBase {
         POST("/v2/loyalty/redeem", Map.of(
                 "tenantId", TENANT, "customerId", cid,
                 "points", 50, "orderId", "order-r2"
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pointsBalance", is(0)));
     }
@@ -57,7 +57,7 @@ class LoyaltyRedeemTest extends FunctionalTestBase {
         POST("/v2/loyalty/redeem", Map.of(
                 "tenantId", TENANT, "customerId", cid,
                 "points", 9999, "orderId", "order-r3"
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -69,12 +69,12 @@ class LoyaltyRedeemTest extends FunctionalTestBase {
         POST("/v2/loyalty/redeem", Map.of(
                 "tenantId", TENANT, "customerId", cid,
                 "points", 20, "orderId", "r-a"
-        ), "").andExpect(status().isOk());
+        ), bearer("admin1")).andExpect(status().isOk());
 
         POST("/v2/loyalty/redeem", Map.of(
                 "tenantId", TENANT, "customerId", cid,
                 "points", 10, "orderId", "r-b"
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pointsRedeemed", is(30)));
     }
@@ -87,7 +87,7 @@ class LoyaltyRedeemTest extends FunctionalTestBase {
         POST("/v2/loyalty/redeem", Map.of(
                 "tenantId", TENANT, "customerId", cid,
                 "points", 0, "orderId", "r-zero"
-        ), "")
+        ), bearer("admin1"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -99,9 +99,9 @@ class LoyaltyRedeemTest extends FunctionalTestBase {
         POST("/v2/loyalty/redeem", Map.of(
                 "tenantId", TENANT, "customerId", cid,
                 "points", 15, "orderId", "order-hist"
-        ), "").andExpect(status().isOk());
+        ), bearer("admin1")).andExpect(status().isOk());
 
-        GET("/v2/loyalty/history?tenantId=" + TENANT + "&customerId=" + cid, "")
+        GET("/v2/loyalty/history?tenantId=" + TENANT + "&customerId=" + cid, bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[?(@.type=='REDEEM')]").isArray())
                 .andExpect(jsonPath("$[?(@.type=='REDEEM')].points", hasItem(-15)));

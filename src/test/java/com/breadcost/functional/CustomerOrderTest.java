@@ -88,7 +88,7 @@ class CustomerOrderTest extends FunctionalTestBase {
                 "requestedDeliveryTime", Instant.now().plus(2, ChronoUnit.DAYS).toString()
         );
 
-        POST("/v2/orders", req, "")
+        POST("/v2/orders", req, bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.orderId").isNotEmpty())
                 .andExpect(jsonPath("$.status").isNotEmpty())
@@ -109,7 +109,7 @@ class CustomerOrderTest extends FunctionalTestBase {
                 ))
         );
 
-        POST("/v2/orders", req, "")
+        POST("/v2/orders", req, bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.orderId").isNotEmpty());
     }
@@ -141,7 +141,7 @@ class CustomerOrderTest extends FunctionalTestBase {
                 )
         );
 
-        POST("/v2/orders", req, "")
+        POST("/v2/orders", req, bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.orderId").isNotEmpty());
     }
@@ -160,7 +160,7 @@ class CustomerOrderTest extends FunctionalTestBase {
                 ))
         );
 
-        POST("/v2/orders", req, "")
+        POST("/v2/orders", req, bearer("admin1"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -172,7 +172,7 @@ class CustomerOrderTest extends FunctionalTestBase {
                 "items", List.of(Map.of("productId", productId, "qty", 1))
         );
 
-        POST("/v2/orders", req, "")
+        POST("/v2/orders", req, bearer("admin1"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -185,7 +185,7 @@ class CustomerOrderTest extends FunctionalTestBase {
                 "items",      List.of()
         );
 
-        POST("/v2/orders", req, "")
+        POST("/v2/orders", req, bearer("admin1"))
                 .andExpect(status().isBadRequest());
     }
 }

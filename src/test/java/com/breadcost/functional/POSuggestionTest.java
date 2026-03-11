@@ -17,7 +17,7 @@ class POSuggestionTest extends FunctionalTestBase {
 
     private String createSupplierWithItem() throws Exception {
         String name = "AutoSupplier-" + UUID.randomUUID();
-        String body = POST("/v2/suppliers", Map.of("tenantId", TENANT, "name", name), "")
+        String body = POST("/v2/suppliers", Map.of("tenantId", TENANT, "name", name), bearer("admin1"))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         String supplierId = om.readTree(body).get("supplierId").asText();
@@ -29,7 +29,7 @@ class POSuggestionTest extends FunctionalTestBase {
                 "unitPrice", 1.80,
                 "moq", 25.0,
                 "unit", "kg"
-        ), "").andExpect(status().isCreated());
+        ), bearer("admin1")).andExpect(status().isCreated());
 
         return supplierId;
     }
@@ -39,7 +39,7 @@ class POSuggestionTest extends FunctionalTestBase {
     void suggest_returnsDraftPOs() throws Exception {
         createSupplierWithItem();
 
-        POST("/v2/purchase-orders/suggest", Map.of("tenantId", TENANT), "")
+        POST("/v2/purchase-orders/suggest", Map.of("tenantId", TENANT), bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
     }
@@ -49,7 +49,7 @@ class POSuggestionTest extends FunctionalTestBase {
     void suggest_poStatusIsDraft() throws Exception {
         createSupplierWithItem();
 
-        POST("/v2/purchase-orders/suggest", Map.of("tenantId", TENANT), "")
+        POST("/v2/purchase-orders/suggest", Map.of("tenantId", TENANT), bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].status", hasItem("DRAFT")));
     }
@@ -59,7 +59,7 @@ class POSuggestionTest extends FunctionalTestBase {
     void suggest_includesSupplierAndPoId() throws Exception {
         createSupplierWithItem();
 
-        POST("/v2/purchase-orders/suggest", Map.of("tenantId", TENANT), "")
+        POST("/v2/purchase-orders/suggest", Map.of("tenantId", TENANT), bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].poId").isArray())
                 .andExpect(jsonPath("$[*].supplierId").isArray());
@@ -68,7 +68,7 @@ class POSuggestionTest extends FunctionalTestBase {
     @Test
     @DisplayName("BC-1302 ✓ Missing tenantId → 400")
     void suggest_missingTenantId_returns400() throws Exception {
-        POST("/v2/purchase-orders/suggest", Map.of(), "")
+        POST("/v2/purchase-orders/suggest", Map.of(), bearer("admin1"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -77,7 +77,7 @@ class POSuggestionTest extends FunctionalTestBase {
     void suggest_noCatalogItems_returnsEmptyOrPOs() throws Exception {
         // Use a unique tenant to ensure no stray items
         String newTenant = "suggest-tenant-" + UUID.randomUUID();
-        POST("/v2/purchase-orders/suggest", Map.of("tenantId", newTenant), "")
+        POST("/v2/purchase-orders/suggest", Map.of("tenantId", newTenant), bearer("admin1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
     }

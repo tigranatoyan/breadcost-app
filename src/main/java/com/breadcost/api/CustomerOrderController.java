@@ -5,6 +5,7 @@ import com.breadcost.masterdata.OrderRepository;
 import com.breadcost.masterdata.OrderService;
 import com.breadcost.masterdata.ProductEntity;
 import com.breadcost.masterdata.ProductRepository;
+import com.breadcost.security.CustomerSecurityUtil;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * Customer Portal — Order Placement API
@@ -32,6 +34,7 @@ import java.util.Map;
 @RequestMapping("/v2/orders")
 @RequiredArgsConstructor
 @Slf4j
+@PreAuthorize("hasAnyRole('Customer','Admin','Manager')")
 public class CustomerOrderController {
 
     private final OrderService orderService;
@@ -69,6 +72,8 @@ public class CustomerOrderController {
     @PostMapping
     public ResponseEntity<Map<String, Object>> placeOrder(
             @Valid @RequestBody PlaceOrderRequest req) {
+
+        CustomerSecurityUtil.assertOwner(req.getCustomerId());
 
         List<OrderService.CreateOrderLineRequest> lines = req.getItems().stream()
                 .map(item -> {
@@ -126,6 +131,8 @@ public class CustomerOrderController {
             @RequestParam String tenantId,
             @RequestParam String customerId) {
 
+        CustomerSecurityUtil.assertOwner(customerId);
+
         OrderEntity order = orderRepository
                 .findByTenantIdAndCustomerId(tenantId, customerId)
                 .stream()
@@ -144,6 +151,8 @@ public class CustomerOrderController {
     public ResponseEntity<List<OrderEntity>> getOrderHistory(
             @RequestParam String tenantId,
             @RequestParam String customerId) {
+
+        CustomerSecurityUtil.assertOwner(customerId);
 
         List<OrderEntity> orders = orderRepository.findByTenantIdAndCustomerId(tenantId, customerId);
         return ResponseEntity.ok(orders);

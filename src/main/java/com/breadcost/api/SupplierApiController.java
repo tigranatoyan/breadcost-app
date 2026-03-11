@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * Supplier API integration endpoints — BC-2202 (FR-6.4)
@@ -19,6 +20,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/v3/supplier-api")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('Admin','Manager')")
 public class SupplierApiController {
 
     private final SupplierApiService service;
