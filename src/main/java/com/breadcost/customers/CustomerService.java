@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 /**
@@ -22,6 +23,7 @@ import java.util.UUID;
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final PasswordResetTokenRepository resetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
@@ -137,5 +139,62 @@ public class CustomerService {
 
     public List<CustomerEntity> listCustomers(String tenantId) {
         return customerRepository.findByTenantId(tenantId);
+    }
+
+    // ── BC-2902: Password Reset ────────────────────────────────────────────
+
+    /**
+     * Generates a password reset token for the customer with the given email.
+     * Token expires in 1 hour. Returns the token string (caller sends to customer).
+     *
+     * @throws NoSuchElementException if no customer found for tenant+email
+     */
+    @Transactional
+    public String forgotPassword(String tenantId, String email) {
+        String normalizedEmail = email.trim().toLowerCase();
+        CustomerEntity customer = customerRepository.findByTenantIdAndEmail(tenantId, normalizedEmail)
+                .orElseThrow(() -> new NoSuchElementException("Customer not found."));
+
+        String tokenValue = UUID.randomUUID().toString();
+        PasswordResetTokenEntity token = PasswordResetTokenEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .customerId(customer.getCustomerId())
+                .token(tokenValue)
+                .expiresAtEpochMs(System.currentTimeMillis() + 3_600_000) // 1 hour
+                .used(false)
+                .build();
+        resetTokenRepository.save(token);
+
+        log.info("Password reset token generated: tenantId={} customerId={}",
+                tenantId, customer.getCustomerId());
+        return tokenValue;
+    }
+
+    /**
+     * Resets the customer's password using a valid, unused, non-expired token.
+     *
+     * @throws NoSuchElementException if token not found or already used (404)
+     * @throws IllegalArgumentException if token expired (400)
+     */
+    @Transactional
+    public void resetPassword(String tokenValue, String newPassword) {
+        PasswordResetTokenEntity token = resetTokenRepository.findByToken(tokenValue)
+                .filter(t -> !t.isUsed())
+                .orElseThrow(() -> new NoSuchElementException("Invalid or already used reset token."));
+
+        if (token.getExpiresAtEpochMs() < System.currentTimeMillis()) {
+            throw new IllegalArgumentException("Token expired.");
+        }
+
+        CustomerEntity customer = customerRepository.findById(token.getCustomerId())
+                .orElseThrow(() -> new IllegalArgumentException("Customer not found."));
+
+        customer.setPasswordHash(passwordEncoder.encode(newPassword));
+        customerRepository.save(customer);
+
+        token.setUsed(true);
+        resetTokenRepository.save(token);
+
+        log.info("Password reset completed: customerId={}", customer.getCustomerId());
     }
 }

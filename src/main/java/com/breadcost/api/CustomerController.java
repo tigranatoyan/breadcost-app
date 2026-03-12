@@ -74,6 +74,18 @@ public class CustomerController {
         private List<AddressRequest> addresses;
     }
 
+    @Data
+    public static class ForgotPasswordRequest {
+        @NotBlank private String tenantId;
+        @Email @NotBlank private String email;
+    }
+
+    @Data
+    public static class ResetPasswordRequest {
+        @NotBlank private String token;
+        @NotBlank private String newPassword;
+    }
+
     // ── Registration (BC-1101) ────────────────────────────────────────────────
 
     /**
@@ -181,6 +193,25 @@ public class CustomerController {
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    // ── BC-2902: Password Reset ─────────────────────────────────────────────
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Map<String, String>> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest req) {
+        String token = customerService.forgotPassword(req.getTenantId(), req.getEmail());
+        // In production, send token via email/SMS — here we return it for dev/test
+        return ResponseEntity.ok(Map.of("resetToken", token));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, String>> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest req) {
+        customerService.resetPassword(req.getToken(), req.getNewPassword());
+        return ResponseEntity.ok(Map.of("message", "Password reset successful."));
+    }
+
+    // ── Address mapping ─────────────────────────────────────────────────────
 
     private List<CustomerAddress> mapAddresses(List<AddressRequest> input) {
         if (input == null) return List.of();

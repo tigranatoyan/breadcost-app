@@ -164,6 +164,7 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
+    if (pathname.startsWith('/customer')) return; // customer portal has its own auth
     if (!isLoggedIn() && pathname !== '/login') {
       router.replace('/login');
     } else {
@@ -184,14 +185,14 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
     setSidebarOpen(false);
   }, [pathname]);
 
-  if (!checked && pathname !== '/login') {
+  if (!checked && pathname !== '/login' && !pathname.startsWith('/customer')) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
-  if (pathname === '/login') return <>{children}</>;
+  if (pathname === '/login' || pathname.startsWith('/customer')) return <>{children}</>;
 
   const logout = () => {
     clearCredentials();

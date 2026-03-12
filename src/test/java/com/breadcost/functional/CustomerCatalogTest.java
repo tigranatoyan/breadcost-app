@@ -113,9 +113,9 @@ class CustomerCatalogTest extends FunctionalTestBase {
     void listCatalog_returnsActiveProductsOnly() throws Exception {
         GET("/v2/products?tenantId=" + TENANT, "")
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(2))))
-                .andExpect(jsonPath("$[*].productId", hasItems(activeProduct1Id, activeProduct2Id)))
-                .andExpect(jsonPath("$[*].productId", not(hasItem(inactiveProductId))));
+                .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(2))))
+                .andExpect(jsonPath("$.content[*].productId", hasItems(activeProduct1Id, activeProduct2Id)))
+                .andExpect(jsonPath("$.content[*].productId", not(hasItem(inactiveProductId))));
     }
 
     @Test
@@ -123,11 +123,11 @@ class CustomerCatalogTest extends FunctionalTestBase {
     void listCatalog_responseFields_complete() throws Exception {
         GET("/v2/products?tenantId=" + TENANT, "")
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[?(@.productId=='" + activeProduct1Id + "')].name",
+                .andExpect(jsonPath("$.content[?(@.productId=='" + activeProduct1Id + "')].name",
                         hasItem("Sourdough Loaf")))
-                .andExpect(jsonPath("$[?(@.productId=='" + activeProduct1Id + "')].price",
+                .andExpect(jsonPath("$.content[?(@.productId=='" + activeProduct1Id + "')].price",
                         hasItem(4.5)))
-                .andExpect(jsonPath("$[?(@.productId=='" + activeProduct1Id + "')].saleUnit",
+                .andExpect(jsonPath("$.content[?(@.productId=='" + activeProduct1Id + "')].saleUnit",
                         hasItem("PIECE")));
     }
 
@@ -136,7 +136,7 @@ class CustomerCatalogTest extends FunctionalTestBase {
     void listCatalog_unknownTenant_returnsEmpty() throws Exception {
         GET("/v2/products?tenantId=no-such-tenant", "")
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(jsonPath("$.content", hasSize(0)));
     }
 
     // ── Single product detail ─────────────────────────────────────────────────

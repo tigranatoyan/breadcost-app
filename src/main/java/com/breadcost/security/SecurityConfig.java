@@ -47,6 +47,8 @@ public class SecurityConfig {
                 // v2 public: customer register, login, catalog browse
                 .requestMatchers(HttpMethod.POST, "/v2/customers/register").permitAll()
                 .requestMatchers(HttpMethod.POST, "/v2/customers/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/v2/customers/forgot-password").permitAll()
+                .requestMatchers(HttpMethod.POST, "/v2/customers/reset-password").permitAll()
                 .requestMatchers(HttpMethod.GET, "/v2/products/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/v2/products").permitAll()
                 // v3 public: WhatsApp webhook
