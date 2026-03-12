@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { API_BASE, TENANT_ID } from '@/lib/api';
-import { Search, ChevronLeft, ChevronRight, Package } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Package, ShoppingCart, Plus } from 'lucide-react';
 
 interface CatalogProduct {
   productId: string;
@@ -29,6 +30,7 @@ interface PageResult {
 const PAGE_SIZE = 12;
 
 export default function CatalogPage() {
+  const router = useRouter();
   const [products, setProducts] = useState<PageResult | null>(null);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [search, setSearch] = useState('');
@@ -36,6 +38,42 @@ export default function CatalogPage() {
   const [page, setPage] = useState(0);
   const [sort, setSort] = useState('name,asc');
   const [loading, setLoading] = useState(true);
+  const [cart, setCart] = useState<Record<string, { name: string; saleUnit: string; price: number; qty: number }>>({});
+
+  // Load cart from sessionStorage on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const raw = sessionStorage.getItem('bc_cart');
+    if (raw) {
+      try {
+        const items: Array<{ productId: string; name: string; saleUnit: string; price: number; qty: number }> = JSON.parse(raw);
+        const map: typeof cart = {};
+        items.forEach(i => { map[i.productId] = { name: i.name, saleUnit: i.saleUnit, price: i.price, qty: i.qty }; });
+        setCart(map);
+      } catch { /* ignore */ }
+    }
+  }, []);
+
+  // Persist cart to sessionStorage
+  const saveCart = (c: typeof cart) => {
+    const items = Object.entries(c).map(([productId, v]) => ({ productId, ...v }));
+    sessionStorage.setItem('bc_cart', JSON.stringify(items));
+  };
+
+  const addToCart = (p: CatalogProduct) => {
+    setCart(prev => {
+      const next = { ...prev };
+      if (next[p.productId]) {
+        next[p.productId] = { ...next[p.productId], qty: next[p.productId].qty + 1 };
+      } else {
+        next[p.productId] = { name: p.name, saleUnit: p.saleUnit, price: p.price, qty: 1 };
+      }
+      saveCart(next);
+      return next;
+    });
+  };
+
+  const cartCount = Object.values(cart).reduce((s, i) => s + i.qty, 0);
 
   // Fetch departments for the filter dropdown
   useEffect(() => {
@@ -78,9 +116,20 @@ export default function CatalogPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-6">
-        <p className="text-xs font-semibold uppercase tracking-widest text-amber-600 mb-1">Browse</p>
-        <h1 className="text-2xl font-bold text-gray-900">Product Catalog</h1>
+      <div className="mb-6 flex items-end justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-amber-600 mb-1">Browse</p>
+          <h1 className="text-2xl font-bold text-gray-900">Product Catalog</h1>
+        </div>
+        {cartCount > 0 && (
+          <button
+            onClick={() => router.push('/customer/checkout')}
+            className="flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-700"
+          >
+            <ShoppingCart className="h-4 w-4" />
+            Checkout ({cartCount})
+          </button>
+        )}
       </div>
 
       {/* Filters bar */}
@@ -163,6 +212,13 @@ export default function CatalogPage() {
                       <span className="text-xs text-gray-400 ml-1">+{p.vatRatePct}% VAT</span>
                     )}
                   </div>
+                  <button
+                    onClick={() => addToCart(p)}
+                    className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700 hover:bg-amber-100 transition-colors"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    {cart[p.productId] ? `In cart (${cart[p.productId].qty})` : 'Add to Cart'}
+                  </button>
                 </div>
               ))}
             </div>

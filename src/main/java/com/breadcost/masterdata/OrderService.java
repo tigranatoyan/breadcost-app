@@ -29,6 +29,7 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final RecipeRepository recipeRepository;
     private final EventStore eventStore;
+    private final OrderStatusHistoryRepository orderStatusHistoryRepository;
 
     /** Hour of day (0-23) after which new standard orders are blocked (default 22 = 10 PM) */
     @Value("${breadcost.order.cutoff-hour:22}")
@@ -158,6 +159,8 @@ public class OrderService {
 
         OrderEntity saved = orderRepository.save(entity);
 
+        recordHistory(tenantId, orderId, "DRAFT", "Order placed");
+
         // Emit event
         eventStore.appendEvent(OrderCreatedEvent.builder()
                 .orderId(orderId)
@@ -192,6 +195,8 @@ public class OrderService {
         entity.setConfirmedAt(now);
         OrderEntity saved = orderRepository.save(entity);
 
+        recordHistory(tenantId, orderId, "CONFIRMED", "Order confirmed");
+
         eventStore.appendEvent(OrderConfirmedEvent.builder()
                 .orderId(orderId)
                 .tenantId(tenantId)
@@ -220,6 +225,8 @@ public class OrderService {
         entity.setStatus(Order.Status.CANCELLED.name());
         OrderEntity saved = orderRepository.save(entity);
 
+        recordHistory(tenantId, orderId, "CANCELLED", reason != null ? "Cancelled: " + reason : "Order cancelled");
+
         eventStore.appendEvent(OrderCancelledEvent.builder()
                 .orderId(orderId)
                 .tenantId(tenantId)
@@ -242,7 +249,11 @@ public class OrderService {
 
         validateTransition(current, targetStatus);
         entity.setStatus(targetStatus.name());
-        return orderRepository.save(entity);
+        OrderEntity saved = orderRepository.save(entity);
+
+        recordHistory(tenantId, orderId, targetStatus.name(), "Status changed to " + targetStatus.name());
+
+        return saved;
     }
 
     private void validateTransition(Order.Status from, Order.Status to) {
@@ -283,6 +294,21 @@ public class OrderService {
         return orderRepository.findById(orderId)
                 .filter(o -> tenantId.equals(o.getTenantId()))
                 .orElseThrow(() -> new NoSuchElementException("Order not found: " + orderId));
+    }
+
+    public List<OrderStatusHistoryEntity> getTimeline(String orderId) {
+        return orderStatusHistoryRepository.findByOrderIdOrderByTimestampEpochMsAsc(orderId);
+    }
+
+    private void recordHistory(String tenantId, String orderId, String status, String description) {
+        orderStatusHistoryRepository.save(OrderStatusHistoryEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .orderId(orderId)
+                .tenantId(tenantId)
+                .status(status)
+                .description(description)
+                .timestampEpochMs(System.currentTimeMillis())
+                .build());
     }
 
     private boolean isAfterCutoff(Instant now) {

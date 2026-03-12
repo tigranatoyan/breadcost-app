@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { User, LogOut, ChefHat, Search } from 'lucide-react';
+import { User, LogOut, ChefHat, Search, Package } from 'lucide-react';
 import {
   isCustomerLoggedIn, getCustomerInfo, clearCustomerSession,
   type CustomerInfo,
@@ -10,6 +10,7 @@ import {
 
 const NAV = [
   { href: '/customer/catalog', label: 'Catalog', icon: Search },
+  { href: '/customer/orders', label: 'My Orders', icon: Package },
   { href: '/customer/profile', label: 'My Account', icon: User },
 ];
 

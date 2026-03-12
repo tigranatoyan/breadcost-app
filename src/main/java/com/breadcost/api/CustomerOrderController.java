@@ -3,6 +3,7 @@ package com.breadcost.api;
 import com.breadcost.masterdata.OrderEntity;
 import com.breadcost.masterdata.OrderRepository;
 import com.breadcost.masterdata.OrderService;
+import com.breadcost.masterdata.OrderStatusHistoryEntity;
 import com.breadcost.masterdata.ProductEntity;
 import com.breadcost.masterdata.ProductRepository;
 import com.breadcost.security.CustomerSecurityUtil;
@@ -156,5 +157,34 @@ public class CustomerOrderController {
 
         List<OrderEntity> orders = orderRepository.findByTenantIdAndCustomerId(tenantId, customerId);
         return ResponseEntity.ok(orders);
+    }
+
+    // ── BC-2903: Order tracking timeline ──────────────────────────────────────
+
+    @GetMapping("/{id}/timeline")
+    public ResponseEntity<List<Map<String, Object>>> getTimeline(
+            @PathVariable("id") String orderId,
+            @RequestParam String tenantId,
+            @RequestParam String customerId) {
+
+        CustomerSecurityUtil.assertOwner(customerId);
+
+        // Verify customer owns the order
+        orderRepository.findByTenantIdAndCustomerId(tenantId, customerId)
+                .stream()
+                .filter(o -> o.getOrderId().equals(orderId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
+
+        List<OrderStatusHistoryEntity> history = orderService.getTimeline(orderId);
+        List<Map<String, Object>> timeline = history.stream()
+                .map(h -> Map.<String, Object>of(
+                        "status", h.getStatus(),
+                        "timestamp", h.getTimestampEpochMs(),
+                        "description", h.getDescription() != null ? h.getDescription() : ""
+                ))
+                .toList();
+
+        return ResponseEntity.ok(timeline);
     }
 }
