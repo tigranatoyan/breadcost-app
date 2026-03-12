@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Badge, Alert } from '@/components/ui';
+import { SectionTitle, Button } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
 import { Clock3, Play, Check, X, Factory, ClipboardList, Wrench, Thermometer } from 'lucide-react';
 
@@ -308,33 +309,37 @@ function WOPanel({
         {/* Footer actions */}
         <div className="border-t px-5 py-3 flex items-center gap-2 bg-gray-50">
           {wo.status === 'PENDING' && (
-            <button
-              className="btn-primary bg-blue-600 hover:bg-blue-700"
+            <Button
+              variant="primary"
+              size="sm"
               disabled={actionBusy}
               onClick={() => onAction(planId, wo.workOrderId, 'start')}
             >
-              {actionBusy ? 'â€¦' : t('floor.startWorkOrder')}
-            </button>
+              {actionBusy ? '…' : t('floor.startWorkOrder')}
+            </Button>
           )}
           {wo.status === 'STARTED' && (
-            <button
-              className="btn-primary bg-green-600 hover:bg-green-700"
+            <Button
+              variant="primary"
+              size="sm"
+              className="bg-green-600 hover:bg-green-700"
               disabled={actionBusy}
               onClick={() => onAction(planId, wo.workOrderId, 'complete')}
             >
-              {actionBusy ? 'â€¦' : t('floor.completeWorkOrder')}
-            </button>
+              {actionBusy ? '…' : t('floor.completeWorkOrder')}
+            </Button>
           )}
           {(wo.status === 'PENDING' || wo.status === 'STARTED') && (
-            <button
-              className="btn-xs bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1.5"
+            <Button
+              variant="danger"
+              size="xs"
               disabled={actionBusy}
               onClick={() => onAction(planId, wo.workOrderId, 'cancel')}
             >
               {t('common.cancel')}
-            </button>
+            </Button>
           )}
-          <button className="ml-auto btn-secondary" onClick={onClose}>{t('common.close')}</button>
+          <Button variant="secondary" size="sm" className="ml-auto" onClick={onClose}>{t('common.close')}</Button>
         </div>
       </div>
     </div>
@@ -468,20 +473,13 @@ export default function FloorPage() {
   const activePlan = plans.find((p) => p.status === 'IN_PROGRESS');
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-[1800px] space-y-6">
       {/* Header */}
-      <div>
-        <div className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">Production</div>
-        <h1 className="mt-1 text-2xl font-bold text-gray-900">{t('floor.title')}</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          {now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-          {activePlan && (
-            <span className="ml-3 text-amber-600 font-medium">
-              {t('floor.activeShift', {shift: activePlan.shift})}
-            </span>
-          )}
-        </p>
-      </div>
+      <SectionTitle
+        eyebrow="Production"
+        title={t('floor.title')}
+        subtitle={now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) + (activePlan ? ` · ${t('floor.activeShift', {shift: activePlan.shift})}` : '')}
+      />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
 

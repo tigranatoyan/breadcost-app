@@ -4,18 +4,19 @@ import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { isLoggedIn, getUsername, getRole, getUserInfo, clearCredentials, type Role } from '@/lib/auth';
 import { useI18n, type Locale } from '@/lib/i18n';
+import { apiFetch, TENANT_ID } from '@/lib/api';
 import {
   LayoutDashboard, ShoppingCart, CreditCard, Factory, HardHat, BookOpen,
   Package, Building2, Warehouse, BarChart3, Settings, MessageCircle,
   Sparkles, TrendingUp, Truck, FileText, Users, Star, MapPin, Smartphone,
-  ArrowLeftRight, Crown, Bell, User, LogOut, Globe, Menu, X, ChefHat,
+  ArrowLeftRight, Crown, Bell, User, LogOut, Globe, Menu, X, ChefHat, Lock,
   type LucideIcon,
 } from 'lucide-react';
 import { cn, SidebarItem } from './design-system';
 
 // ─── nav definition ─────────────────────────────────────────────────────────
 
-type NavItem = { href: string; labelKey: string; icon: LucideIcon };
+type NavItem = { href: string; labelKey: string; icon: LucideIcon; featureKey?: string };
 type NavSection = { titleKey?: string; items: NavItem[]; roles: Role[] };
 
 const SECTIONS: NavSection[] = [
@@ -82,22 +83,22 @@ const SECTIONS: NavSection[] = [
   {
     titleKey: 'nav.supplyChain',
     items: [
-      { href: '/suppliers', labelKey: 'nav.suppliers', icon: Package },
-      { href: '/deliveries', labelKey: 'nav.deliveries', icon: Truck },
+      { href: '/suppliers', labelKey: 'nav.suppliers', icon: Package, featureKey: 'SUPPLIER' },
+      { href: '/deliveries', labelKey: 'nav.deliveries', icon: Truck, featureKey: 'DELIVERY' },
     ],
     roles: ['admin', 'management'],
   },
   {
     titleKey: 'nav.finance',
     items: [
-      { href: '/invoices', labelKey: 'nav.invoices', icon: FileText },
+      { href: '/invoices', labelKey: 'nav.invoices', icon: FileText, featureKey: 'INVOICING' },
       { href: '/customers', labelKey: 'nav.customers', icon: Users },
     ],
     roles: ['admin', 'management', 'finance'],
   },
   {
     titleKey: 'nav.loyalty',
-    items: [{ href: '/loyalty', labelKey: 'nav.loyalty', icon: Star }],
+    items: [{ href: '/loyalty', labelKey: 'nav.loyalty', icon: Star, featureKey: 'LOYALTY' }],
     roles: ['admin', 'management'],
   },
   {
@@ -108,15 +109,15 @@ const SECTIONS: NavSection[] = [
   {
     titleKey: 'nav.aiSection',
     items: [
-      { href: '/ai-whatsapp', labelKey: 'nav.aiWhatsapp', icon: MessageCircle },
-      { href: '/ai-suggestions', labelKey: 'nav.aiSuggestions', icon: Sparkles },
-      { href: '/ai-pricing', labelKey: 'nav.aiPricing', icon: TrendingUp },
+      { href: '/ai-whatsapp', labelKey: 'nav.aiWhatsapp', icon: MessageCircle, featureKey: 'AI_BOT' },
+      { href: '/ai-suggestions', labelKey: 'nav.aiSuggestions', icon: Sparkles, featureKey: 'AI_BOT' },
+      { href: '/ai-pricing', labelKey: 'nav.aiPricing', icon: TrendingUp, featureKey: 'AI_BOT' },
     ],
     roles: ['admin', 'management'],
   },
   {
     titleKey: 'nav.driverSection',
-    items: [{ href: '/driver', labelKey: 'nav.driver', icon: MapPin }],
+    items: [{ href: '/driver', labelKey: 'nav.driver', icon: MapPin, featureKey: 'DELIVERY' }],
     roles: ['admin', 'management'],
   },
   {
@@ -163,6 +164,7 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState('');
   const [role, setRole] = useState<Role>('viewer');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [features, setFeatures] = useState<string[]>([]);
 
   useEffect(() => {
     if (pathname.startsWith('/customer')) return; // customer portal has its own auth
@@ -174,6 +176,10 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
       setUser(u);
       setRole(r);
       setChecked(true);
+      // Fetch subscription features for nav gating
+      apiFetch<{ features?: string[] }>('/v2/tenant/features')
+        .then((data) => setFeatures(data.features ?? []))
+        .catch(() => setFeatures([]));
       const defaultRoute = ROLE_DEFAULT[r];
       if (defaultRoute && (pathname === '/' || pathname === '/dashboard')) {
         router.replace(defaultRoute);
@@ -200,7 +206,20 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
     router.push('/login');
   };
 
-  const filteredSections = SECTIONS.filter((s) => s.roles.includes(role));
+  const filteredSections = SECTIONS
+    .filter((s) => s.roles.includes(role))
+    .map((s) => ({
+      ...s,
+      items: s.items.filter((item) => !item.featureKey || features.includes(item.featureKey)),
+    }))
+    .filter((s) => s.items.length > 0);
+
+  // Check if current page requires a feature the tenant doesn't have
+  const allItems = SECTIONS.flatMap((s) => s.items);
+  const currentItem = allItems.find(
+    (item) => pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'))
+  );
+  const isFeatureGated = currentItem?.featureKey && !features.includes(currentItem.featureKey);
 
   const sidebarContent = (
     <>
@@ -363,7 +382,23 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
         </aside>
 
         {/* Main content */}
-        <main className="min-w-0">{children}</main>
+        <main className="min-w-0">
+          {isFeatureGated ? (
+            <div className="flex flex-col items-center justify-center py-24 text-center">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
+                <Lock className="h-8 w-8" />
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900">{t('subscription.upgradeRequired')}</h2>
+              <p className="mt-2 max-w-md text-gray-500">{t('subscription.upgradeMessage')}</p>
+              <button
+                onClick={() => router.push('/dashboard')}
+                className="mt-6 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+              >
+                {t('subscription.upgradeCta')}
+              </button>
+            </div>
+          ) : children}
+        </main>
       </div>
     </div>
   );

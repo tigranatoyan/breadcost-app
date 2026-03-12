@@ -1,6 +1,7 @@
 package com.breadcost.masterdata;
 
 import com.breadcost.domain.Product;
+import com.breadcost.subscription.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final DepartmentRepository departmentRepository;
+    private final SubscriptionService subscriptionService;
 
     // -------------------------------------------------------------------------
     // Request / Response DTOs
@@ -60,6 +62,16 @@ public class ProductService {
                 req.tenantId(), req.name(), req.departmentId())) {
             throw new IllegalArgumentException(
                     "Product '" + req.name() + "' already exists in this department");
+        }
+
+        // BC-3102: Enforce maxProducts limit
+        int maxProducts = subscriptionService.getMaxProducts(req.tenantId());
+        if (maxProducts > 0) {
+            long currentCount = productRepository.findByTenantId(req.tenantId()).size();
+            if (currentCount >= maxProducts) {
+                throw new IllegalStateException(
+                        "Product limit reached (" + maxProducts + "). Upgrade your plan to add more products.");
+            }
         }
 
         ProductEntity entity = ProductEntity.builder()

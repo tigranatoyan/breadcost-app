@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.breadcost.subscription.SubscriptionService;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,6 +18,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SubscriptionService subscriptionService;
 
     public List<UserEntity> getUsers(String tenantId) {
         return userRepository.findByTenantId(tenantId);
@@ -28,6 +31,17 @@ public class UserService {
 
     public UserEntity createUser(String tenantId, String username, String password,
                                   String displayName, String roles, String departmentId) {
+        // BC-3102: Enforce maxUsers limit
+        int maxUsers = subscriptionService.getMaxUsers(tenantId);
+        if (maxUsers > 0) {
+            long activeCount = userRepository.findByTenantId(tenantId).stream()
+                    .filter(UserEntity::isActive).count();
+            if (activeCount >= maxUsers) {
+                throw new IllegalStateException(
+                        "User limit reached (" + maxUsers + "). Upgrade your plan to add more users.");
+            }
+        }
+
         UserEntity user = UserEntity.builder()
                 .userId(UUID.randomUUID().toString())
                 .tenantId(tenantId)

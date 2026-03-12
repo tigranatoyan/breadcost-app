@@ -81,8 +81,8 @@ public class SubscriptionService {
     public TenantSubscriptionEntity assignTier(String tenantId, String tierLevel,
                                                 String assignedBy,
                                                 LocalDate startDate, LocalDate expiryDate) {
-        // Deactivate existing subscription if any
-        tenantSubRepo.findByTenantId(tenantId).ifPresent(existing -> {
+        // Deactivate existing active subscription if any
+        tenantSubRepo.findByTenantIdAndActive(tenantId, true).ifPresent(existing -> {
             existing.setActive(false);
             tenantSubRepo.save(existing);
         });
@@ -141,6 +141,8 @@ public class SubscriptionService {
         if (sub.isEmpty()) {
             result.put("tier", "NONE");
             result.put("features", List.of());
+            result.put("maxUsers", 0);
+            result.put("maxProducts", 0);
             return result;
         }
         TenantSubscriptionEntity s = sub.get();
@@ -150,6 +152,32 @@ public class SubscriptionService {
 
         Optional<SubscriptionTierEntity> tier = tierRepo.findByLevel(s.getTierLevel());
         result.put("features", tier.map(SubscriptionTierEntity::featureList).orElse(List.of()));
+        result.put("maxUsers", tier.map(SubscriptionTierEntity::getMaxUsers).orElse(0));
+        result.put("maxProducts", tier.map(SubscriptionTierEntity::getMaxProducts).orElse(0));
         return result;
+    }
+
+    /**
+     * Get the max users limit for a tenant (0 = unlimited).
+     * BC-3102
+     */
+    @Transactional(readOnly = true)
+    public int getMaxUsers(String tenantId) {
+        return tenantSubRepo.findByTenantIdAndActive(tenantId, true)
+                .flatMap(sub -> tierRepo.findByLevel(sub.getTierLevel()))
+                .map(SubscriptionTierEntity::getMaxUsers)
+                .orElse(0);
+    }
+
+    /**
+     * Get the max products limit for a tenant (0 = unlimited).
+     * BC-3102
+     */
+    @Transactional(readOnly = true)
+    public int getMaxProducts(String tenantId) {
+        return tenantSubRepo.findByTenantIdAndActive(tenantId, true)
+                .flatMap(sub -> tierRepo.findByLevel(sub.getTierLevel()))
+                .map(SubscriptionTierEntity::getMaxProducts)
+                .orElse(0);
     }
 }

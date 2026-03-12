@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
+import com.breadcost.subscription.SubscriptionRequired;
 
 /**
  * REST controller for BC-E15 Invoicing, Credit Limits and Customer Pricing.
@@ -18,6 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @RestController
 @RequestMapping("/v2")
 @PreAuthorize("hasAnyRole('Admin','Manager','FinanceUser')")
+@SubscriptionRequired("INVOICING")
 public class InvoiceController {
 
     private final InvoiceService invoiceService;

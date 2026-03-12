@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
+import com.breadcost.subscription.SubscriptionRequired;
 
 /**
  * AI pricing + anomaly endpoints — BC-2001 (FR-12.5), BC-2002 (FR-12.6)
@@ -18,6 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @RequestMapping("/v3/ai")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('Admin','Manager','FinanceUser')")
+@SubscriptionRequired("AI_BOT")
 public class AiPricingAnomalyController {
 
     private final AiPricingAnomalyService service;

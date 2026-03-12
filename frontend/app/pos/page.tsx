@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Alert } from '@/components/ui';
+import { SectionTitle, Button, InputField, SelectField, Card } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
 import { getUsername } from '@/lib/auth';
 import { Package } from 'lucide-react';
@@ -134,8 +135,8 @@ function QuickAdd({ product, deptName, onAdd, onCancel }: QuickAddProps) {
           {t('common.total')}: {fmt(parseFloat(qty || '0') * parseFloat(price || '0'))}
         </div>
         <div className="flex gap-2 mt-auto pt-2">
-          <button type="button" className="flex-1 btn-secondary text-xs py-1.5" onClick={onCancel}>{t('common.cancel')}</button>
-          <button type="submit" className="flex-1 btn-primary text-xs py-1.5">{t('pos.addToCart')}</button>
+          <Button variant="secondary" size="xs" type="button" className="flex-1" onClick={onCancel}>{t('common.cancel')}</Button>
+          <Button variant="primary" size="xs" type="submit" className="flex-1">{t('pos.addToCart')}</Button>
         </div>
       </form>
     </div>
@@ -347,21 +348,13 @@ export default function POSPage() {
 
   return (
     <div className="h-[calc(100vh-64px)] flex flex-col">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-3 shrink-0">
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">Retail</div>
-          <h1 className="mt-1 text-2xl font-bold text-gray-900">{t('pos.title')}</h1>
-          <p className="mt-1 text-sm text-gray-500">{t('pos.subtitle')}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            className="btn-secondary text-xs"
-            disabled={eodLoading}
-            onClick={runEod}
-          >
-            {eodLoading ? t('pos.processing') : t('pos.endOfDay')}
-          </button>
-        </div>
+      <div className="mb-3 shrink-0">
+        <SectionTitle
+          eyebrow="Retail"
+          title={t('pos.title')}
+          subtitle={t('pos.subtitle')}
+          action={<Button variant="secondary" size="sm" disabled={eodLoading} onClick={runEod}>{eodLoading ? t('pos.processing') : t('pos.endOfDay')}</Button>}
+        />
       </div>
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
@@ -377,22 +370,21 @@ export default function POSPage() {
         <div className="flex-1 flex flex-col min-w-0">
           {/* Filter bar */}
           <div className="flex gap-2 mb-3 shrink-0">
-            <input
-              className="input flex-1"
+            <InputField
+              className="flex-1"
               placeholder={t('pos.searchProducts')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            <select
-              className="input w-44"
+            <SelectField
+              className="w-44"
               value={deptFilter}
               onChange={(e) => setDeptFilter(e.target.value)}
-            >
-              <option value="ALL">{t('pos.allDepartments')}</option>
-              {departments.map((d) => (
-                <option key={d.departmentId} value={d.departmentId}>{d.name}</option>
-              ))}
-            </select>
+              options={[
+                { value: 'ALL', label: t('pos.allDepartments') },
+                ...departments.map((d) => ({ value: d.departmentId, label: d.name })),
+              ]}
+            />
           </div>
 
           {/* Grid */}
@@ -405,7 +397,7 @@ export default function POSPage() {
                 : t('pos.noProductsMatch')}
             </div>
           ) : (
-            <div className="overflow-y-auto flex-1 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 content-start">
+            <div className="overflow-y-auto flex-1 grid grid-cols-2 sm:grid-cols-3 gap-3 content-start">
               {filtered.map((p) => {
                 const inCart = cart.find((l) => l.productId === p.productId);
                 return (
@@ -591,13 +583,9 @@ export default function POSPage() {
               />
             </div>
 
-            <button
-              className="w-full btn-primary py-3 text-base font-semibold disabled:opacity-50"
-              disabled={cart.length === 0 || checkingOut || (paymentMethod === 'CARD' && !cardReference.trim())}
-              onClick={completeSale}
-            >
+            <Button variant="primary" size="lg" className="w-full py-3 text-base font-semibold" disabled={cart.length === 0 || checkingOut || (paymentMethod === 'CARD' && !cardReference.trim())} onClick={completeSale}>
               {checkingOut ? t('pos.processing') : t('pos.completeSale', { total: fmt(cartTotal) })}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -655,8 +643,8 @@ export default function POSPage() {
               </div>
             </div>
             <div className="px-6 py-4 border-t flex gap-3">
-              <button className="flex-1 btn-secondary" onClick={printReceipt}>{t('pos.printReceipt')}</button>
-              <button className="flex-1 btn-primary" onClick={resetAfterSale}>{t('pos.newSale')}</button>
+              <Button variant="secondary" size="sm" className="flex-1" onClick={printReceipt}>{t('pos.printReceipt')}</Button>
+              <Button variant="primary" size="sm" className="flex-1" onClick={resetAfterSale}>{t('pos.newSale')}</Button>
             </div>
           </div>
         </div>
@@ -686,8 +674,8 @@ export default function POSPage() {
               </table>
             </div>
             <div className="px-6 py-4 border-t flex gap-3">
-              <button className="flex-1 btn-secondary" onClick={printEod}>{t('pos.printReceipt')}</button>
-              <button className="flex-1 btn-primary" onClick={() => setEodData(null)}>{t('common.close')}</button>
+              <Button variant="secondary" size="sm" className="flex-1" onClick={printEod}>{t('pos.printReceipt')}</Button>
+              <Button variant="primary" size="sm" className="flex-1" onClick={() => setEodData(null)}>{t('common.close')}</Button>
             </div>
           </div>
         </div>

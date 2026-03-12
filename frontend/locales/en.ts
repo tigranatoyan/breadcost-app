@@ -1184,6 +1184,13 @@ const en = {
     en: 'English',
     hy: 'Հայերեն',
   },
+
+  // ── Subscription gating ───────────────────────────────────────────────────
+  subscription: {
+    upgradeRequired: 'Upgrade Required',
+    upgradeMessage: 'Your current plan does not include this feature. Please contact your administrator to upgrade.',
+    upgradeCta: 'Go to Dashboard',
+  },
 } as const;
 
 export default en;

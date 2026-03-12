@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Modal, Spinner, Alert, Badge, Field } from '@/components/ui';
+import { SectionTitle, Button, SelectField, InputField, Card } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
 import { Plus } from 'lucide-react';
 
@@ -286,36 +287,32 @@ export default function ProductionPlansPage() {
   });
 
   return (
-    <div className="max-w-5xl">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-4">
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">Production</div>
-          <h1 className="mt-1 text-2xl font-bold text-gray-900">{t('productionPlans.title')}</h1>
-          <p className="mt-1 text-sm text-gray-500">{t('productionPlans.subtitle')}</p>
-        </div>
-        <button className="btn-primary" onClick={() => setOpen(true)}>
-          <Plus className="h-4 w-4" /> {t('productionPlans.newPlan')}
-        </button>
+    <div className="max-w-[1800px]">
+      <div className="mb-4">
+        <SectionTitle
+          eyebrow="Production"
+          title={t('productionPlans.title')}
+          subtitle={t('productionPlans.subtitle')}
+          action={<Button variant="primary" size="sm" onClick={() => setOpen(true)}><Plus className="h-4 w-4" /> {t('productionPlans.newPlan')}</Button>}
+        />
       </div>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-4">
-        <select
-          className="input w-44"
+        <SelectField
+          className="w-44"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="ALL">{t('common.allStatuses')}</option>
-          {['DRAFT', 'GENERATED', 'APPROVED', 'PUBLISHED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-        <input
-          className="input w-44"
+          options={[
+            { value: 'ALL', label: t('common.allStatuses') },
+            ...['DRAFT', 'GENERATED', 'APPROVED', 'PUBLISHED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].map((s) => ({ value: s, label: s })),
+          ]}
+        />
+        <InputField
+          className="w-44"
           type="date"
           value={dateFilter}
           onChange={(e) => setDateFilter(e.target.value)}
-          title="Filter by plan date"
         />
         {(statusFilter !== 'ALL' || dateFilter) && (
           <button
@@ -664,16 +661,12 @@ export default function ProductionPlansPage() {
               />
             </Field>
             <div className="flex justify-end gap-2 pt-2 border-t">
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={() => setOpen(false)}
-              >
+              <Button variant="secondary" size="sm" type="button" onClick={() => setOpen(false)}>
                 {t('common.cancel')}
-              </button>
-              <button type="submit" className="btn-primary" disabled={saving}>
+              </Button>
+              <Button variant="primary" size="sm" type="submit" disabled={saving}>
                 {saving ? t('common.saving') : t('common.create')}
-              </button>
+              </Button>
             </div>
           </form>
         </Modal>

@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
+import com.breadcost.subscription.SubscriptionRequired;
 
 /**
  * Driver mobile app endpoints — BC-2101..2103 (FR-7.7, FR-8.7, FR-8.8)
@@ -23,6 +24,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @RequestMapping("/v3/driver")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('Admin','Manager')")
+@SubscriptionRequired("DELIVERY")
 public class DriverController {
 
     private final DriverService service;

@@ -3,9 +3,11 @@ package com.breadcost.functional;
 import com.breadcost.masterdata.UserEntity;
 import com.breadcost.masterdata.UserRepository;
 import com.breadcost.security.JwtUtil;
+import com.breadcost.subscription.SubscriptionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.time.LocalDate;
 import java.util.UUID;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -61,6 +63,9 @@ public abstract class FunctionalTestBase {
     @Autowired
     protected PasswordEncoder passwordEncoder;
 
+    @Autowired
+    protected SubscriptionService subscriptionService;
+
     // ── seed data ────────────────────────────────────────────────────────────
 
     @BeforeEach
@@ -74,6 +79,11 @@ public abstract class FunctionalTestBase {
             save("floor1",     "Floor One",      "ProductionUser");
             save("tech1",      "Technologist 1", "Technologist");
         }
+        // Always ensure full feature access — tests that need a specific tier
+        // override inside their own method
+        subscriptionService.seedTiers();
+        subscriptionService.assignTier(TENANT, "ENTERPRISE", "admin1",
+                LocalDate.now(), LocalDate.now().plusYears(1));
     }
 
     private void save(String username, String display, String role) {

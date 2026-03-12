@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
+import com.breadcost.subscription.SubscriptionRequired;
 
 /**
  * Supplier REST API — BC-1301: Supplier catalog CRUD
@@ -28,6 +29,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @RequestMapping("/v2/suppliers")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('Admin','Manager','Warehouse')")
+@SubscriptionRequired("SUPPLIER")
 public class SupplierController {
 
     private final SupplierService supplierService;

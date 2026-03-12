@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner } from '@/components/ui';
-import { Badge, Card as DSCard, Progress, Button } from '@/components/design-system';
+import { Badge, Card, StatCard, Progress, Button, SectionTitle } from '@/components/design-system';
 import { CircleDollarSign, ShoppingCart, Factory, Warehouse, AlertTriangle, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useT } from '@/lib/i18n';
@@ -107,37 +107,14 @@ interface StatCardData {
 // ─── sub-components ───────────────────────────────────────────────────────────
 function KpiCard({ label, value, sub, href, icon: Icon, accent }: StatCardData) {
   return (
-    <Link href={href} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{label}</p>
-          <p className="mt-2 text-2xl font-bold text-gray-900">{value}</p>
-          {sub && <p className="mt-1 text-xs text-gray-500">{sub}</p>}
-        </div>
-        <div className={`rounded-xl p-2 ${accent ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'}`}>
-          <Icon className="h-5 w-5" />
-        </div>
-      </div>
+    <Link href={href} className="block hover:shadow-md transition-shadow rounded-2xl">
+      <StatCard icon={Icon} label={label} value={value} hint={sub} />
     </Link>
   );
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return <h2 className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500 mb-3">{children}</h2>;
-}
-
-function Card({ children, className = '', title, action }: { children: React.ReactNode; className?: string; title?: string; action?: React.ReactNode }) {
-  return (
-    <div className={`rounded-2xl border border-gray-200 bg-white shadow-sm ${className}`}>
-      {(title || action) && (
-        <div className="mb-0 flex items-center justify-between gap-3 px-5 pt-4 pb-2">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-          {action}
-        </div>
-      )}
-      {children}
-    </div>
-  );
 }
 
 // ─── main component ───────────────────────────────────────────────────────────
@@ -291,20 +268,14 @@ export default function DashboardPage() {
   if (loading) return <Spinner />;
 
   return (
-    <div className="max-w-6xl space-y-8">
+    <div className="max-w-[1800px] space-y-8">
       {/* Header */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">{t('dashboard.overview') ?? 'Overview'}</div>
-          <h1 className="mt-1 text-2xl font-bold text-gray-900">{t('dashboard.title')}</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-          </p>
-        </div>
-        <Button variant="secondary" size="sm" onClick={load}>
-          <RefreshCw className="h-4 w-4" /> {t('dashboard.refresh')}
-        </Button>
-      </div>
+      <SectionTitle
+        eyebrow={t('dashboard.overview') ?? 'Overview'}
+        title={t('dashboard.title')}
+        subtitle={new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+        action={<Button variant="secondary" size="sm" onClick={load}><RefreshCw className="h-4 w-4" /> {t('dashboard.refresh')}</Button>}
+      />
 
       {/* KPI row */}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">

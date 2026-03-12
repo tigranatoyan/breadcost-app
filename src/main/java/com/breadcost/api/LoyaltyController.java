@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.breadcost.subscription.SubscriptionRequired;
+
 /**
  * Customer Portal — Loyalty API  /v2/loyalty
  *
@@ -34,6 +36,7 @@ import java.util.List;
 @RequestMapping("/v2/loyalty")
 @RequiredArgsConstructor
 @Slf4j
+@SubscriptionRequired("LOYALTY")
 public class LoyaltyController {
 
     private final LoyaltyService loyaltyService;

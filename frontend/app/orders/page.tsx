@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Modal, Spinner, Alert, Badge, Field } from '@/components/ui';
+import { SectionTitle, Button, InputField, SelectField, Table } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
 import { Plus, Calendar, ChevronUp, ChevronDown } from 'lucide-react';
 
@@ -295,35 +296,32 @@ export default function OrdersPage() {
   // ─── render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div className="max-w-5xl">
+    <div className="max-w-[1800px]">
       {/* header */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-5">
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">Sales</div>
-          <h1 className="mt-1 text-2xl font-bold text-gray-900">{t('orders.title')}</h1>
-          <p className="mt-1 text-sm text-gray-500">{t('orders.orderCount', { count: filtered.length })}</p>
-        </div>
-        <button className="btn-primary" onClick={openForm}>
-          <Plus className="h-4 w-4" /> {t('orders.newOrder')}
-        </button>
+      <div className="mb-5">
+        <SectionTitle
+          eyebrow="Operations"
+          title={t('orders.title')}
+          subtitle={t('orders.orderCount', { count: filtered.length })}
+          action={<Button variant="primary" size="sm" onClick={openForm}><Plus className="h-4 w-4" /> {t('orders.newOrder')}</Button>}
+        />
       </div>
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
 
       {/* filters */}
       <div className="flex flex-wrap gap-3 mb-4">
-        <select
-          className="input w-44"
+        <SelectField
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="ALL">{t('common.allStatuses')}</option>
-          {ALL_STATUSES.map((s) => (
-            <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
-          ))}
-        </select>
-        <input
-          className="input w-56"
+          className="w-44"
+          options={[
+            { value: 'ALL', label: t('common.allStatuses') },
+            ...ALL_STATUSES.map((s) => ({ value: s, label: s.replace(/_/g, ' ') })),
+          ]}
+        />
+        <InputField
+          className="w-56"
           placeholder={t('orders.searchCustomer')}
           value={customerSearch}
           onChange={(e) => setCustomerSearch(e.target.value)}
@@ -378,33 +376,21 @@ export default function OrdersPage() {
                 >
                   {/* DRAFT → Confirm */}
                   {o.status === 'DRAFT' && (
-                    <button
-                      className="btn-xs bg-blue-600 text-white hover:bg-blue-700"
-                      disabled={actionId === o.orderId}
-                      onClick={() => doConfirm(o.orderId)}
-                    >
+                    <Button variant="primary" size="xs" disabled={actionId === o.orderId} onClick={() => doConfirm(o.orderId)}>
                       {t('orders.confirmBtn')}
-                    </button>
+                    </Button>
                   )}
                   {/* Status advance */}
                   {STATUS_NEXT[o.status] && (
-                    <button
-                      className="btn-xs bg-indigo-600 text-white hover:bg-indigo-700"
-                      disabled={actionId === o.orderId}
-                      onClick={() => doAdvanceStatus(o.orderId, STATUS_NEXT[o.status]!)}
-                    >
+                    <Button variant="primary" size="xs" disabled={actionId === o.orderId} onClick={() => doAdvanceStatus(o.orderId, STATUS_NEXT[o.status]!)}>
                       {t(STATUS_NEXT_KEY[o.status])}
-                    </button>
+                    </Button>
                   )}
                   {/* Cancel */}
                   {(o.status === 'DRAFT' || o.status === 'CONFIRMED') && (
-                    <button
-                      className="btn-xs bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
-                      disabled={actionId === o.orderId}
-                      onClick={() => openCancelDialog(o.orderId)}
-                    >
+                    <Button variant="danger" size="xs" disabled={actionId === o.orderId} onClick={() => openCancelDialog(o.orderId)}>
                       {t('orders.cancelBtn')}
-                    </button>
+                    </Button>
                   )}
                 </div>
                 <span className="text-gray-400 text-xs shrink-0">
@@ -421,6 +407,24 @@ export default function OrdersPage() {
                     <span><span className="font-medium text-gray-700">{t('orders.placed')}:</span> {fmtDateTime(o.orderPlacedAt)}</span>
                     <span><span className="font-medium text-gray-700">{t('orders.delivery')}:</span> {fmtDateTime(o.requestedDeliveryTime)}</span>
                     {o.notes && <span><span className="font-medium text-gray-700">{t('common.notes')}:</span> {o.notes}</span>}
+                  </div>
+                  {/* status flow */}
+                  <div className="flex items-center gap-1 flex-wrap">
+                    {ALL_STATUSES.filter((s) => s !== 'CANCELLED').map((s, i) => {
+                      const reached = ALL_STATUSES.indexOf(o.status) >= ALL_STATUSES.indexOf(s);
+                      const current = o.status === s;
+                      return (
+                        <span key={s} className="flex items-center gap-1">
+                          {i > 0 && <span className={`w-4 h-px ${reached ? 'bg-blue-400' : 'bg-gray-200'}`} />}
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${current ? 'bg-blue-600 text-white' : reached ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-400'}`}>
+                            {s.replace(/_/g, ' ')}
+                          </span>
+                        </span>
+                      );
+                    })}
+                    {o.status === 'CANCELLED' && (
+                      <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">CANCELLED</span>
+                    )}
                   </div>
                   {/* lines table */}
                   {o.lines && o.lines.length > 0 && (
@@ -599,16 +603,12 @@ export default function OrdersPage() {
             </div>
 
             <div className="flex justify-end gap-2 pt-2 border-t">
-              <button type="button" className="btn-secondary" onClick={() => setOpen(false)}>
+              <Button variant="secondary" size="sm" type="button" onClick={() => setOpen(false)}>
                 {t('common.cancel')}
-              </button>
-              <button
-                type="submit"
-                className="btn-primary"
-                disabled={saving || form.lines.length === 0}
-              >
+              </Button>
+              <Button variant="primary" size="sm" type="submit" disabled={saving || form.lines.length === 0}>
                 {saving ? t('common.saving') : t('orders.newOrder')}
-              </button>
+              </Button>
             </div>
           </form>
         </Modal>
@@ -630,16 +630,12 @@ export default function OrdersPage() {
               />
             </Field>
             <div className="flex justify-end gap-2 pt-2 border-t">
-              <button className="btn-secondary" onClick={() => setCancelTarget(null)}>
+              <Button variant="secondary" size="sm" onClick={() => setCancelTarget(null)}>
                 {t('common.cancel')}
-              </button>
-              <button
-                className="bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-4 py-1.5 rounded-lg disabled:opacity-50"
-                disabled={!!actionId}
-                onClick={doCancel}
-              >
+              </Button>
+              <Button variant="danger" size="sm" disabled={!!actionId} onClick={doCancel}>
                 {actionId ? t('common.saving') : t('orders.confirmCancel')}
-              </button>
+              </Button>
             </div>
           </div>
         </Modal>

@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
+import com.breadcost.subscription.SubscriptionRequired;
 
 /**
  * AI WhatsApp ordering endpoints — BC-1801..1804 (FR-12.x)
@@ -20,6 +21,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @RequestMapping("/v3/ai")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('Admin','Manager')")
+@SubscriptionRequired("AI_BOT")
 public class AiConversationController {
 
     private final AiConversationService service;
