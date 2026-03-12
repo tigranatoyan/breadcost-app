@@ -4,6 +4,7 @@ import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Modal, Spinner, Alert, Badge, Field } from '@/components/ui';
 import { useT } from '@/lib/i18n';
 import { getRole } from '@/lib/auth';
+import { Plus, ArrowLeftRight, SlidersHorizontal } from 'lucide-react';
 
 const SITE_ID = 'MAIN';
 const REASON_CODES = ['WASTE', 'SPOILAGE', 'COUNT_CORRECTION', 'OTHER'] as const;
@@ -391,9 +392,13 @@ export default function InventoryPage() {
   return (
     <div className="max-w-6xl">
       {/* header */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-5">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-semibold">{t('inventory.title')}</h1>
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">Inventory</div>
+            <h1 className="mt-1 text-2xl font-bold text-gray-900">{t('inventory.title')}</h1>
+            <p className="mt-1 text-sm text-gray-500">FIFO lots, stock alerts, receiving, transfers, and adjustments.</p>
+          </div>
           {alertCount > 0 && (
             <span className="bg-red-100 text-red-700 text-xs font-semibold px-2.5 py-1 rounded-full">
               {t('inventory.alerts', { count: alertCount })}
@@ -494,7 +499,7 @@ export default function InventoryPage() {
       ) : tab === 'stock' ? (
         /* ── Stock Levels ─────────────────────────────────────────────── */
         filteredPositions.length === 0 ? (
-          <div className="text-center py-16 text-sm text-gray-400 border rounded-xl bg-white">
+          <div className="text-center py-16 text-sm text-gray-400 rounded-2xl border border-gray-200 bg-white">
             {positions.length === 0
               ? t('inventory.noStockOnHand')
               : t('inventory.noPositionsMatch')}
@@ -601,13 +606,13 @@ export default function InventoryPage() {
       ) : (
         /* ── Items Master Data ────────────────────────────────────────── */
         filteredItems.length === 0 ? (
-          <div className="text-center py-16 text-sm text-gray-400 border rounded-xl bg-white">
+          <div className="text-center py-16 text-sm text-gray-400 rounded-2xl border border-gray-200 bg-white">
             {items.length === 0
               ? t('inventory.noItemsDefined')
               : t('inventory.noItemsMatch')}
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border bg-white shadow-sm">
+          <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm">
             <table className="min-w-full text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>

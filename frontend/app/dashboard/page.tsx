@@ -1,7 +1,9 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
-import { Spinner, Badge } from '@/components/ui';
+import { Spinner } from '@/components/ui';
+import { Badge, Card as DSCard, Progress, Button } from '@/components/design-system';
+import { CircleDollarSign, ShoppingCart, Factory, Warehouse, AlertTriangle, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useT } from '@/lib/i18n';
 
@@ -93,33 +95,49 @@ interface RevenueSummary {
   currency: string;
 }
 
-interface StatCard {
+interface StatCardData {
   label: string;
   value: number | string;
   sub?: string;
   href: string;
-  icon: string;
-  color: string;
+  icon: React.ComponentType<{ className?: string }>;
+  accent?: boolean;
 }
 
 // ─── sub-components ───────────────────────────────────────────────────────────
-function KpiCard({ label, value, sub, href, icon, color }: StatCard) {
+function KpiCard({ label, value, sub, href, icon: Icon, accent }: StatCardData) {
   return (
-    <Link href={href} className={`border rounded-xl p-4 ${color} hover:shadow-md transition-shadow`}>
-      <div className="text-2xl mb-1">{icon}</div>
-      <div className="text-3xl font-bold text-gray-800">{value}</div>
-      <div className="text-sm font-medium text-gray-600 mt-0.5">{label}</div>
-      {sub && <div className="text-xs text-gray-400 mt-0.5">{sub}</div>}
+    <Link href={href} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{label}</p>
+          <p className="mt-2 text-2xl font-bold text-gray-900">{value}</p>
+          {sub && <p className="mt-1 text-xs text-gray-500">{sub}</p>}
+        </div>
+        <div className={`rounded-xl p-2 ${accent ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'}`}>
+          <Icon className="h-5 w-5" />
+        </div>
+      </div>
     </Link>
   );
 }
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">{children}</h2>;
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return <h2 className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500 mb-3">{children}</h2>;
 }
 
-function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <div className={`bg-white border rounded-xl shadow-sm ${className}`}>{children}</div>;
+function Card({ children, className = '', title, action }: { children: React.ReactNode; className?: string; title?: string; action?: React.ReactNode }) {
+  return (
+    <div className={`rounded-2xl border border-gray-200 bg-white shadow-sm ${className}`}>
+      {(title || action) && (
+        <div className="mb-0 flex items-center justify-between gap-3 px-5 pt-4 pb-2">
+          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          {action}
+        </div>
+      )}
+      {children}
+    </div>
+  );
 }
 
 // ─── main component ───────────────────────────────────────────────────────────
@@ -254,11 +272,11 @@ export default function DashboardPage() {
   if (cancelledCount > 0) issues.push({ level: 'info', msg: t('dashboard.cancelledOnRecord', { count: cancelledCount }) });
 
   // kpi stats
-  const stats: StatCard[] = [
-    { label: t('dashboard.runningRevenue'), value: fmtMoney(runningRevenue), sub: t('dashboard.activeOrders', { count: activeOrders.length }), href: '/orders', icon: '💰', color: 'bg-emerald-50 border-emerald-200' },
-    { label: t('dashboard.openOrders'), value: activeOrders.length, sub: criticalOrders.length > 0 ? t('dashboard.critical', { count: criticalOrders.length }) : t('dashboard.confirmed', { count: confirmedOrders.length }), href: '/orders', icon: '📦', color: criticalOrders.length > 0 ? 'bg-red-50 border-red-300' : 'bg-green-50 border-green-200' },
-    { label: t('dashboard.todayPlans'), value: todayPlans.length, sub: activePlan ? t('dashboard.activeShift', { shift: activePlan.shift }) : t('dashboard.noneActive'), href: '/production-plans', icon: '📅', color: 'bg-purple-50 border-purple-200' },
-    { label: t('dashboard.stockValue'), value: fmtMoney(totalStockValue), sub: serverAlerts.length > 0 ? t('dashboard.stockAlerts', { count: serverAlerts.length }) : t('dashboard.positions', { count: positions.length }), href: '/inventory', icon: '🏦', color: serverAlerts.length > 0 ? 'bg-red-50 border-red-300' : 'bg-blue-50 border-blue-200' },
+  const stats: StatCardData[] = [
+    { label: t('dashboard.runningRevenue'), value: fmtMoney(runningRevenue), sub: t('dashboard.activeOrders', { count: activeOrders.length }), href: '/orders', icon: CircleDollarSign },
+    { label: t('dashboard.openOrders'), value: activeOrders.length, sub: criticalOrders.length > 0 ? t('dashboard.critical', { count: criticalOrders.length }) : t('dashboard.confirmed', { count: confirmedOrders.length }), href: '/orders', icon: ShoppingCart, accent: criticalOrders.length > 0 },
+    { label: t('dashboard.todayPlans'), value: todayPlans.length, sub: activePlan ? t('dashboard.activeShift', { shift: activePlan.shift }) : t('dashboard.noneActive'), href: '/production-plans', icon: Factory },
+    { label: t('dashboard.stockValue'), value: fmtMoney(totalStockValue), sub: serverAlerts.length > 0 ? t('dashboard.stockAlerts', { count: serverAlerts.length }) : t('dashboard.positions', { count: positions.length }), href: '/inventory', icon: Warehouse, accent: serverAlerts.length > 0 },
   ];
 
   // production floor progress
@@ -275,34 +293,29 @@ export default function DashboardPage() {
   return (
     <div className="max-w-6xl space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">{t('dashboard.title')}</h1>
-          <p className="text-sm text-gray-400 mt-0.5">
+          <div className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">{t('dashboard.overview') ?? 'Overview'}</div>
+          <h1 className="mt-1 text-2xl font-bold text-gray-900">{t('dashboard.title')}</h1>
+          <p className="mt-1 text-sm text-gray-500">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
-        <button
-          className="btn-secondary text-xs"
-          onClick={load}
-        >
-          {t('dashboard.refresh')}
-        </button>
+        <Button variant="secondary" size="sm" onClick={load}>
+          <RefreshCw className="h-4 w-4" /> {t('dashboard.refresh')}
+        </Button>
       </div>
 
       {/* KPI row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {stats.map((s) => <KpiCard key={s.label} {...s} />)}
       </div>
 
       {/* BC-1807: Today's Orders + Active Plans widgets */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Today's Orders */}
-        <Card className="p-5">
-          <div className="flex items-center justify-between mb-3">
-            <SectionTitle>{t('dashboard.todaysOrders')}</SectionTitle>
-            <Link href="/orders" className="text-xs text-blue-600 hover:underline">{t('dashboard.view')}</Link>
-          </div>
+        <Card className="p-5" title={t('dashboard.todaysOrders')} action={
+            <Link href="/orders" className="text-xs text-blue-600 hover:underline">{t('dashboard.view')}</Link>}>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <div className="text-3xl font-bold text-gray-800">{todayOrders.length}</div>
@@ -329,11 +342,8 @@ export default function DashboardPage() {
         </Card>
 
         {/* Active Plans */}
-        <Card className="p-5">
-          <div className="flex items-center justify-between mb-3">
-            <SectionTitle>{t('dashboard.activePlansWidget')}</SectionTitle>
-            <Link href="/production-plans" className="text-xs text-blue-600 hover:underline">{t('dashboard.view')}</Link>
-          </div>
+        <Card className="p-5" title={t('dashboard.activePlansWidget')} action={
+            <Link href="/production-plans" className="text-xs text-blue-600 hover:underline">{t('dashboard.view')}</Link>}>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <div className="text-3xl font-bold text-gray-800">{activePlans.length}</div>
@@ -384,7 +394,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Delivery Timeline (spans 2 cols) */}
         <div className="lg:col-span-2 space-y-4">
-          <SectionTitle>{t('dashboard.deliveryTimeline')}</SectionTitle>
+          <SectionLabel>{t('dashboard.deliveryTimeline')}</SectionLabel>
           <Card>
             {deliveryTimeline.length === 0 ? (
               <div className="py-10 text-center text-sm text-gray-400">{t('dashboard.noDeliveries')} <Link href="/orders" className="text-blue-600 hover:underline">{t('dashboard.createAnOrder')}</Link></div>
@@ -424,17 +434,19 @@ export default function DashboardPage() {
 
         {/* Issues panel */}
         <div className="space-y-4">
-          <SectionTitle>{t('dashboard.issuesDetected')}</SectionTitle>
+          <SectionLabel>{t('dashboard.issuesDetected')}</SectionLabel>
           <Card>
             {issues.length === 0 ? (
               <div className="px-5 py-10 text-center text-sm text-gray-400">{t('dashboard.noIssues')}</div>
             ) : (
               <div className="divide-y">
                 {issues.map((iss, i) => {
-                  const dot = iss.level === 'error' ? '🔴' : iss.level === 'warn' ? '🟡' : '🔵';
+                  const colors = iss.level === 'error' ? 'bg-red-50 text-red-600' : iss.level === 'warn' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600';
                   return (
-                    <div key={i} className="px-4 py-3 flex gap-2 text-sm">
-                      <span className="mt-0.5 shrink-0">{dot}</span>
+                    <div key={i} className="px-4 py-3 flex gap-3 text-sm items-start">
+                      <div className={`rounded-full p-1.5 shrink-0 ${colors}`}>
+                        <AlertTriangle className="h-3.5 w-3.5" />
+                      </div>
                       <span className="text-gray-700">{iss.msg}</span>
                     </div>
                   );
@@ -449,14 +461,16 @@ export default function DashboardPage() {
       {serverAlerts.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <SectionTitle>{t('dashboard.stockAlertsWidget')}</SectionTitle>
+            <SectionLabel>{t('dashboard.stockAlertsWidget')}</SectionLabel>
             <Link href="/inventory" className="text-xs text-blue-600 hover:underline">{t('common.viewAll')}</Link>
           </div>
           <Card>
             <div className="divide-y">
               {serverAlerts.map((a) => (
                 <div key={a.itemId} className={`px-5 py-3 flex items-center gap-3 ${a.severity === 'CRITICAL' ? 'bg-red-50' : 'bg-yellow-50'}`}>
-                  <span className="text-lg shrink-0">{a.severity === 'CRITICAL' ? '🔴' : '🟡'}</span>
+                  <div className={`rounded-full p-2 shrink-0 ${a.severity === 'CRITICAL' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
+                    <AlertTriangle className="h-4 w-4" />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium truncate">{a.itemName}</div>
                     <div className="text-xs text-gray-500 mt-0.5">
@@ -476,7 +490,7 @@ export default function DashboardPage() {
       {/* Revenue Widget (BC-1604) */}
       {revenue && (
         <div className="space-y-4">
-          <SectionTitle>{t('dashboard.revenueWidget')}</SectionTitle>
+          <SectionLabel>{t('dashboard.revenueWidget')}</SectionLabel>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {([
               { label: t('dashboard.revenueToday'), value: revenue.today },
@@ -496,7 +510,7 @@ export default function DashboardPage() {
       {/* Production Floor */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <SectionTitle>{t('dashboard.productionFloor')}</SectionTitle>
+          <SectionLabel>{t('dashboard.productionFloor')}</SectionLabel>
           <Link href="/production-plans" className="text-xs text-blue-600 hover:underline">{t('common.viewAll')}</Link>
         </div>
         {floorPlans.length === 0 ? (
@@ -517,12 +531,8 @@ export default function DashboardPage() {
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${shiftColor[p.shift] ?? 'bg-gray-100 text-gray-700'}`}>{p.shift}</span>
                   </div>
                   <div className="text-xs text-gray-500 mb-3">{t('dashboard.workOrdersComplete', { done: String(done), total: String(total), inProgress: String(inProg) })}</div>
-                  <div className="w-full bg-gray-100 rounded-full h-2 mb-3">
-                    <div
-                      className={`h-2 rounded-full transition-all ${p.status === 'IN_PROGRESS' ? 'bg-blue-500' : p.status === 'COMPLETED' ? 'bg-green-500' : 'bg-gray-300'}`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
+                  <Progress value={pct} />
+                  <div className="mt-2" />
                   <Badge status={p.status} />
                 </Card>
               );

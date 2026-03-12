@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Modal, Spinner, Alert, Badge, Field } from '@/components/ui';
 import { useT } from '@/lib/i18n';
+import { Plus, Calendar, ChevronUp, ChevronDown } from 'lucide-react';
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -296,10 +297,14 @@ export default function OrdersPage() {
   return (
     <div className="max-w-5xl">
       {/* header */}
-      <div className="flex items-center justify-between mb-5">
-        <h1 className="text-2xl font-semibold">{t('orders.title')}</h1>
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-5">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">Sales</div>
+          <h1 className="mt-1 text-2xl font-bold text-gray-900">{t('orders.title')}</h1>
+          <p className="mt-1 text-sm text-gray-500">{t('orders.orderCount', { count: filtered.length })}</p>
+        </div>
         <button className="btn-primary" onClick={openForm}>
-          {t('orders.newOrder')}
+          <Plus className="h-4 w-4" /> {t('orders.newOrder')}
         </button>
       </div>
 
@@ -323,22 +328,19 @@ export default function OrdersPage() {
           value={customerSearch}
           onChange={(e) => setCustomerSearch(e.target.value)}
         />
-        <span className="text-sm text-gray-400 self-center ml-auto">
-          {t('orders.orderCount', { count: filtered.length })}
-        </span>
       </div>
 
       {/* list */}
       {loading ? (
         <Spinner />
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 text-sm text-gray-400 border rounded-xl bg-white">
+        <div className="text-center py-16 text-sm text-gray-400 rounded-2xl border border-gray-200 bg-white">
           {orders.length === 0 ? t('orders.noOrders') : t('orders.noMatch')}
         </div>
       ) : (
         <div className="space-y-2">
           {filtered.map((o) => (
-            <div key={o.orderId} className="border rounded-xl bg-white shadow-sm">
+            <div key={o.orderId} className="rounded-2xl border border-gray-200 bg-white shadow-sm">
               {/* row header */}
               <div
                 className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 select-none"
@@ -350,7 +352,7 @@ export default function OrdersPage() {
                 </span>
                 {/* delivery date */}
                 <span className="text-xs text-gray-500 shrink-0 hidden sm:inline">
-                  📅 {fmtDate(o.requestedDeliveryTime)}
+                  <Calendar className="inline h-3.5 w-3.5 mr-0.5" /> {fmtDate(o.requestedDeliveryTime)}
                 </span>
                 {/* line count */}
                 <span className="text-xs text-gray-400 shrink-0">
@@ -406,7 +408,7 @@ export default function OrdersPage() {
                   )}
                 </div>
                 <span className="text-gray-400 text-xs shrink-0">
-                  {expanded === o.orderId ? '▲' : '▼'}
+                  {expanded === o.orderId ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </span>
               </div>
 

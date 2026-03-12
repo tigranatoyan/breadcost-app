@@ -1,5 +1,5 @@
 # BreadCost App — Work Session Snapshot
-**Last Updated:** 2026-03-11 (R4-S1 complete — 8 stories: 4 security BE + 4 design system FE, 404 tests, pushed to main)
+**Last Updated:** 2026-03-11 (Visual alignment — globals.css, 10 page headers, card borders, emoji→lucide icons, build clean)
 **Purpose:** Handoff context for continuing development in a new chat session
 
 > **Frontend Requirements:** See `work/120-task/FE_REQUIREMENTS.md` — APPROVED.
@@ -43,9 +43,10 @@
 | Auth | JWT (JwtUtil + JwtAuthFilter), Spring Security, @PreAuthorize RBAC |
 | Multi-tenancy | TenantContext ThreadLocal + TenantFilter (JWT tenant extraction) |
 
-**Run backend:** `.\gradlew bootRun` (port 8080)
-**Run frontend:** `cd frontend && npm run dev` (port 3000)
+**Run backend:** `.\gradlew bootRun` (port 8080) or `java -jar build/libs/breadcost-app-1.0.0-SNAPSHOT.jar --spring.profiles.active=dev --server.port=8085`
+**Run frontend:** `cd frontend && npm run dev` (port 3000) — Node.js at `C:\Program Files\nodejs` (may need PATH prepend)
 **Build frontend:** `cd frontend && npm run build` (28 routes, 0 errors)
+**Note:** API_BASE in `frontend/lib/api.ts` currently set to port 8085 (match server port)
 
 ---
 
@@ -171,6 +172,8 @@
 - **SFC pattern:** `'use client'` → imports → `TENANT_ID='tenant1'` → component function → `apiFetch` calls → `useState` only → JSX with Tailwind
 - **UI kit:** `components/ui.tsx` exports: Modal, Table, Spinner, Alert, Badge, Field, Success
 - **Design system:** `components/design-system.tsx` exports: cn, Button, Card, StatCard, SectionTitle, InputField, SelectField, Progress, Badge, SidebarItem, Table (trial-matching)
+- **Global CSS:** `globals.css` — btn/btn-primary/btn-secondary/btn-xs/input classes via `@apply` (rounded-md, inline-flex, gap-2). All pages inherit consistent button/input styling.
+- **Lucide icons:** `lucide-react` installed — all pages use lucide icons (no emoji icons). Icons imported per page.
 - **i18n:** `useI18n()` hook → `t('section.key')` dot notation, EN + HY locales (~1150 keys each)
 - **API:** `lib/api.ts` → `apiFetch(url)` with auth header, all calls include `?tenantId=TENANT_ID`
 - **Auth:** `lib/auth.ts` → role guard, `AuthShell` sidebar with role-based nav filtering
@@ -205,6 +208,44 @@
 ---
 
 ## Session History
+
+### 2026-03-11 — Visual Alignment: FIGMA_TRIAL → Live Pages
+
+**Scope:** Align all live frontend pages with `FIGMA_TRIAL.tsx` design prototype.
+
+**API Fix:**
+- `api.ts` API_BASE changed from port 8080 → 8085
+- 3 files (`report-builder`, `suppliers`, `admin`) had hardcoded `localhost:8080` URLs → replaced with `${API_BASE}`
+- Installed `lucide-react` dependency
+
+**globals.css Update (affects all 28 pages):**
+- `.btn` → added `inline-flex items-center justify-center gap-2 rounded-md`
+- `.btn-xs` → added `inline-flex items-center justify-center gap-1.5 rounded-md`
+- `.input` → changed `rounded` → `rounded-md`, improved focus ring
+- All buttons and inputs across every page now match design-system styling
+
+**Page Header Eyebrow Pattern (10 pages):**
+Added `<div class="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">EYEBROW</div>` + bold title + subtitle pattern:
+- Dashboard → "Overview", Recipes → "Workshop", Orders → "Sales", POS → "Retail"
+- Production Plans → "Production", Floor → "Production", Inventory → "Inventory"
+- Products → "Catalog", Departments → "Operations", Reports → "Insights"
+
+**Card Border Updates (20+ instances):**
+- `border rounded-xl` → `rounded-2xl border border-gray-200` across orders, pos, production-plans, inventory, floor, reports
+
+**Emoji → Lucide Icon Replacements:**
+- Dashboard: emoji KPIs → lucide icons in blue-50 circles, emoji issues → AlertTriangle
+- Recipes: ⏱→Clock3, ▲/▼→ChevronUp/Down
+- Orders: 📅→Calendar, ▲/▼→ChevronUp/Down
+- POS: 🍞→Package
+- Floor: ⏳→Clock3, ▶️→Play, ✅→Check, ❌→X, 🏭→Factory, 📋→ClipboardList, 🔧→Wrench, ⏱→Clock3, 🌡→Thermometer
+- Reports: 📥→Download, ↻→RefreshCw (animated spin), ⚡→Zap
+
+**Other:**
+- `tsconfig.json` — excluded `FIGMA_TRIAL.tsx` from build (pre-existing duplicate key error)
+- Build: 28 routes, 0 errors
+
+**Files changed:** globals.css, tsconfig.json, api.ts, dashboard, recipes, orders, pos, production-plans, inventory, floor, products, departments, reports, report-builder, suppliers, admin (16 files)
 
 ### 2026-03-11 — R4-S1: Security Hardening + Design System
 

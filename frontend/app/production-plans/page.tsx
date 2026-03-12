@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Modal, Spinner, Alert, Badge, Field } from '@/components/ui';
 import { useT } from '@/lib/i18n';
+import { Plus } from 'lucide-react';
 
 interface WorkOrder {
   workOrderId: string;
@@ -286,10 +287,14 @@ export default function ProductionPlansPage() {
 
   return (
     <div className="max-w-5xl">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-semibold">{t('productionPlans.title')}</h1>
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-4">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">Production</div>
+          <h1 className="mt-1 text-2xl font-bold text-gray-900">{t('productionPlans.title')}</h1>
+          <p className="mt-1 text-sm text-gray-500">{t('productionPlans.subtitle')}</p>
+        </div>
         <button className="btn-primary" onClick={() => setOpen(true)}>
-          {t('productionPlans.newPlan')}
+          <Plus className="h-4 w-4" /> {t('productionPlans.newPlan')}
         </button>
       </div>
 
@@ -332,12 +337,12 @@ export default function ProductionPlansPage() {
       ) : (
         <div className="space-y-2">
           {filteredPlans.length === 0 && (
-            <div className="text-center py-16 text-sm text-gray-400 border rounded-xl bg-white">
+            <div className="text-center py-16 text-sm text-gray-400 rounded-2xl border border-gray-200 bg-white">
               {plans.length === 0 ? t('productionPlans.noPlans') : t('productionPlans.noPlansMatch')}
             </div>
           )}
           {filteredPlans.map((p) => (
-            <div key={p.planId} className="border rounded-xl bg-white shadow-sm">
+            <div key={p.planId} className="rounded-2xl border border-gray-200 bg-white shadow-sm">
               {/* Plan header row */}
               <div
                 className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50"

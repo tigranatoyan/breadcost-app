@@ -1,6 +1,6 @@
 import { getAuthHeader, clearCredentials } from './auth';
 
-export const API_BASE = 'http://localhost:8080';
+export const API_BASE = 'http://localhost:8085';
 export const TENANT_ID = 'tenant1';
 
 export async function apiFetch<T = unknown>(

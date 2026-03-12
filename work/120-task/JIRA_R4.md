@@ -162,6 +162,17 @@
 **Goal:** Core back-office pages match trial visuals. Subscription tiers actually enforced.
 **Stories:** 8 | **Estimated SP:** 29
 
+> **⚠️ Visual Rework Head-Start (2026-03-11):** The visual alignment session pre-completed
+> significant work across BC-3201–3208. Changes already landed (uncommitted):
+> - **globals.css**: btn/input classes updated (all 28 pages benefit)
+> - **Eyebrow headers**: 10 pages (Dashboard, Recipes, Orders, POS, Production Plans, Floor, Inventory, Products, Departments, Reports)
+> - **Card borders**: 20+ instances migrated to `rounded-2xl border border-gray-200`
+> - **Emoji → Lucide icons**: Dashboard, Recipes, Orders, POS, Floor, Reports
+> - **Dashboard + Recipes**: Fully migrated to design-system components (StatCard, Badge, Progress, Button)
+>
+> **Per-story status:** BC-3201 ~90% done | BC-3202 ~60% | BC-3203 ~30% | BC-3204 ~40% | BC-3205 ~50% | BC-3206 ~30% | BC-3207 ~30% | BC-3208 ~60%
+> **Remaining work**: deeper component migration (design-system Table, Modal, SelectField), filter bars, status flow visualizations, Gantt wrapper, chart components, modal redesigns.
+
 ---
 
 ### Epic: BC-E29 — Subscription Enforcement
@@ -188,6 +199,8 @@
 
 **Goal:** All remaining pages match trial visuals. Full regression and polish.
 **Stories:** 7 | **Estimated SP:** 27
+
+> **Note:** BC-3206–3208 partially addressed in visual alignment head-start (see R4-S5 note). BC-3209–3212 not yet started.
 
 ---
 

@@ -1,7 +1,9 @@
 'use client';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
-import { Modal, Spinner, Alert, Badge, Field } from '@/components/ui';
+import { Modal, Spinner, Alert, Field } from '@/components/ui';
+import { Badge, Button } from '@/components/design-system';
+import { Plus, BookOpen, ChevronDown, ChevronUp, Clock3, Check } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 
 interface Product {
@@ -330,15 +332,20 @@ export default function RecipesPage() {
 
   return (
     <div className="max-w-5xl">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">{t('recipes.title')}</h1>
-        <button
-          className="btn-primary"
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-6">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">{t('recipes.workshop') ?? 'Workshop'}</div>
+          <h1 className="mt-1 text-2xl font-bold text-gray-900">{t('recipes.title')}</h1>
+          <p className="mt-1 text-sm text-gray-500">{t('recipes.subtitle') ?? 'Select a product above to view its recipes.'}</p>
+        </div>
+        <Button
+          variant="primary"
+          size="sm"
           disabled={!selectedPid}
           onClick={openForm}
         >
-          {t('recipes.newRecipe')}
-        </button>
+          <Plus className="h-4 w-4" /> {t('recipes.newRecipe')}
+        </Button>
       </div>
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
@@ -351,7 +358,7 @@ export default function RecipesPage() {
           <div className="flex gap-4 mb-5">
             <div className="max-w-xs flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('recipes.selectDepartment')}</label>
-              <select className="input" value={selectedDeptId}
+              <select className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500" value={selectedDeptId}
                 onChange={(e) => { setSelectedDeptId(e.target.value); setSelectedPid(''); setRecipes([]); }}>
                 <option value="">{t('recipes.allDepartments')}</option>
                 {depts.map((d) => <option key={d.departmentId} value={d.departmentId}>{d.name}</option>)}
@@ -359,7 +366,7 @@ export default function RecipesPage() {
             </div>
             <div className="max-w-xs flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('recipes.selectProduct')}</label>
-              <select className="input" value={selectedPid} onChange={(e) => selectProduct(e.target.value)}>
+              <select className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500" value={selectedPid} onChange={(e) => selectProduct(e.target.value)}>
                 <option value="">{t('recipes.chooseProduct')}</option>
                 {products
                   .filter((p) => !selectedDeptId || p.departmentId === selectedDeptId)
@@ -373,7 +380,7 @@ export default function RecipesPage() {
           ) : selectedPid ? (
             <div className="space-y-2">
               {recipes.length === 0 ? (
-                <div className="text-sm text-gray-400 py-12 text-center border rounded-xl bg-white">
+                <div className="text-sm text-gray-400 py-12 text-center rounded-2xl border border-gray-200 bg-white shadow-sm">
                   {t('recipes.noRecipes')}
                 </div>
               ) : (
@@ -381,9 +388,9 @@ export default function RecipesPage() {
                   const tab = activeTab[r.recipeId] ?? 'ingredients';
                   const recipeSteps = steps[r.recipeId] ?? [];
                   return (
-                  <div key={r.recipeId} className="border rounded-xl bg-white shadow-sm">
+                  <div key={r.recipeId} className="rounded-2xl border border-gray-200 bg-white shadow-sm">
                     <div
-                      className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-gray-50"
+                      className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-gray-50 rounded-t-2xl"
                       onClick={() => toggleExpand(r.recipeId)}
                     >
                       <span className="font-medium text-sm">v{r.version}</span>
@@ -395,24 +402,26 @@ export default function RecipesPage() {
                         {t('recipes.yield')}: {r.expectedYield} {r.yieldUom}
                       </span>
                       {r.leadTimeHours && (
-                        <span className="text-sm text-blue-600 font-medium">
-                          ⏱ {r.leadTimeHours}h
+                        <span className="inline-flex items-center gap-1 text-sm text-blue-600 font-medium">
+                          <Clock3 className="h-3.5 w-3.5" /> {r.leadTimeHours}h
                         </span>
                       )}
                       <span className="text-xs text-gray-400 ml-auto">
                         {r.ingredients?.length ?? 0} {t('recipes.ingr')} · {recipeSteps.length} steps
                       </span>
                       {r.status === 'DRAFT' && (
-                        <button
-                          className="btn-xs bg-green-600 text-white hover:bg-green-700 ml-2"
+                        <Button
+                          variant="success"
+                          size="xs"
                           disabled={activating === r.recipeId}
                           onClick={(ev) => { ev.stopPropagation(); activate(r.recipeId); }}
                         >
+                          <Check className="h-3.5 w-3.5" />
                           {activating === r.recipeId ? t('recipes.activating') : t('recipes.activate')}
-                        </button>
+                        </Button>
                       )}
-                      <span className="text-gray-400 text-xs">
-                        {expanded === r.recipeId ? '▲' : '▼'}
+                      <span className="text-gray-400">
+                        {expanded === r.recipeId ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                       </span>
                     </div>
 

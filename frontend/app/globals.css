@@ -4,7 +4,7 @@
 
 @layer components {
   .btn {
-    @apply px-4 py-2 text-sm font-medium rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-primary {
     @apply btn bg-blue-600 text-white hover:bg-blue-700;
@@ -19,9 +19,9 @@
     @apply btn bg-green-600 text-white hover:bg-green-700;
   }
   .btn-xs {
-    @apply px-2.5 py-1 text-xs font-medium rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .input {
-    @apply w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white;
+    @apply w-full border border-gray-300 rounded-md px-3 py-2 text-sm outline-none ring-0 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500 bg-white;
   }
 }

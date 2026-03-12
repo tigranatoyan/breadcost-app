@@ -4,6 +4,7 @@ import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Alert } from '@/components/ui';
 import { useT } from '@/lib/i18n';
 import { getUsername } from '@/lib/auth';
+import { Package } from 'lucide-react';
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -346,8 +347,12 @@ export default function POSPage() {
 
   return (
     <div className="h-[calc(100vh-64px)] flex flex-col">
-      <div className="flex items-center justify-between mb-3 shrink-0">
-        <h1 className="text-2xl font-semibold">{t('pos.title')}</h1>
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-3 shrink-0">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">Retail</div>
+          <h1 className="mt-1 text-2xl font-bold text-gray-900">{t('pos.title')}</h1>
+          <p className="mt-1 text-sm text-gray-500">{t('pos.subtitle')}</p>
+        </div>
         <div className="flex items-center gap-2">
           <button
             className="btn-secondary text-xs"
@@ -356,7 +361,6 @@ export default function POSPage() {
           >
             {eodLoading ? t('pos.processing') : t('pos.endOfDay')}
           </button>
-          <span className="text-sm text-gray-400">{t('pos.subtitle')}</span>
         </div>
       </div>
 
@@ -407,14 +411,14 @@ export default function POSPage() {
                 return (
                   <div
                     key={p.productId}
-                    className="relative border rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow"
+                    className="relative rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow"
                   >
                     {/* Product card */}
                     <button
                       className="w-full text-left p-4 rounded-xl"
                       onClick={() => setQuickAddId(p.productId)}
                     >
-                      <div className="text-2xl mb-2">🍞</div>
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 text-gray-400 mb-2"><Package className="h-5 w-5" /></div>
                       <div className="font-semibold text-sm leading-tight">{p.name}</div>
                       <div className="text-xs text-gray-400 mt-1">{deptMap[p.departmentId] ?? '—'}</div>
                       <div className="text-xs text-gray-400 mt-0.5">{p.baseUom}</div>
@@ -442,7 +446,7 @@ export default function POSPage() {
         </div>
 
         {/* ── Cart ────────────────────────────────────────────────────────── */}
-        <div className="w-80 shrink-0 flex flex-col bg-white border rounded-xl shadow-sm overflow-hidden">
+        <div className="w-80 shrink-0 flex flex-col bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
             <span className="font-semibold text-sm">{t('pos.cart')}</span>
             {cart.length > 0 && (

@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
-import { apiFetch, TENANT_ID } from '@/lib/api';
+import { apiFetch, API_BASE, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Modal, Table, Spinner, Alert, Badge, Field, Success } from '@/components/ui';
 
@@ -243,7 +243,7 @@ export default function SuppliersPage() {
 
   const exportPO = async (id: string) => {
     try {
-      const res = await fetch(`http://localhost:8080/v2/purchase-orders/${id}/export?tenantId=${TENANT_ID}`, {
+      const res = await fetch(`${API_BASE}/v2/purchase-orders/${id}/export?tenantId=${TENANT_ID}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('bc_token')}` },
       });
       if (!res.ok) throw new Error('Export failed');

@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { apiFetch, TENANT_ID } from '@/lib/api';
+import { apiFetch, API_BASE, TENANT_ID } from '@/lib/api';
 import { Alert, Spinner, Modal, Field, Success } from '@/components/ui';
 import { useT } from '@/lib/i18n';
 
@@ -405,7 +405,7 @@ export default function AdminPage() {
                 { label: t('admin.appLabel'), value: 'BreadCost v1.0.0' },
                 { label: t('admin.backendLabel'), value: 'Spring Boot 3.4.2 · Java 21 · H2 File DB' },
                 { label: t('admin.frontendLabel'), value: 'Next.js 14 · React 18 · Tailwind CSS 3' },
-                { label: t('admin.apiBaseLabel'), value: 'http://localhost:8080/v1' },
+                { label: t('admin.apiBaseLabel'), value: `${API_BASE}/v1` },
                 { label: t('admin.tenantIdLabel'), value: TENANT_ID },
                 { label: t('admin.defaultSiteLabel'), value: 'MAIN' },
               ].map(({ label, value }) => (

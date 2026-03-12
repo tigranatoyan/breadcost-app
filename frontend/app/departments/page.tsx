@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Modal, Table, Spinner, Alert, Badge, Field, Success } from '@/components/ui';
+import { Plus } from 'lucide-react';
 
 interface Dept {
   departmentId: string;
@@ -93,10 +94,14 @@ export default function DepartmentsPage() {
 
   return (
     <div className="max-w-4xl">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">{t('departments.title')}</h1>
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-6">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">Operations</div>
+          <h1 className="mt-1 text-2xl font-bold text-gray-900">{t('departments.title')}</h1>
+          <p className="mt-1 text-sm text-gray-500">Lead times, warehouse mode, and status.</p>
+        </div>
         <button className="btn-primary" onClick={() => setOpen(true)}>
-          {t('departments.newDepartment')}
+          <Plus className="h-4 w-4" /> {t('departments.newDepartment')}
         </button>
       </div>
 

@@ -1,8 +1,9 @@
-'use client';
+﻿'use client';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Badge, Alert } from '@/components/ui';
 import { useT } from '@/lib/i18n';
+import { Clock3, Play, Check, X, Factory, ClipboardList, Wrench, Thermometer } from 'lucide-react';
 
 // â”€â”€â”€ interfaces â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -76,8 +77,12 @@ const shiftBg: Record<string, string> = {
   AFTERNOON: 'bg-orange-100 text-orange-800 border-orange-300',
   NIGHT: 'bg-indigo-100 text-indigo-800 border-indigo-300',
 };
-const woStatusIcon: Record<string, string> = {
-  PENDING: 'â³', STARTED: 'â–¶ï¸', IN_PROGRESS: 'â–¶ï¸', COMPLETED: 'âœ…', CANCELLED: 'âŒ',
+const woStatusIcon: Record<string, React.ReactNode> = {
+  PENDING: <Clock3 className="h-5 w-5 text-gray-400" />,
+  STARTED: <Play className="h-5 w-5 text-blue-500" />,
+  IN_PROGRESS: <Play className="h-5 w-5 text-blue-500" />,
+  COMPLETED: <Check className="h-5 w-5 text-green-500" />,
+  CANCELLED: <X className="h-5 w-5 text-red-400" />,
 };
 
 // â”€â”€â”€ Work Order Detail Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -210,17 +215,17 @@ function WOPanel({
                             <div className="flex flex-wrap gap-3 mt-1.5 text-xs text-gray-400">
                               {step.instruments && (
                                 <span className="flex items-center gap-1">
-                                  <span>ðŸ”§</span> {step.instruments}
+                                  <Wrench className="h-3.5 w-3.5" /> {step.instruments}
                                 </span>
                               )}
                               {step.durationMinutes && (
                                 <span className="flex items-center gap-1">
-                                  <span>â±</span> {step.durationMinutes} min
+                                  <Clock3 className="h-3.5 w-3.5" /> {step.durationMinutes} min
                                 </span>
                               )}
                               {step.temperatureCelsius != null && (
                                 <span className="flex items-center gap-1">
-                                  <span>ðŸŒ¡</span> {step.temperatureCelsius}Â°C
+                                  <Thermometer className="h-3.5 w-3.5" /> {step.temperatureCelsius}°C
                                 </span>
                               )}
                             </div>
@@ -239,7 +244,7 @@ function WOPanel({
             <>
               {!recipe ? (
                 <div className="text-center py-12">
-                  <div className="text-3xl mb-2">âŒ</div>
+                  <ClipboardList className="h-8 w-8 mx-auto mb-2 text-gray-300" />
                   <div className="text-sm font-medium text-gray-600">{t('floor.noActiveRecipe')}</div>
                   <div className="text-xs text-gray-400 mt-1">{t('floor.askTechnologistRecipe')}</div>
                 </div>
@@ -466,8 +471,9 @@ export default function FloorPage() {
     <div className="max-w-4xl space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold">{t('floor.title')}</h1>
-        <p className="text-sm text-gray-400 mt-0.5">
+        <div className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">Production</div>
+        <h1 className="mt-1 text-2xl font-bold text-gray-900">{t('floor.title')}</h1>
+        <p className="mt-1 text-sm text-gray-500">
           {now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
           {activePlan && (
             <span className="ml-3 text-amber-600 font-medium">
@@ -480,8 +486,8 @@ export default function FloorPage() {
       {error && <Alert msg={error} onClose={() => setError('')} />}
 
       {plans.length === 0 ? (
-        <div className="bg-white border rounded-xl p-12 text-center text-gray-400">
-          <div className="text-4xl mb-3">ðŸ­</div>
+        <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center text-gray-400">
+          <Factory className="h-10 w-10 mx-auto mb-3 text-gray-300" />
           <div className="font-medium">{t('floor.noPlansToday')}</div>
           <div className="text-sm mt-1">{t('floor.plansCreatedBySupervisor')}</div>
         </div>
@@ -496,7 +502,7 @@ export default function FloorPage() {
           return (
             <div
               key={plan.planId}
-              className={`bg-white border rounded-xl shadow-sm overflow-hidden ${isActive ? 'ring-2 ring-blue-500' : ''}`}
+              className={`bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${isActive ? 'ring-2 ring-blue-500' : ''}`}
             >
               {/* Plan header */}
               <div className={`px-5 py-3 flex items-center gap-3 border-b ${isActive ? 'bg-blue-600 text-white' : 'bg-slate-50'}`}>
@@ -534,7 +540,7 @@ export default function FloorPage() {
                       className="px-5 py-3 flex items-center gap-3 hover:bg-gray-50 cursor-pointer"
                       onClick={() => openWo(wo, plan.planId)}
                     >
-                      <span className="text-lg flex-shrink-0">{woStatusIcon[wo.status] ?? 'â€¢'}</span>
+                      <span className="flex-shrink-0">{woStatusIcon[wo.status] ?? <Clock3 className="h-5 w-5 text-gray-300" />}</span>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium">{wo.productName}</div>
                         <div className="text-xs text-gray-400">

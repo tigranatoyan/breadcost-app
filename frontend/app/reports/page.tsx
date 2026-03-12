@@ -1,8 +1,9 @@
-'use client';
+﻿'use client';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Badge } from '@/components/ui';
 import { useT } from '@/lib/i18n';
+import { Download, RefreshCw, Zap } from 'lucide-react';
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -137,7 +138,7 @@ function pct(part: number, total: number) {
 
 function StatBox({ label, value, sub, color = 'text-gray-800' }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
-    <div className="bg-white border rounded-xl p-5 shadow-sm">
+    <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
       <div className={`text-3xl font-bold ${color}`}>{value}</div>
       <div className="text-sm text-gray-600 mt-0.5 font-medium">{label}</div>
       {sub && <div className="text-xs text-gray-400 mt-0.5">{sub}</div>}
@@ -191,7 +192,7 @@ function OrdersReport({ orders }: { orders: Order[] }) {
         {/* Revenue by status */}
         <div>
           <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('reports.revenueByStatus')}</h3>
-          <div className="bg-white border rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             <table className="min-w-full text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>
@@ -217,7 +218,7 @@ function OrdersReport({ orders }: { orders: Order[] }) {
         {/* Top customers */}
         <div>
           <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('reports.topCustomers')}</h3>
-          <div className="bg-white border rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             {topCustomers.length === 0 ? (
               <div className="py-8 text-center text-sm text-gray-400">{t('reports.noCustomerData')}</div>
             ) : (
@@ -250,7 +251,7 @@ function OrdersReport({ orders }: { orders: Order[] }) {
       {/* Order listing summary */}
       <div>
         <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('reports.allOrders')}</h3>
-        <div className="bg-white border rounded-xl shadow-sm overflow-x-auto">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
@@ -265,7 +266,7 @@ function OrdersReport({ orders }: { orders: Order[] }) {
                   <td className="px-4 py-2.5 font-mono text-xs text-gray-500">{o.orderId.slice(0, 8).toUpperCase()}</td>
                   <td className="px-4 py-2.5 font-medium">
                     {o.customerName}
-                    {(o.rushOrder || o.isRushOrder) && <span className="ml-1 text-orange-500 text-xs">⚡</span>}
+                    {(o.rushOrder || o.isRushOrder) && <Zap className="ml-1 h-3.5 w-3.5 text-orange-500 inline" />}
                   </td>
                   <td className="px-4 py-2.5"><Badge status={o.status} /></td>
                   <td className="px-4 py-2.5 text-gray-500 text-xs whitespace-nowrap">
@@ -332,7 +333,7 @@ function InventoryReport({ positions, items }: { positions: StockPosition[]; ite
           <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('reports.valuationByType')}</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
             {Object.entries(byType).sort((a, b) => b[1].value - a[1].value).map(([type, data]) => (
-              <div key={type} className="bg-white border rounded-xl p-4 shadow-sm">
+              <div key={type} className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
                 <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium mb-2 ${TYPE_BADGE[type] ?? 'bg-gray-100 text-gray-600'}`}>{type}</span>
                 <div className="text-xl font-bold text-gray-800">{fmtMoney(data.value)}</div>
                 <div className="text-xs text-gray-400">{data.count} position{data.count !== 1 ? 's' : ''}</div>
@@ -382,7 +383,7 @@ function InventoryReport({ positions, items }: { positions: StockPosition[]; ite
       {/* Full positions table */}
       <div>
         <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('reports.stockPositionsDetail')}</h3>
-        <div className="bg-white border rounded-xl shadow-sm overflow-x-auto">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
@@ -478,7 +479,7 @@ function ProductionReport({ plans }: { plans: Plan[] }) {
         {/* Plan status breakdown */}
         <div>
           <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('reports.plansByStatus')}</h3>
-          <div className="bg-white border rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             <table className="min-w-full text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>
@@ -510,7 +511,7 @@ function ProductionReport({ plans }: { plans: Plan[] }) {
         {/* WO status breakdown */}
         <div>
           <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('reports.woSummary')}</h3>
-          <div className="bg-white border rounded-xl shadow-sm p-5 space-y-3">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-3">
             {[
               { label: t('common.total'), value: woTotal, color: 'bg-gray-300' },
               { label: t('reports.inProgress'), value: woInProgress, color: 'bg-blue-400' },
@@ -536,7 +537,7 @@ function ProductionReport({ plans }: { plans: Plan[] }) {
       {/* Plans table */}
       <div>
         <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t('reports.allProductionPlans')}</h3>
-        <div className="bg-white border rounded-xl shadow-sm overflow-x-auto">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
@@ -732,7 +733,7 @@ export default function ReportsPage() {
         { label: t('reports.last30Days'), value: revenue.month },
         { label: t('reports.allTime'), value: revenue.allTime },
       ].map(({ label, value }) => (
-        <div key={label} className="bg-white border rounded-xl p-4 shadow-sm">
+        <div key={label} className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
           <div className="text-xs text-gray-400 mb-1">{label}</div>
           <div className="text-xl font-bold text-gray-800">{fmtMoney(value)}</div>
           <div className="text-xs text-gray-400">{revenue.currency}</div>
@@ -743,7 +744,7 @@ export default function ReportsPage() {
 
   // ── Top products sidebar ──────────────────────────────────────────────────
   const topProductsPanel = topProducts.length > 0 ? (
-    <div className="mt-6 bg-white border rounded-xl shadow-sm p-5">
+    <div className="mt-6 bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
       <div className="text-sm font-semibold text-gray-700 mb-3">{t('reports.topProductsWeek')}</div>
       <table className="w-full text-xs">
         <thead>
@@ -805,21 +806,22 @@ export default function ReportsPage() {
 
   return (
     <div className="max-w-6xl">
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-5">
         <div>
-          <h1 className="text-2xl font-semibold">{t('reports.title')}</h1>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <div className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">Insights</div>
+          <h1 className="mt-1 text-2xl font-bold text-gray-900">{t('reports.title')}</h1>
+          <p className="mt-1 text-sm text-gray-500">
             {t('reports.lastRefreshed', { time: lastRefresh.toLocaleTimeString() })}
           </p>
         </div>
         <div className="flex gap-2">
           {csvExporters[tab] && (
             <button className="btn-secondary" onClick={csvExporters[tab]!}>
-              📥 {t('reports.exportCsv')}
+              <Download className="h-4 w-4" /> {t('reports.exportCsv')}
             </button>
           )}
           <button className="btn-secondary" onClick={load} disabled={loading}>
-            {loading ? t('common.loading') : `↻ ${t('common.refresh')}`}
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> {loading ? t('common.loading') : t('common.refresh')}
           </button>
         </div>
       </div>
@@ -881,7 +883,7 @@ export default function ReportsPage() {
               {materialConsumptionView.length === 0 ? (
                 <div className="py-8 text-center text-sm text-gray-400">{t('reports.noDataForPeriod')}</div>
               ) : (
-                <div className="bg-white border rounded-xl shadow-sm overflow-x-auto">
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-x-auto">
                   <table className="min-w-full text-sm">
                     <thead className="bg-gray-50 border-b">
                       <tr>
@@ -913,7 +915,7 @@ export default function ReportsPage() {
               {costPerBatchView.length === 0 ? (
                 <div className="py-8 text-center text-sm text-gray-400">{t('reports.noDataForPeriod')}</div>
               ) : (
-                <div className="bg-white border rounded-xl shadow-sm overflow-x-auto">
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-x-auto">
                   <table className="min-w-full text-sm">
                     <thead className="bg-gray-50 border-b">
                       <tr>
