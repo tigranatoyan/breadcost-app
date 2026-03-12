@@ -95,6 +95,7 @@ const en = {
     driver: '🚗 Driver Sessions',
     exchangeRates: '💱 Exchange Rates',
     mobileAdmin: '📱 Mobile Admin',
+    notificationTemplates: '🔔 Notification Templates',
   },
 
   // ── Roles ──────────────────────────────────────────────────────────────────
@@ -1007,6 +1008,7 @@ const en = {
     title: 'AI WhatsApp Conversations',
     allConversations: 'All Conversations',
     escalated: 'Escalated',
+    flows: 'Flows',
     phone: 'Phone',
     status: 'Status',
     messages: 'Messages',
@@ -1153,6 +1155,20 @@ const en = {
     noApprovedPO: 'No approved PO for this supplier.',
     saved: 'Config saved.',
     poSent: 'PO sent to supplier API.'
+  },
+
+  // ── Notification Templates ──────────────────────────────────────────────────
+  notificationTemplates: {
+    title: 'Notification Templates',
+    addTemplate: 'Add Template',
+    editTemplate: 'Edit Template',
+    saved: 'Template saved.',
+    preview: 'Preview',
+    subject: 'Subject',
+    body: 'Body',
+    active: 'Active',
+    typeLabel: 'Type',
+    channelLabel: 'Channel',
   },
 
   // ── 404 / Not Found ────────────────────────────────────────────────────────

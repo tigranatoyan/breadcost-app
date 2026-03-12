@@ -211,19 +211,87 @@ public class CustomerController {
         return ResponseEntity.ok(Map.of("message", "Password reset successful."));
     }
 
+    // ── BC-2905: Individual address CRUD ────────────────────────────────────
+
+    /** POST /v2/customers/{id}/addresses — add a new address (max 5) */
+    @PostMapping("/{id}/addresses")
+    @PreAuthorize("hasAnyRole('Customer','Admin','Manager')")
+    public ResponseEntity<List<CustomerAddress>> addAddress(
+            @PathVariable("id") String customerId,
+            @RequestParam String tenantId,
+            @RequestBody @Valid AddressRequest req) {
+
+        CustomerSecurityUtil.assertOwner(customerId);
+        CustomerEntity customer = customerService.getProfile(tenantId, customerId);
+
+        if (customer.getAddresses().size() >= 5) {
+            throw new IllegalArgumentException("Maximum 5 addresses allowed.");
+        }
+
+        List<CustomerAddress> updated = new java.util.ArrayList<>(customer.getAddresses());
+        updated.add(mapSingleAddress(req));
+        CustomerEntity saved = customerService.updateProfile(tenantId, customerId, null, null, updated);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved.getAddresses());
+    }
+
+    /** PUT /v2/customers/{id}/addresses/{index} — update specific address */
+    @PutMapping("/{id}/addresses/{index}")
+    @PreAuthorize("hasAnyRole('Customer','Admin','Manager')")
+    public ResponseEntity<List<CustomerAddress>> updateAddress(
+            @PathVariable("id") String customerId,
+            @PathVariable("index") int index,
+            @RequestParam String tenantId,
+            @RequestBody @Valid AddressRequest req) {
+
+        CustomerSecurityUtil.assertOwner(customerId);
+        CustomerEntity customer = customerService.getProfile(tenantId, customerId);
+
+        if (index < 0 || index >= customer.getAddresses().size()) {
+            throw new IllegalArgumentException("Address index out of range: " + index);
+        }
+
+        List<CustomerAddress> updated = new java.util.ArrayList<>(customer.getAddresses());
+        updated.set(index, mapSingleAddress(req));
+        CustomerEntity saved = customerService.updateProfile(tenantId, customerId, null, null, updated);
+        return ResponseEntity.ok(saved.getAddresses());
+    }
+
+    /** DELETE /v2/customers/{id}/addresses/{index} — remove specific address */
+    @DeleteMapping("/{id}/addresses/{index}")
+    @PreAuthorize("hasAnyRole('Customer','Admin','Manager')")
+    public ResponseEntity<List<CustomerAddress>> removeAddress(
+            @PathVariable("id") String customerId,
+            @PathVariable("index") int index,
+            @RequestParam String tenantId) {
+
+        CustomerSecurityUtil.assertOwner(customerId);
+        CustomerEntity customer = customerService.getProfile(tenantId, customerId);
+
+        if (index < 0 || index >= customer.getAddresses().size()) {
+            throw new IllegalArgumentException("Address index out of range: " + index);
+        }
+
+        List<CustomerAddress> updated = new java.util.ArrayList<>(customer.getAddresses());
+        updated.remove(index);
+        CustomerEntity saved = customerService.updateProfile(tenantId, customerId, null, null, updated);
+        return ResponseEntity.ok(saved.getAddresses());
+    }
+
     // ── Address mapping ─────────────────────────────────────────────────────
+
+    private CustomerAddress mapSingleAddress(AddressRequest a) {
+        return CustomerAddress.builder()
+                .label(a.getLabel())
+                .line1(a.getLine1())
+                .line2(a.getLine2())
+                .city(a.getCity())
+                .postalCode(a.getPostalCode())
+                .countryCode(a.getCountryCode())
+                .build();
+    }
 
     private List<CustomerAddress> mapAddresses(List<AddressRequest> input) {
         if (input == null) return List.of();
-        return input.stream()
-                .map(a -> CustomerAddress.builder()
-                        .label(a.getLabel())
-                        .line1(a.getLine1())
-                        .line2(a.getLine2())
-                        .city(a.getCity())
-                        .postalCode(a.getPostalCode())
-                        .countryCode(a.getCountryCode())
-                        .build())
-                .toList();
+        return input.stream().map(this::mapSingleAddress).toList();
     }
 }

@@ -74,6 +74,17 @@ public class CustomerEntity {
     @Builder.Default
     private BigDecimal outstandingBalance = BigDecimal.ZERO;
 
+    // ── BC-3004: Notification preferences ─────────────────────────────────────
+
+    @Builder.Default
+    private boolean whatsappEnabled = true;
+
+    @Builder.Default
+    private boolean emailEnabled = true;
+
+    @Builder.Default
+    private boolean pushEnabled = true;
+
     private Instant createdAt;
     private Instant updatedAt;
 

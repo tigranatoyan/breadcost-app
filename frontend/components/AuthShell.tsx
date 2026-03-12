@@ -122,6 +122,7 @@ const SECTIONS: NavSection[] = [
   {
     titleKey: 'nav.platform',
     items: [
+      { href: '/notification-templates', labelKey: 'nav.notificationTemplates', icon: Bell },
       { href: '/subscriptions', labelKey: 'nav.subscriptions', icon: Crown },
       { href: '/exchange-rates', labelKey: 'nav.exchangeRates', icon: ArrowLeftRight },
       { href: '/mobile-admin', labelKey: 'nav.mobileAdmin', icon: Smartphone },

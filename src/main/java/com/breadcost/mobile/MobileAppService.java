@@ -1,5 +1,7 @@
 package com.breadcost.mobile;
 
+import com.breadcost.customers.CustomerEntity;
+import com.breadcost.customers.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,7 @@ public class MobileAppService {
 
     private final MobileDeviceRegistrationRepository deviceRepo;
     private final PushNotificationRepository notificationRepo;
+    private final CustomerRepository customerRepository;
 
     // ── Device Registration ──────────────────────────────────────────────────
 
@@ -74,6 +77,14 @@ public class MobileAppService {
     public PushNotificationEntity sendNotification(String tenantId, String customerId,
                                                     String title, String body,
                                                     String notificationType, String referenceId) {
+        // BC-3004: Check customer push notification preference
+        Optional<CustomerEntity> customerOpt = customerRepository
+                .findByTenantIdAndCustomerId(tenantId, customerId);
+        if (customerOpt.isPresent() && !customerOpt.get().isPushEnabled()) {
+            log.info("Push notification skipped (disabled): customer={} type={}", customerId, notificationType);
+            return null;
+        }
+
         PushNotificationEntity notification = PushNotificationEntity.builder()
                 .notificationId(UUID.randomUUID().toString())
                 .tenantId(tenantId)
