@@ -1,6 +1,6 @@
 # ============================================================
 #  BreadCost — JIRA Source Data
-#  All epics and stories derived from work/120-task/JIRA.md
+#  All epics and stories derived from jira/JIRA.md
 #  Structure: EPICS list + STORIES list
 #
 #  Epic keys: id, title, goal, sprint, requirements, release

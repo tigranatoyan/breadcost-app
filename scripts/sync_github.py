@@ -168,7 +168,7 @@ def create_epic_issues(dry_run: bool) -> dict:
             f"**Goal:** {epic['goal']}\n\n"
             f"**Requirements:** {epic['requirements']}\n\n"
             f"**Release:** {epic['release']}\n\n"
-            f"---\n_This issue was auto-created from `work/120-task/JIRA.md`._"
+            f"---\n_This issue was auto-created from `jira/JIRA.md`._"
         )
 
         if dry_run:
@@ -235,7 +235,7 @@ def create_story_issues(epic_issue_map: dict, dry_run: bool) -> None:
             f"## {story['id']} — {story['title']}\n\n"
             f"**Epic:** {epic_link}\n\n"
             f"### Acceptance Criteria\n{ac_md}\n\n"
-            f"---\n_This issue was auto-created from `work/120-task/JIRA.md`._"
+            f"---\n_This issue was auto-created from `jira/JIRA.md`._"
         )
 
         if dry_run:

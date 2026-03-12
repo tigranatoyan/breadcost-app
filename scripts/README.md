@@ -1,6 +1,6 @@
 # BreadCost — JIRA & GitHub Integration Scripts
 
-Sync all epics, stories, and labels from `work/120-task/JIRA.md` into your JIRA project and GitHub repository.
+Sync all epics, stories, and labels from `jira/JIRA.md` into your JIRA project and GitHub repository.
 
 ---
 

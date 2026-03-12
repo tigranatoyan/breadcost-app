@@ -55,6 +55,6 @@ data/
 *.bak
 
 #  Integration scripts  credentials (NEVER COMMIT) 
-work/120-task/scripts/config.py
+scripts/config.py
 **/__pycache__/
 *.pyc

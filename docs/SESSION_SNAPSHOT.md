@@ -2,10 +2,10 @@
 **Last Updated:** 2026-03-11 (Visual alignment — globals.css, 10 page headers, card borders, emoji→lucide icons, build clean)
 **Purpose:** Handoff context for continuing development in a new chat session
 
-> **Frontend Requirements:** See `work/120-task/FE_REQUIREMENTS.md` — APPROVED.
-> **Frontend Spec:** See `work/120-task/FRONTEND_SPEC.md` — frozen reference for R1/R1.5 pages.
-> **Release 4 Plan:** See `work/120-task/JIRA_R4.md` — 41 stories, 7 epics, 6 sprints.
-> **Architecture:** See `ARCMAP.md` — 8 arcs, 11 actors, cross-arc dependency map.
+> **Frontend Requirements:** See `requirements/FE_REQUIREMENTS.md` — APPROVED.
+> **Frontend Spec:** See `requirements/FRONTEND_SPEC.md` — frozen reference for R1/R1.5 pages.
+> **Release 4 Plan:** See `jira/JIRA_R4.md` — 41 stories, 7 epics, 6 sprints.
+> **Architecture:** See `architecture/ARCMAP.md` — 8 arcs, 11 actors, cross-arc dependency map.
 
 ---
 
@@ -383,16 +383,17 @@ Added `<div class="text-xs font-semibold uppercase tracking-[0.24em] text-blue-6
 
 ---
 
-## Requirements Documents
+## Requirements & Planning Documents
 
-All in `work/120-task/`:
-
-| File | Contents |
-|---|---|
-| `REQUIREMENTS.md` | Full FR + NFR for all 12 domains + Release mapping (R1/R2/R3) |
-| `ARCHITECTURE_REVIEW.md` | Existing codebase analysis vs R1 requirements |
-| `FE_REQUIREMENTS.md` | Frontend requirements for all screens, roles, principles |
-| `FRONTEND_SPEC.md` | Frozen implementation reference for R1/R1.5 pages |
-| `JIRA.md` | Jira project structure, epics, stories, sprints |
-| `GUI_TEST_PLAN.md` | Manual GUI test plan |
-| `MANUAL_TEST_PLAN.md` | End-to-end manual test scenarios |
+| File | Location | Contents |
+|---|---|---|
+| `REQUIREMENTS.md` | `requirements/` | Full FR + NFR for all 12 domains + Release mapping (R1/R2/R3) |
+| `FE_REQUIREMENTS.md` | `requirements/` | Frontend requirements for all screens, roles, principles |
+| `FRONTEND_SPEC.md` | `requirements/` | Frozen implementation reference for R1/R1.5 pages |
+| `FIGMA_DESIGN_PROMPT.md` | `requirements/` | Figma design prompt for trial visual prototype |
+| `ARCHITECTURE_REVIEW.md` | `architecture/` | Existing codebase analysis vs R1 requirements |
+| `ARCMAP.md` | `architecture/` | 8 arcs, 11 actors, cross-arc dependency map |
+| `JIRA.md` | `jira/` | Jira project structure, epics, stories, sprints |
+| `JIRA_R4.md` | `jira/` | Release 4 plan — 41 stories, 7 epics, 6 sprints |
+| `GUI_TEST_PLAN.md` | `reports/` | Manual GUI test plan |
+| `MANUAL_TEST_PLAN.md` | `reports/` | End-to-end manual test scenarios |
