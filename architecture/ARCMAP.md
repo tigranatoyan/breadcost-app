@@ -409,13 +409,13 @@ Arc 8 (Platform) ──gates features──→ All Arcs                     │
 | G-1 | ~~POS sales don't decrement inventory~~ | Arc 5 → Arc 3 | **Closed R5-S1**: BackflushConsumption per sale line |
 | G-2 | ~~Production doesn't auto-check ingredient stock~~ | Arc 2, step 6 | **Closed R5-S1**: startWO blocks if insufficient; completeWO backflushes |
 | G-3 | ~~No proactive delay notification to customer~~ | Arc 4, step 7 | **Closed R5-S2**: advanceStatus auto-notifies via MobileAppService |
-| G-4 | Invoice dispute workflow missing | Arc 6, step 3 | No formal dispute resolution | Unresolved |
-| G-5 | Subscription expiry not enforced | Arc 8, step 3 | Expired tenants keep access | Unresolved |
+| G-4 | ~~Invoice dispute workflow missing~~ | Arc 6, step 3 | **Closed R5-S3**: DISPUTED status + disputeInvoice/resolveDispute with credit note |
+| G-5 | ~~Subscription expiry not enforced~~ | Arc 8, step 3 | **Closed R5-S3**: getFeatureAccess/getMaxUsers/getMaxProducts check expiry; deactivateExpired() + findExpiringSoon() |
 | G-6 | ~~No auto-production-order from stock alerts~~ | Arc 3, step 1 | **Closed R5-S2**: StockAlertService + POST /v1/inventory/auto-plan |
 | G-7 | ~~Catalog doesn't show real-time stock~~ | Arc 4, step 4 | **Closed R5-S2**: CatalogProduct.inStock field |
 | G-8 | ~~Order doesn't auto-reserve stock~~ | Arc 1, step 2 | **Not needed:** orders trigger production, not stock deduction | Closed (by design) |
-| G-9 | No yield/quality tracking in production | Arc 2, step 7 | Waste not measured | Unresolved |
-| G-10 | No supplier-item mapping | Arc 3, step 3 | Manual supplier lookup | Unresolved |
+| G-9 | ~~No yield/quality tracking in production~~ | Arc 2, step 7 | **Closed R5-S3**: WO completion accepts actualYield/wasteQty/qualityScore; yieldVariancePct calculated |
+| G-10 | ~~No supplier-item mapping~~ | Arc 3, step 3 | **Closed R5-S3**: preferred flag on catalog items; reverse lookup; auto-PO from plan material requirements |
 
 ---
 
