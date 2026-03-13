@@ -1060,6 +1060,10 @@ const en = {
     productName: 'Product',
     quantity: 'Quantity',
     resolved: 'Escalation resolved.',
+    conversations: 'Conversations',
+    selectConversation: 'Select a conversation to view details',
+    escalationPending: 'Escalation Pending',
+    escalationDescription: 'This conversation has been escalated and requires attention.',
   },
 
   // ── AI Suggestions ─────────────────────────────────────────────────────────

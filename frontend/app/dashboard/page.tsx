@@ -514,15 +514,29 @@ export default function DashboardPage() {
 
       {/* Quick-start guide if empty */}
       {deptCount === 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
-          <h3 className="font-semibold text-blue-800 mb-2">{t('dashboard.gettingStarted')}</h3>
-          <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
-            <li><Link href="/departments" className="underline hover:text-blue-900">{t('dashboard.step1')}</Link> {t('dashboard.step1Example')}</li>
-            <li><Link href="/products" className="underline hover:text-blue-900">{t('dashboard.step2')}</Link> {t('dashboard.step2Example')}</li>
-            <li><Link href="/recipes" className="underline hover:text-blue-900">{t('dashboard.step3')}</Link>{t('dashboard.step3Extra')}</li>
-            <li><Link href="/orders" className="underline hover:text-blue-900">{t('dashboard.step4')}</Link></li>
-            <li><Link href="/production-plans" className="underline hover:text-blue-900">{t('dashboard.step5')}</Link>{t('dashboard.step5Extra')}</li>
-          </ol>
+        <div className="rounded-2xl border border-blue-200 bg-blue-50/50 p-6">
+          <h3 className="font-semibold text-blue-900 text-lg mb-4">{t('dashboard.gettingStarted')}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
+            {[
+              { step: 1, href: '/departments', label: t('dashboard.step1'), desc: t('dashboard.step1Example'), icon: '🏢' },
+              { step: 2, href: '/products', label: t('dashboard.step2'), desc: t('dashboard.step2Example'), icon: '🍞' },
+              { step: 3, href: '/recipes', label: t('dashboard.step3'), desc: t('dashboard.step3Extra'), icon: '📋' },
+              { step: 4, href: '/orders', label: t('dashboard.step4'), desc: '', icon: '📦' },
+              { step: 5, href: '/production-plans', label: t('dashboard.step5'), desc: t('dashboard.step5Extra'), icon: '🏭' },
+            ].map(s => (
+              <Link key={s.step} href={s.href}
+                className="group flex flex-col rounded-xl border border-blue-200 bg-white p-4 transition hover:shadow-md hover:border-blue-400">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
+                    {s.step}
+                  </span>
+                  <span className="text-lg">{s.icon}</span>
+                </div>
+                <span className="text-sm font-semibold text-gray-900 group-hover:text-blue-700 transition">{s.label}</span>
+                {s.desc && <span className="mt-1 text-xs text-gray-500">{s.desc}</span>}
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </div>

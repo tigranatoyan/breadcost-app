@@ -3,7 +3,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Table, Spinner, Alert, Badge, Success } from '@/components/ui';
-import { SectionTitle, Button } from '@/components/design-system';
+import { SectionTitle, Button, Card } from '@/components/design-system';
+import { DollarSign, AlertTriangle, Check, X, ArrowUp, ArrowDown } from 'lucide-react';
 
 /* ── types ─────────────────────────────────────────────── */
 interface PricingSuggestion {
@@ -26,17 +27,16 @@ interface AnomalyAlert {
 }
 
 const SEVERITY_COLORS: Record<string, string> = {
-  LOW: 'bg-blue-100 text-blue-800',
-  MEDIUM: 'bg-yellow-100 text-yellow-800',
-  HIGH: 'bg-orange-100 text-orange-800',
-  CRITICAL: 'bg-red-100 text-red-800',
+  LOW: 'bg-blue-100 text-blue-800 border-blue-200',
+  MEDIUM: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  HIGH: 'bg-orange-100 text-orange-800 border-orange-200',
+  CRITICAL: 'bg-red-100 text-red-800 border-red-200',
 };
 
 /* ── page ──────────────────────────────────────────────── */
 export default function AiPricingPage() {
   const t = useT();
 
-  const [tab, setTab] = useState<'pricing' | 'anomalies'>('pricing');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -119,96 +119,150 @@ export default function AiPricingPage() {
     } catch (e) { setError(String(e)); }
   };
 
-  /* ── tab change effects ──────────────────────────────── */
-  useEffect(() => {
-    if (tab === 'pricing') loadPricing();
-    else loadAlerts();
-  }, [tab, loadPricing, loadAlerts]);
-
-  const tabs: { key: typeof tab; label: string }[] = [
-    { key: 'pricing', label: t('aiPricing.pricingSuggestions') },
-    { key: 'anomalies', label: t('aiPricing.anomalyAlerts') },
-  ];
+  /* ── load both on mount ──────────────────────────────── */
+  useEffect(() => { loadPricing(); }, [loadPricing]);
+  useEffect(() => { loadAlerts(); }, [loadAlerts]);
 
   return (
     <div className="space-y-6">
-      <SectionTitle eyebrow="AI" title={t('aiPricing.title')} />
+      <SectionTitle eyebrow="AI Tools" title={t('aiPricing.title')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}
 
-      {/* tabs */}
-      <div className="flex gap-1">
-        {tabs.map(tb => (
-          <button key={tb.key} onClick={() => setTab(tb.key)}
-            className={`px-4 py-2 rounded-t font-medium ${tab === tb.key ? 'bg-white border-t border-x text-blue-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-            {tb.label}
-          </button>
-        ))}
+      {/* ── Side-by-side layout ────────────────────────── */}
+      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+
+        {/* LEFT: Pricing Suggestions Table */}
+        <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
+          <div className="flex items-center gap-2 border-b border-gray-100 px-5 py-4">
+            <DollarSign className="h-5 w-5 text-green-500" />
+            <h3 className="font-semibold text-gray-900">{t('aiPricing.pricingSuggestions')}</h3>
+            <span className="ml-auto rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+              {pricing.filter(p => p.status === 'PENDING').length} {t('aiPricing.pending')}
+            </span>
+          </div>
+          <div className="p-4">
+            <div className="flex gap-2 items-center mb-3">
+              <Button variant="primary" size="sm" onClick={generatePricing}>{t('aiPricing.generate')}</Button>
+              <label className="flex items-center gap-1 text-xs ml-auto">
+                <input type="checkbox" checked={pendingOnly} onChange={e => setPendingOnly(e.target.checked)} />
+                {t('aiPricing.pending')}
+              </label>
+            </div>
+            {pricingLoading ? <Spinner /> : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-100 text-left text-xs text-gray-500">
+                      <th className="py-2 pr-3">{t('aiPricing.product')}</th>
+                      <th className="py-2 pr-3">{t('aiPricing.currentPrice')}</th>
+                      <th className="py-2 pr-3">{t('aiPricing.suggestedPrice')}</th>
+                      <th className="py-2 pr-3">Change</th>
+                      <th className="py-2 pr-3">{t('aiPricing.reasoning')}</th>
+                      <th className="py-2"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pricing.length === 0 && (
+                      <tr><td colSpan={6} className="py-8 text-center text-gray-400">{t('aiPricing.noPricing')}</td></tr>
+                    )}
+                    {pricing.map(p => {
+                      const change = p.suggestedPrice - p.currentPrice;
+                      const pct = p.currentPrice > 0 ? (change / p.currentPrice * 100) : 0;
+                      const isUp = change > 0;
+                      return (
+                        <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50/50">
+                          <td className="py-2.5 pr-3 font-medium text-gray-900">{p.productName}</td>
+                          <td className="py-2.5 pr-3 text-gray-500">{p.currentPrice?.toFixed(2)}</td>
+                          <td className="py-2.5 pr-3 font-semibold text-gray-900">{p.suggestedPrice?.toFixed(2)}</td>
+                          <td className="py-2.5 pr-3">
+                            <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${isUp ? 'text-green-600' : 'text-red-600'}`}>
+                              {isUp ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+                              {Math.abs(pct).toFixed(1)}%
+                            </span>
+                          </td>
+                          <td className="py-2.5 pr-3 text-xs text-gray-500 max-w-[200px] truncate">{p.reasoning}</td>
+                          <td className="py-2.5">
+                            {p.status === 'PENDING' ? (
+                              <div className="flex gap-1">
+                                <button onClick={() => acceptPricing(p.id)} className="rounded-lg bg-green-600 p-1.5 text-white hover:bg-green-700 transition" title={t('aiPricing.accept')}>
+                                  <Check className="h-3.5 w-3.5" />
+                                </button>
+                                <button onClick={() => dismissPricing(p.id)} className="rounded-lg border border-gray-300 p-1.5 text-gray-500 hover:bg-gray-50 transition" title={t('aiPricing.dismiss')}>
+                                  <X className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            ) : <Badge status={p.status} />}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT: Anomaly Alert Cards */}
+        <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
+          <div className="flex items-center gap-2 border-b border-gray-100 px-5 py-4">
+            <AlertTriangle className="h-5 w-5 text-amber-500" />
+            <h3 className="font-semibold text-gray-900">{t('aiPricing.anomalyAlerts')}</h3>
+            <span className="ml-auto rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+              {alerts.filter(a => a.status === 'ACTIVE').length} {t('aiPricing.active')}
+            </span>
+          </div>
+          <div className="p-4">
+            <div className="flex gap-2 items-center mb-3">
+              <Button variant="primary" size="sm" onClick={generateAlerts}>{t('aiPricing.generate')}</Button>
+              <label className="flex items-center gap-1 text-xs ml-auto">
+                <input type="checkbox" checked={activeOnly} onChange={e => setActiveOnly(e.target.checked)} />
+                {t('aiPricing.active')}
+              </label>
+            </div>
+            {alertsLoading ? <Spinner /> : alerts.length === 0 ? (
+              <p className="text-center text-sm text-gray-400 py-8">{t('aiPricing.noAlerts')}</p>
+            ) : (
+              <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+                {alerts.map(a => {
+                  const colors = SEVERITY_COLORS[a.severity] || 'bg-gray-100 text-gray-800 border-gray-200';
+                  return (
+                    <div key={a.id} className="rounded-xl border border-gray-200 p-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-semibold text-gray-900">{a.alertType}</span>
+                        <span className={`rounded-full border px-2 py-0.5 text-xs font-medium ${colors}`}>
+                          {a.severity}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 mb-1">{a.explanation}</p>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs font-medium text-gray-700">
+                          Deviation: <strong className={a.deviationPercent > 20 ? 'text-red-600' : 'text-gray-900'}>{a.deviationPercent?.toFixed(1)}%</strong>
+                        </span>
+                      </div>
+                      <p className="text-xs text-blue-700 bg-blue-50 rounded-lg px-2 py-1 mb-2">{a.suggestedAction}</p>
+                      {a.status === 'ACTIVE' ? (
+                        <div className="flex gap-2">
+                          <button onClick={() => acknowledgeAlert(a.id)}
+                            className="flex items-center gap-1 rounded-lg bg-blue-600 px-2.5 py-1 text-xs text-white hover:bg-blue-700 transition">
+                            <Check className="h-3 w-3" /> {t('aiPricing.acknowledge')}
+                          </button>
+                          <button onClick={() => dismissAlert(a.id)}
+                            className="flex items-center gap-1 rounded-lg border border-gray-300 px-2.5 py-1 text-xs text-gray-600 hover:bg-gray-50 transition">
+                            <X className="h-3 w-3" /> {t('aiPricing.dismiss')}
+                          </button>
+                        </div>
+                      ) : <Badge status={a.status} />}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-
-      {/* ── Pricing Suggestions ────────────────────────── */}
-      {tab === 'pricing' && (
-        <div className="space-y-4">
-          <div className="flex gap-2 items-center">
-            <Button variant="primary" size="sm" onClick={generatePricing}>{t('aiPricing.generate')}</Button>
-            <label className="flex items-center gap-1 text-sm ml-auto">
-              <input type="checkbox" checked={pendingOnly} onChange={e => setPendingOnly(e.target.checked)} />
-              {t('aiPricing.pending')}
-            </label>
-          </div>
-          {pricingLoading ? <Spinner /> : (
-            <Table
-              cols={[t('aiPricing.product'), t('aiPricing.currentPrice'), t('aiPricing.suggestedPrice'), t('aiPricing.reasoning'), '']}
-              rows={pricing.map(p => [
-                p.productName,
-                p.currentPrice?.toFixed(2),
-                <span key={p.id + 'sp'} className="font-semibold">{p.suggestedPrice?.toFixed(2)}</span>,
-                <span key={p.id + 'r'} className="text-sm text-gray-600 max-w-xs truncate block">{p.reasoning}</span>,
-                p.status === 'PENDING' ? (
-                  <div key={p.id} className="flex gap-1">
-                    <button onClick={() => acceptPricing(p.id)} className="text-green-600 hover:underline text-sm">{t('aiPricing.accept')}</button>
-                    <button onClick={() => dismissPricing(p.id)} className="text-red-600 hover:underline text-sm">{t('aiPricing.dismiss')}</button>
-                  </div>
-                ) : <Badge key={p.id} status={p.status} />,
-              ])}
-              empty={t('aiPricing.noPricing')}
-            />
-          )}
-        </div>
-      )}
-
-      {/* ── Anomaly Alerts ─────────────────────────────── */}
-      {tab === 'anomalies' && (
-        <div className="space-y-4">
-          <div className="flex gap-2 items-center">
-            <Button variant="primary" size="sm" onClick={generateAlerts}>{t('aiPricing.generate')}</Button>
-            <label className="flex items-center gap-1 text-sm ml-auto">
-              <input type="checkbox" checked={activeOnly} onChange={e => setActiveOnly(e.target.checked)} />
-              {t('aiPricing.active')}
-            </label>
-          </div>
-          {alertsLoading ? <Spinner /> : (
-            <Table
-              cols={[t('aiPricing.type'), t('aiPricing.severity'), t('aiPricing.deviation'), t('aiPricing.explanation'), t('aiPricing.suggestedAction'), '']}
-              rows={alerts.map(a => [
-                a.alertType,
-                <span key={a.id + 's'} className={`px-2 py-0.5 rounded text-xs font-medium ${SEVERITY_COLORS[a.severity] || 'bg-gray-100'}`}>{a.severity}</span>,
-                `${a.deviationPercent?.toFixed(1)}%`,
-                <span key={a.id + 'e'} className="text-sm text-gray-600 max-w-xs truncate block">{a.explanation}</span>,
-                <span key={a.id + 'sa'} className="text-sm">{a.suggestedAction}</span>,
-                a.status === 'ACTIVE' ? (
-                  <div key={a.id} className="flex gap-1">
-                    <button onClick={() => acknowledgeAlert(a.id)} className="text-blue-600 hover:underline text-sm">{t('aiPricing.acknowledge')}</button>
-                    <button onClick={() => dismissAlert(a.id)} className="text-red-600 hover:underline text-sm">{t('aiPricing.dismiss')}</button>
-                  </div>
-                ) : <Badge key={a.id} status={a.status} />,
-              ])}
-              empty={t('aiPricing.noAlerts')}
-            />
-          )}
-        </div>
-      )}
     </div>
   );
 }
