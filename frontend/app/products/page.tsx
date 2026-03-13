@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
-import { Modal, Table, Spinner, Alert, Badge, Field, Success } from '@/components/ui';
+import { Modal, Table, Spinner, Alert, Badge, Field, Success, PageSkeleton } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
 import { Plus } from 'lucide-react';
@@ -168,7 +168,7 @@ export default function ProductsPage() {
       )}
 
       {loading ? (
-        <Spinner />
+        <PageSkeleton />
       ) : (
         <Table
           cols={[t('products.cols.name'), t('products.cols.department'), t('products.cols.saleUnit'), t('products.cols.baseUom'), t('products.cols.price'), t('products.cols.vat'), t('products.cols.status'), t('common.actions')]}

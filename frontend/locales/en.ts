@@ -221,6 +221,7 @@ const en = {
     cancelWarning: 'Cancelling this order cannot be undone. Optionally provide a reason.',
     rushPremiumHint: 'Leave blank to use system default',
     noProducts: 'No products available. Add products first.',
+    orderCreated: 'Order created successfully',
   },
 
   // ── Products ───────────────────────────────────────────────────────────────

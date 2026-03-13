@@ -289,6 +289,13 @@ public class OrderService {
         return orderRepository.findByTenantId(tenantId);
     }
 
+    public org.springframework.data.domain.Page<OrderEntity> getOrdersByTenantPaged(
+            String tenantId, int page, int size) {
+        return orderRepository.findByTenantId(tenantId,
+                org.springframework.data.domain.PageRequest.of(page, size,
+                        org.springframework.data.domain.Sort.by("orderPlacedAt").descending()));
+    }
+
     public List<OrderEntity> getOrdersByStatus(String tenantId, String status) {
         return orderRepository.findByTenantIdAndStatus(tenantId, status);
     }

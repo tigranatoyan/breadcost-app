@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
-import { Spinner, Badge, Alert } from '@/components/ui';
+import { Spinner, Badge, Alert, PageSkeleton } from '@/components/ui';
 import { SectionTitle, SelectField } from '@/components/design-system';
 import Link from 'next/link';
 import { useT } from '@/lib/i18n';
@@ -142,7 +142,7 @@ export default function TechnologistPage() {
     yieldVariance.push({ product: pr.product.name, expected: expectedTotal, actual: actualTotal, variance, uom: pr.recipe.yieldUom });
   }
 
-  if (loading) return <Spinner />;
+  if (loading) return <PageSkeleton />;
 
   return (
     <div className="max-w-[1800px] space-y-8">

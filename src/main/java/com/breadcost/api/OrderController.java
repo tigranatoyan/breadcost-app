@@ -42,6 +42,17 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getOrdersByTenant(tenantId));
     }
 
+    // ─── GET ALL (PAGINATED) ─────────────────────────────────────────────────────
+
+    @GetMapping("/paged")
+    @PreAuthorize("hasAnyRole('Admin','Manager','ProductionUser','FinanceUser','Viewer')")
+    public ResponseEntity<org.springframework.data.domain.Page<OrderEntity>> getOrdersPaged(
+            @RequestParam String tenantId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(orderService.getOrdersByTenantPaged(tenantId, page, Math.min(size, 100)));
+    }
+
     // ─── GET ONE ─────────────────────────────────────────────────────────────────
 
     @GetMapping("/{orderId}")

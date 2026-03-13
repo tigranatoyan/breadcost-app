@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
-import { Spinner } from '@/components/ui';
+import { Spinner, PageSkeleton } from '@/components/ui';
 import { Badge, Card, StatCard, Progress, Button, SectionTitle } from '@/components/design-system';
 import { CircleDollarSign, ShoppingCart, Factory, Warehouse, AlertTriangle, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
@@ -265,7 +265,7 @@ export default function DashboardPage() {
     NIGHT: 'bg-indigo-100 text-indigo-800',
   };
 
-  if (loading) return <Spinner />;
+  if (loading) return <PageSkeleton />;
 
   return (
     <div className="max-w-[1800px] space-y-8">

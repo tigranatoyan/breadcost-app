@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
-import { Spinner } from '@/components/ui';
+import { Spinner, PageSkeleton } from '@/components/ui';
 import { SectionTitle, StatCard, Card, Table, Button } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
 import {
@@ -71,7 +71,7 @@ export default function AnalyticsPage() {
     return String(k.value);
   };
 
-  if (loading) return <Spinner />;
+  if (loading) return <PageSkeleton />;
 
   return (
     <div className="space-y-8">

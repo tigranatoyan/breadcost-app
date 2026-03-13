@@ -117,24 +117,29 @@ export function SectionTitle({ eyebrow, title, subtitle, action }: SectionTitleP
 interface InputFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string;
   hint?: string;
+  error?: string;
   rightIcon?: React.ComponentType<{ className?: string }>;
 }
 
-export function InputField({ label, hint, rightIcon: Icon, className, ...props }: InputFieldProps) {
+export function InputField({ label, hint, error, rightIcon: Icon, className, ...props }: InputFieldProps) {
   return (
     <label className="block">
       {label && <div className="mb-1 text-sm font-medium text-gray-700">{label}</div>}
       <div className="relative">
         <input
           className={cn(
-            'w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none ring-0 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500 bg-white',
+            'w-full rounded-md border px-3 py-2 text-sm outline-none ring-0 transition bg-white',
+            error
+              ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-500'
+              : 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500',
             className,
           )}
           {...props}
         />
         {Icon && <Icon className="pointer-events-none absolute right-3 top-2.5 h-4 w-4 text-gray-400" />}
       </div>
-      {hint && <div className="mt-1 text-xs text-gray-500">{hint}</div>}
+      {error && <div className="mt-1 text-xs text-red-600">{error}</div>}
+      {hint && !error && <div className="mt-1 text-xs text-gray-500">{hint}</div>}
     </label>
   );
 }
@@ -251,29 +256,46 @@ export function Table({ cols, rows, empty = 'No records found' }: TableProps) {
     return <div className="text-center py-16 text-sm text-gray-400 border rounded-xl bg-white">{empty}</div>;
   }
   return (
-    <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm">
-      <table className="min-w-full divide-y divide-gray-200 text-sm">
-        <thead className="bg-gray-50">
-          <tr>
-            {cols.map((c) => (
-              <th key={c} className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                {c}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-200 bg-white">
-          {rows.map((row, i) => (
-            <tr key={i} className="hover:bg-gray-50 transition-colors">
-              {row.map((cell, j) => (
-                <td key={j} className="whitespace-nowrap px-4 py-3 text-gray-700 align-top">
-                  {cell}
-                </td>
+    <>
+      {/* Desktop table */}
+      <div className="hidden sm:block overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <table className="min-w-full divide-y divide-gray-200 text-sm">
+          <thead className="bg-gray-50">
+            <tr>
+              {cols.map((c) => (
+                <th key={c} className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  {c}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody className="divide-y divide-gray-200 bg-white">
+            {rows.map((row, i) => (
+              <tr key={i} className="hover:bg-gray-50 transition-colors">
+                {row.map((cell, j) => (
+                  <td key={j} className="whitespace-nowrap px-4 py-3 text-gray-700 align-top">
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile card view */}
+      <div className="sm:hidden space-y-3">
+        {rows.map((row, i) => (
+          <div key={i} className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm space-y-1.5 text-sm">
+            {row.map((cell, j) => (
+              <div key={j} className="flex items-start justify-between gap-2">
+                <span className="text-xs font-medium text-gray-500 shrink-0">{cols[j]}</span>
+                <span className="text-gray-700 text-right">{cell}</span>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </>
   );
 }

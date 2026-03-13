@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import AuthShell from '@/components/AuthShell';
 import { I18nProvider } from '@/lib/i18n';
+import { ToastProvider } from '@/components/ui';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -13,7 +14,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className="bg-gray-50 text-gray-900">
         <I18nProvider>
-          <AuthShell>{children}</AuthShell>
+          <ToastProvider>
+            <AuthShell>{children}</AuthShell>
+          </ToastProvider>
         </I18nProvider>
       </body>
     </html>

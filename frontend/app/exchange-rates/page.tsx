@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
-import { Modal, Table, Spinner, Alert, Field, Success } from '@/components/ui';
+import { Modal, Table, Spinner, Alert, Field, Success, PageSkeleton } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
 
 /* ── types ─────────────────────────────────────────────── */
@@ -117,7 +117,7 @@ export default function ExchangeRatesPage() {
     } catch (e) { setError(String(e)); }
   };
 
-  if (loading) return <Spinner />;
+  if (loading) return <PageSkeleton />;
 
   return (
     <div className="space-y-6">

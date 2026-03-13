@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
-import { Modal, Spinner, Alert, Badge, Field } from '@/components/ui';
+import { Modal, Spinner, Alert, Badge, Field, PageSkeleton, Pagination, useToast } from '@/components/ui';
 import { SectionTitle, Button, InputField, SelectField, Table } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
 import { Plus, Calendar, ChevronUp, ChevronDown } from 'lucide-react';
@@ -98,10 +98,14 @@ function fmtDateTime(iso: string | null | undefined) {
 
 export default function OrdersPage() {
   const t = useT();
+  const { toastSuccess, toastError } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const PAGE_SIZE = 20;
 
   // filters
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -138,24 +142,32 @@ export default function OrdersPage() {
 
   // ─── load ────────────────────────────────────────────────────────────────────
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (p = page) => {
     try {
       setLoading(true);
       setError('');
-      const [ords, prods] = await Promise.all([
-        apiFetch<Order[]>(`/v1/orders?tenantId=${TENANT_ID}`),
+      const [pagedResult, prods] = await Promise.all([
+        apiFetch<{ content: Order[]; totalPages: number; totalElements: number }>(
+          `/v1/orders/paged?tenantId=${TENANT_ID}&page=${p}&size=${PAGE_SIZE}`
+        ),
         apiFetch<Product[]>(`/v1/products?tenantId=${TENANT_ID}`),
       ]);
-      setOrders(ords);
+      setOrders(pagedResult.content);
+      setTotalPages(pagedResult.totalPages);
       setProducts(prods);
     } catch (e) {
       setError(String(e));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page]);
 
   useEffect(() => { load(); }, [load]);
+
+  const changePage = (newPage: number) => {
+    setPage(newPage);
+    load(newPage);
+  };
 
   // ─── filtered list ────────────────────────────────────────────────────────────
 
@@ -234,8 +246,9 @@ export default function OrdersPage() {
       });
       setOpen(false);
       load();
+      toastSuccess(t('orders.orderCreated'));
     } catch (e) {
-      setError(String(e));
+      toastError(String(e));
     } finally {
       setSaving(false);
     }
@@ -330,7 +343,7 @@ export default function OrdersPage() {
 
       {/* list */}
       {loading ? (
-        <Spinner />
+        <PageSkeleton />
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 text-sm text-gray-400 rounded-2xl border border-gray-200 bg-white">
           {orders.length === 0 ? t('orders.noOrders') : t('orders.noMatch')}
@@ -474,6 +487,8 @@ export default function OrdersPage() {
           ))}
         </div>
       )}
+
+      {!loading && <Pagination page={page} totalPages={totalPages} onPageChange={changePage} />}
 
       {/* ─── Create Order Modal ─────────────────────────────────────────────── */}
       {open && (

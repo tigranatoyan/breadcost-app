@@ -1,5 +1,138 @@
 'use client';
-import { ReactNode } from 'react';
+import { ReactNode, createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+
+/* ── Skeleton ──────────────────────────────────────────────────────── */
+export function Skeleton({ className = '' }: { className?: string }) {
+  return <div className={`animate-pulse rounded-lg bg-gray-200 ${className}`} />;
+}
+
+/** A ready-made page skeleton: 4 stat cards + table placeholder */
+export function PageSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <Skeleton className="h-3 w-20 mb-2" />
+          <Skeleton className="h-7 w-48" />
+        </div>
+        <Skeleton className="h-9 w-28 rounded-md" />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm space-y-3">
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-7 w-16" />
+            <Skeleton className="h-2 w-32" />
+          </div>
+        ))}
+      </div>
+      <div className="rounded-xl border bg-white shadow-sm p-4 space-y-3">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <Skeleton key={i} className="h-10 w-full" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── Toast system ──────────────────────────────────────────────────── */
+type ToastType = 'success' | 'error' | 'info';
+interface Toast { id: number; message: string; type: ToastType }
+
+interface ToastCtx {
+  toast: (message: string, type?: ToastType) => void;
+  toastSuccess: (message: string) => void;
+  toastError: (message: string) => void;
+}
+
+const ToastContext = createContext<ToastCtx>({
+  toast: () => {},
+  toastSuccess: () => {},
+  toastError: () => {},
+});
+
+export const useToast = () => useContext(ToastContext);
+
+export function ToastProvider({ children }: { children: ReactNode }) {
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const nextId = useRef(0);
+
+  const toast = useCallback((message: string, type: ToastType = 'info') => {
+    const id = nextId.current++;
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000);
+  }, []);
+
+  const toastSuccess = useCallback((msg: string) => toast(msg, 'success'), [toast]);
+  const toastError = useCallback((msg: string) => toast(msg, 'error'), [toast]);
+
+  const dismiss = useCallback((id: number) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const colors: Record<ToastType, string> = {
+    success: 'bg-green-600',
+    error: 'bg-red-600',
+    info: 'bg-blue-600',
+  };
+
+  const icons: Record<ToastType, string> = {
+    success: '✓',
+    error: '⚠',
+    info: 'ℹ',
+  };
+
+  return (
+    <ToastContext.Provider value={{ toast, toastSuccess, toastError }}>
+      {children}
+      {/* Toast container — fixed bottom-right */}
+      <div className="fixed bottom-4 right-4 z-[9999] flex flex-col-reverse gap-2 pointer-events-none">
+        {toasts.map((t) => (
+          <div
+            key={t.id}
+            className={`pointer-events-auto flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-white shadow-lg transition-all animate-[slideUp_0.3s_ease-out] ${colors[t.type]}`}
+          >
+            <span>{icons[t.type]}</span>
+            <span className="flex-1 max-w-xs break-words">{t.message}</span>
+            <button onClick={() => dismiss(t.id)} className="ml-2 text-white/70 hover:text-white">×</button>
+          </div>
+        ))}
+      </div>
+    </ToastContext.Provider>
+  );
+}
+
+/* ── Pagination ────────────────────────────────────────────────────── */
+interface PaginationProps {
+  page: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
+
+export function Pagination({ page, totalPages, onPageChange }: PaginationProps) {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="flex items-center justify-center gap-2 py-4 text-sm">
+      <button
+        onClick={() => onPageChange(page - 1)}
+        disabled={page <= 0}
+        className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        ←
+      </button>
+      <span className="text-gray-600">
+        {page + 1} / {totalPages}
+      </span>
+      <button
+        onClick={() => onPageChange(page + 1)}
+        disabled={page >= totalPages - 1}
+        className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        →
+      </button>
+    </div>
+  );
+}
 
 /* ── Modal ─────────────────────────────────────────────────────────── */
 export function Modal({
