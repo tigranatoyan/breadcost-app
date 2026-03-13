@@ -368,6 +368,11 @@ const en = {
     startWorkOrder: '▶ Start Work Order',
     completeWorkOrder: '✓ Complete Work Order',
     progress: '{done}/{total} complete',
+    // A1.2 - yield tracking
+    actualYield: 'Actual Yield',
+    wasteQty: 'Waste Qty',
+    qualityScore: 'Quality Score',
+    qualityNotes: 'Quality Notes',
   },
 
   // ── Inventory ──────────────────────────────────────────────────────────────
@@ -454,6 +459,9 @@ const en = {
       statusCol: 'Status',
       descriptionCol: 'Description',
     },
+    // A1.6 - auto plan
+    autoPlan: '🔄 Auto-Plan',
+    autoPlanCreated: 'Production plan created from low-stock alerts.',
   },
 
   // ── Point of Sale ──────────────────────────────────────────────────────────
@@ -792,6 +800,14 @@ const en = {
     noLines: 'No lines.',
     qty: 'Quantity',
     total: 'Total',
+    // A1.4 - generate from plan
+    generateFromPlan: '🏭 Generate POs from Plan',
+    posGeneratedFromPlan: 'Purchase orders generated from production plan.',
+    // A1.5 - ingredient lookup
+    ingredientLookup: 'Find Suppliers by Ingredient',
+    ingredientIdPlaceholder: 'Enter ingredient ID…',
+    findSuppliers: 'Lookup',
+    noSuppliersForIngredient: 'No suppliers found for this ingredient.',
   },
 
   // ── Deliveries ─────────────────────────────────────────────────────────────
@@ -872,6 +888,19 @@ const en = {
     validTo: 'Valid To',
     noDiscounts: 'No discount rules.',
     discountAdded: 'Discount rule added.',
+    // A1.1 - dispute / resolve
+    dispute: 'Dispute',
+    resolve: 'Resolve',
+    disputed: 'Invoice disputed.',
+    resolved: 'Invoice resolved.',
+    disputeTitle: 'Dispute Invoice',
+    disputeHint: 'Submit a dispute for this invoice. Provide the reason below.',
+    disputeReason: 'Dispute Reason',
+    disputeReasonPlaceholder: 'Describe the issue…',
+    resolveTitle: 'Resolve Invoice',
+    resolveHint: 'Resolve this disputed invoice.',
+    resolveNotes: 'Resolution Notes',
+    resolveNotesPlaceholder: 'Describe the resolution…',
   },
 
   // ── Report Builder ─────────────────────────────────────────────────────────
@@ -980,6 +1009,10 @@ const en = {
     check: 'Check',
     featureAllowed: '✅ Feature is allowed for your plan.',
     featureDenied: '❌ Feature is NOT included in your plan.',
+    // A1.3 - expiry management
+    expiringSoon: '⚠ {count} subscription(s) expiring soon',
+    deactivateExpired: 'Deactivate Expired',
+    expiredDeactivated: 'Expired subscriptions deactivated.',
   },
 
   // ── Exchange Rates ─────────────────────────────────────────────────────────

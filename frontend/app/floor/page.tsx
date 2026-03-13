@@ -98,12 +98,18 @@ function WOPanel({
   techSteps: TechnologyStep[];
   stepsLoading: boolean;
   onClose: () => void;
-  onAction: (planId: string, woId: string, action: string) => void;
+  onAction: (planId: string, woId: string, action: string, body?: Record<string, unknown>) => void;
   actionBusy: boolean;
 }) {
   const t = useT();
   const [tab, setTab] = useState<'steps' | 'recipe'>(techSteps.length > 0 ? 'steps' : 'recipe');
   const [confirmed, setConfirmed] = useState<Record<number, boolean>>(() => getConfirmed(wo.workOrderId, techSteps));
+
+  /* A1.2 — yield tracking fields */
+  const [actualYield, setActualYield] = useState('');
+  const [wasteQty, setWasteQty] = useState('');
+  const [qualityScore, setQualityScore] = useState('');
+  const [qualityNotes, setQualityNotes] = useState('');
 
   // Update confirmed map when steps arrive
   useEffect(() => {
@@ -307,7 +313,29 @@ function WOPanel({
         </div>
 
         {/* Footer actions */}
-        <div className="border-t px-5 py-3 flex items-center gap-2 bg-gray-50">
+        <div className="border-t px-5 py-3 flex flex-col gap-3 bg-gray-50">
+          {/* A1.2 — Yield inputs (visible when STARTED) */}
+          {wo.status === 'STARTED' && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium text-gray-500">{t('floor.actualYield')}</label>
+                <input className="input w-full mt-0.5" type="number" step="0.1" min="0" value={actualYield} onChange={e => setActualYield(e.target.value)} placeholder={recipe ? String(recipe.expectedYield * wo.batchCount) : ''} />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-500">{t('floor.wasteQty')}</label>
+                <input className="input w-full mt-0.5" type="number" step="0.1" min="0" value={wasteQty} onChange={e => setWasteQty(e.target.value)} placeholder="0" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-500">{t('floor.qualityScore')}</label>
+                <input className="input w-full mt-0.5" type="number" step="1" min="0" max="100" value={qualityScore} onChange={e => setQualityScore(e.target.value)} placeholder="0–100" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-500">{t('floor.qualityNotes')}</label>
+                <input className="input w-full mt-0.5" type="text" value={qualityNotes} onChange={e => setQualityNotes(e.target.value)} placeholder={t('common.optional')} />
+              </div>
+            </div>
+          )}
+          <div className="flex items-center gap-2">
           {wo.status === 'PENDING' && (
             <Button
               variant="primary"
@@ -324,7 +352,12 @@ function WOPanel({
               size="sm"
               className="bg-green-600 hover:bg-green-700"
               disabled={actionBusy}
-              onClick={() => onAction(planId, wo.workOrderId, 'complete')}
+              onClick={() => onAction(planId, wo.workOrderId, 'complete', {
+                ...(actualYield ? { actualYield: Number(actualYield) } : {}),
+                ...(wasteQty ? { wasteQty: Number(wasteQty) } : {}),
+                ...(qualityScore ? { qualityScore: Number(qualityScore) } : {}),
+                ...(qualityNotes ? { qualityNotes } : {}),
+              })}
             >
               {actionBusy ? '…' : t('floor.completeWorkOrder')}
             </Button>
@@ -340,6 +373,7 @@ function WOPanel({
             </Button>
           )}
           <Button variant="secondary" size="sm" className="ml-auto" onClick={onClose}>{t('common.close')}</Button>
+          </div>
         </div>
       </div>
     </div>
@@ -456,10 +490,13 @@ export default function FloorPage() {
     }
   };
 
-  const handleWoAction = async (planId: string, woId: string, action: string) => {
+  const handleWoAction = async (planId: string, woId: string, action: string, body?: Record<string, unknown>) => {
     try {
       setActionBusy(true);
-      await apiFetch(`/v1/production-plans/work-orders/${woId}/${action}?tenantId=${TENANT_ID}`, { method: 'POST' });
+      await apiFetch(`/v1/production-plans/work-orders/${woId}/${action}?tenantId=${TENANT_ID}`, {
+        method: 'POST',
+        ...(body && Object.keys(body).length > 0 ? { body: JSON.stringify(body) } : {}),
+      });
       await reloadPlan(planId);
     } catch (e) {
       setError(String(e));

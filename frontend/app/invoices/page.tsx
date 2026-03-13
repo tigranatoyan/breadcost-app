@@ -74,6 +74,14 @@ export default function InvoicesPage() {
   const [limitModal, setLimitModal] = useState<string | null>(null);
   const [limitVal, setLimitVal] = useState('');
 
+  /* dispute / resolve (A1.1) */
+  const [disputeInv, setDisputeInv] = useState<Invoice | null>(null);
+  const [disputeReason, setDisputeReason] = useState('');
+  const [disputeSaving, setDisputeSaving] = useState(false);
+  const [resolveInv, setResolveInv] = useState<Invoice | null>(null);
+  const [resolveNotes, setResolveNotes] = useState('');
+  const [resolveSaving, setResolveSaving] = useState(false);
+
   /* discount rules */
   const [discountCustomerId, setDiscountCustomerId] = useState('');
   const [discountRules, setDiscountRules] = useState<DiscountRule[]>([]);
@@ -144,6 +152,33 @@ export default function InvoicesPage() {
     } catch (e) { setError(String(e)); }
   };
 
+  /* A1.1 — dispute workflow */
+  const disputeInvoice = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!disputeInv) return;
+    try {
+      setDisputeSaving(true);
+      await apiFetch(`/v2/invoices/${disputeInv.invoiceId}/dispute?tenantId=${TENANT_ID}`, { method: 'PUT', body: JSON.stringify({ reason: disputeReason }) });
+      setSuccess(t('invoices.disputed'));
+      setDisputeInv(null);
+      setDisputeReason('');
+      loadInvoices();
+    } catch (e) { setError(String(e)); } finally { setDisputeSaving(false); }
+  };
+
+  const resolveInvoice = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resolveInv) return;
+    try {
+      setResolveSaving(true);
+      await apiFetch(`/v2/invoices/${resolveInv.invoiceId}/resolve?tenantId=${TENANT_ID}`, { method: 'PUT', body: JSON.stringify({ notes: resolveNotes }) });
+      setSuccess(t('invoices.resolved'));
+      setResolveInv(null);
+      setResolveNotes('');
+      loadInvoices();
+    } catch (e) { setError(String(e)); } finally { setResolveSaving(false); }
+  };
+
   /* discount rules */
   const loadDiscountRules = async () => {
     if (!discountCustomerId) return;
@@ -205,6 +240,7 @@ export default function InvoicesPage() {
               <option value="PARTIALLY_PAID">PARTIALLY_PAID</option>
               <option value="PAID">PAID</option>
               <option value="OVERDUE">OVERDUE</option>
+              <option value="DISPUTED">DISPUTED</option>
               <option value="VOIDED">VOIDED</option>
             </select>
           </div>
@@ -224,6 +260,12 @@ export default function InvoicesPage() {
                   )}
                   <Button variant="secondary" size="xs" onClick={() => creditCheck(inv.customerId)}>{t('invoices.credit')}</Button>
                   <Button variant="secondary" size="xs" onClick={() => { setLimitModal(inv.customerId); setLimitVal(''); }}>{t('invoices.setLimit')}</Button>
+                  {(inv.status === 'ISSUED' || inv.status === 'PARTIALLY_PAID' || inv.status === 'OVERDUE') && (
+                    <Button variant="secondary" size="xs" className="bg-amber-500 hover:bg-amber-600 text-white border-amber-500" onClick={() => { setDisputeInv(inv); setDisputeReason(''); }}>{t('invoices.dispute')}</Button>
+                  )}
+                  {inv.status === 'DISPUTED' && (
+                    <Button variant="primary" size="xs" onClick={() => { setResolveInv(inv); setResolveNotes(''); }}>{t('invoices.resolve')}</Button>
+                  )}
                   {inv.status !== 'VOIDED' && <Button variant="danger" size="xs" onClick={() => voidInvoice(inv.invoiceId)}>{t('invoices.void')}</Button>}
                 </div>,
               ])}
@@ -309,6 +351,34 @@ export default function InvoicesPage() {
               <Button variant="primary" size="sm" onClick={setCreditLimit}>{t('common.save')}</Button>
             </div>
           </div>
+        </Modal>
+      )}
+
+      {/* dispute modal (A1.1) */}
+      {disputeInv && (
+        <Modal title={`${t('invoices.disputeTitle')} — ${disputeInv.invoiceId.slice(0, 8)}`} onClose={() => setDisputeInv(null)}>
+          <form onSubmit={disputeInvoice} className="space-y-4">
+            <p className="text-sm text-gray-600">{t('invoices.disputeHint')}</p>
+            <Field label={t('invoices.disputeReason')}><textarea className="input w-full" rows={3} required value={disputeReason} onChange={e => setDisputeReason(e.target.value)} placeholder={t('invoices.disputeReasonPlaceholder')} /></Field>
+            <div className="flex justify-end gap-2">
+              <Button variant="secondary" size="sm" onClick={() => setDisputeInv(null)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" type="submit" disabled={disputeSaving} className="bg-amber-500 hover:bg-amber-600 border-amber-500">{disputeSaving ? t('common.saving') : t('invoices.dispute')}</Button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* resolve modal (A1.1) */}
+      {resolveInv && (
+        <Modal title={`${t('invoices.resolveTitle')} — ${resolveInv.invoiceId.slice(0, 8)}`} onClose={() => setResolveInv(null)}>
+          <form onSubmit={resolveInvoice} className="space-y-4">
+            <p className="text-sm text-gray-600">{t('invoices.resolveHint')}</p>
+            <Field label={t('invoices.resolveNotes')}><textarea className="input w-full" rows={3} required value={resolveNotes} onChange={e => setResolveNotes(e.target.value)} placeholder={t('invoices.resolveNotesPlaceholder')} /></Field>
+            <div className="flex justify-end gap-2">
+              <Button variant="secondary" size="sm" onClick={() => setResolveInv(null)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" type="submit" disabled={resolveSaving}>{resolveSaving ? t('common.saving') : t('invoices.resolve')}</Button>
+            </div>
+          </form>
         </Modal>
       )}
 

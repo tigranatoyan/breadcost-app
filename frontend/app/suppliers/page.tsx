@@ -99,6 +99,14 @@ export default function SuppliersPage() {
   const [apiForm, setApiForm] = useState({ supplierId: '', apiUrl: '', apiKeyRef: '', format: 'JSON', enabled: true });
   const [apiSaving, setApiSaving] = useState(false);
 
+  /* A1.4 — generate POs from plan */
+  const [genSaving, setGenSaving] = useState(false);
+
+  /* A1.5 — ingredient → supplier lookup */
+  const [lookupId, setLookupId] = useState('');
+  const [lookupResults, setLookupResults] = useState<{ supplierId: string; supplierName: string; unitPrice: number; currency: string; leadTimeDays?: number }[] | null>(null);
+  const [lookupLoading, setLookupLoading] = useState(false);
+
   /* ── loaders ────────────────────────────────────────── */
   const loadSuppliers = useCallback(async () => {
     try {
@@ -275,6 +283,28 @@ export default function SuppliersPage() {
     } catch (e) { setError(String(e)); } finally { setPoSaving(false); }
   };
 
+  /* A1.4 — generate POs from production plan */
+  const generateFromPlan = async () => {
+    try {
+      setGenSaving(true);
+      await apiFetch('/v2/purchase-orders/from-plan', { method: 'POST', body: JSON.stringify({ tenantId: TENANT_ID }) });
+      setSuccess(t('suppliers.posGeneratedFromPlan'));
+      loadPOs();
+    } catch (e) { setError(String(e)); } finally { setGenSaving(false); }
+  };
+
+  /* A1.5 — ingredient → supplier lookup */
+  const lookupSuppliers = async () => {
+    if (!lookupId.trim()) return;
+    try {
+      setLookupLoading(true);
+      const data = await apiFetch<{ supplierId: string; supplierName: string; unitPrice: number; currency: string; leadTimeDays?: number }[]>(
+        `/v2/purchase-orders/ingredients/${encodeURIComponent(lookupId.trim())}/suppliers?tenantId=${TENANT_ID}`,
+      );
+      setLookupResults(data);
+    } catch (e) { setError(String(e)); } finally { setLookupLoading(false); }
+  };
+
   /* ── render ─────────────────────────────────────────── */
   return (
     <div className="max-w-[1800px]">
@@ -323,8 +353,27 @@ export default function SuppliersPage() {
         <>
           <div className="flex justify-end gap-2 mb-4">
             <Button variant="secondary" size="sm" onClick={suggestPOs} disabled={poSaving}>{t('suppliers.suggest')}</Button>
+            <Button variant="success" size="sm" onClick={generateFromPlan} disabled={genSaving}>{genSaving ? t('common.saving') : t('suppliers.generateFromPlan')}</Button>
             <Button variant="primary" size="sm" onClick={() => { setShowCreatePO(true); addPOLine(); }}>+ {t('suppliers.createPO')}</Button>
           </div>
+          {/* A1.5 — ingredient → supplier lookup */}
+          <div className="mb-4 p-3 bg-gray-50 rounded-lg flex items-end gap-3">
+            <Field label={t('suppliers.ingredientLookup')}>
+              <input className="input" value={lookupId} onChange={e => setLookupId(e.target.value)} placeholder={t('suppliers.ingredientIdPlaceholder')} />
+            </Field>
+            <Button variant="secondary" size="sm" onClick={lookupSuppliers} disabled={lookupLoading}>{lookupLoading ? '…' : t('suppliers.findSuppliers')}</Button>
+          </div>
+          {lookupResults && (
+            <div className="mb-4">
+              {lookupResults.length > 0 ? (
+                <Table
+                  cols={[t('suppliers.supplier'), t('suppliers.unitPrice'), t('suppliers.currency'), t('suppliers.leadTime')]}
+                  rows={lookupResults.map((r, i) => [r.supplierName || r.supplierId, r.unitPrice.toFixed(2), r.currency, r.leadTimeDays != null ? `${r.leadTimeDays}d` : '—'])}
+                  empty=""
+                />
+              ) : <p className="text-sm text-gray-500">{t('suppliers.noSuppliersForIngredient')}</p>}
+            </div>
+          )}
           {poLoading ? <Spinner /> : (
             <Table
               cols={[t('suppliers.poId'), t('suppliers.supplier'), t('common.status'), t('suppliers.total'), t('common.date'), t('common.actions')]}

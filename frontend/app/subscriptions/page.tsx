@@ -46,6 +46,10 @@ export default function SubscriptionsPage() {
   const [featureKey, setFeatureKey] = useState('');
   const [featureResult, setFeatureResult] = useState<boolean | null>(null);
 
+  /* A1.3 — expiring-soon & deactivate */
+  const [expiringSoon, setExpiringSoon] = useState<TenantSub[]>([]);
+  const [deactivating, setDeactivating] = useState(false);
+
   /* loaders */
   const loadTiers = useCallback(async () => {
     try {
@@ -63,8 +67,15 @@ export default function SubscriptionsPage() {
     } catch { setTenantSub(null); } finally { setSubLoading(false); }
   }, []);
 
+  const loadExpiringSoon = useCallback(async () => {
+    try {
+      const data = await apiFetch<TenantSub[]>(`/v2/subscriptions/expiring-soon?tenantId=${TENANT_ID}`);
+      setExpiringSoon(data);
+    } catch { /* ignore */ }
+  }, []);
+
   useEffect(() => { loadTiers(); }, [loadTiers]);
-  useEffect(() => { if (tab === 'assignment') loadAssignment(); }, [tab, loadAssignment]);
+  useEffect(() => { if (tab === 'assignment') { loadAssignment(); loadExpiringSoon(); } }, [tab, loadAssignment, loadExpiringSoon]);
 
   const assignSubscription = async () => {
     if (!assignTier) return;
@@ -75,6 +86,16 @@ export default function SubscriptionsPage() {
       setShowAssign(false);
       loadAssignment();
     } catch (e) { setError(String(e)); } finally { setSaving(false); }
+  };
+
+  const deactivateExpired = async () => {
+    try {
+      setDeactivating(true);
+      await apiFetch(`/v2/subscriptions/deactivate-expired?tenantId=${TENANT_ID}`, { method: 'POST' });
+      setSuccess(t('subscriptions.expiredDeactivated'));
+      loadAssignment();
+      loadExpiringSoon();
+    } catch (e) { setError(String(e)); } finally { setDeactivating(false); }
   };
 
   const checkFeature = async () => {
@@ -125,6 +146,18 @@ export default function SubscriptionsPage() {
       {/* ───────── ASSIGNMENT ───────── */}
       {tab === 'assignment' && (
         <div className="space-y-6">
+          {/* A1.3 — expiring-soon banner */}
+          {expiringSoon.length > 0 && (
+            <div className="bg-amber-50 border border-amber-300 rounded-lg p-4 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-amber-800">⚠ {t('subscriptions.expiringSoon', { count: expiringSoon.length })}</p>
+                <p className="text-xs text-amber-700 mt-0.5">{expiringSoon.map(s => s.tierName || s.tierId).join(', ')}</p>
+              </div>
+              <Button variant="danger" size="sm" disabled={deactivating} onClick={deactivateExpired}>
+                {deactivating ? t('common.saving') : t('subscriptions.deactivateExpired')}
+              </Button>
+            </div>
+          )}
           {subLoading ? <Spinner /> : tenantSub ? (
             <div className="bg-white shadow rounded p-4 space-y-2 text-sm">
               <div><strong>{t('subscriptions.currentTier')}:</strong> {tenantSub.tierName || tenantSub.tierId}</div>

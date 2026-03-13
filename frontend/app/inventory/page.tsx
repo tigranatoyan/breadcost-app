@@ -213,6 +213,16 @@ export default function InventoryPage() {
     }).length;
   }, [positions, itemMap]);
 
+  /* A1.6 — auto-plan from low-stock alerts */
+  const [autoPlanSaving, setAutoPlanSaving] = useState(false);
+  const autoPlan = async () => {
+    try {
+      setAutoPlanSaving(true);
+      await apiFetch(`/v1/inventory/auto-plan?tenantId=${TENANT_ID}`, { method: 'POST' });
+      setSuccess(t('inventory.autoPlanCreated'));
+    } catch (e) { setError(String(e)); } finally { setAutoPlanSaving(false); }
+  };
+
   // ─── receive stock ────────────────────────────────────────────────────────
 
   const openReceive = () => {
@@ -403,6 +413,11 @@ export default function InventoryPage() {
               <span className="bg-red-100 text-red-700 text-xs font-semibold px-2.5 py-1 rounded-full">
                 {t('inventory.alerts', { count: alertCount })}
               </span>
+            )}
+            {alertCount > 0 && canAdjust && (
+              <Button variant="success" size="sm" disabled={autoPlanSaving} onClick={autoPlan}>
+                {autoPlanSaving ? t('common.saving') : t('inventory.autoPlan')}
+              </Button>
             )}
             {tab === 'stock' && (
               <>

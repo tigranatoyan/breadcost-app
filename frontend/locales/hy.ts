@@ -349,6 +349,11 @@
     startWorkOrder: '\u25B6 \u054d\u056f\u057d\u0565\u056c \u0561\u0577\u056d\u0561\u057f\u0561\u0576\u0584\u0568',
     completeWorkOrder: '\u2713 \u0531\u057e\u0561\u0580\u057f\u0565\u056c \u0561\u0577\u056d\u0561\u057f\u0561\u0576\u0584\u0568',
     progress: '{done}/{total} \u0561\u057e\u0561\u0580\u057f\u057e\u0561\u056e',
+    // A1.2
+    actualYield: 'Փաստացի արտադրանք',
+    wasteQty: 'Թափոններ',
+    qualityScore: 'Որակի միավոր',
+    qualityNotes: 'Որակի նոտեր',
   },
 
   inventory: {
@@ -427,6 +432,9 @@
       statusCol: '\u053f\u0561\u0580\u0563\u0561\u057e\u056b\u0573\u0561\u056f',
       descriptionCol: '\u0546\u056f\u0561\u0580\u0561\u0563\u0580\u0578\u0582\u0569\u0575\u0578\u0582\u0576',
     },
+    // A1.6
+    autoPlan: '🔄 Ջնապլան',
+    autoPlanCreated: 'Արտադրական պլանը ստեղծվեց։',
   },
 
   pos: {
@@ -747,6 +755,14 @@
     noLines: '\u054f\u0578\u0572\u0565\u0580 \u0579\u056f\u0561\u0576\u0589',
     qty: '\u0554\u0561\u0576\u0561\u056f',
     total: '\u0538\u0576\u0564\u0570\u0561\u0576\u0578\u0582\u0580',
+    // A1.4
+    generateFromPlan: '🏭 Ստեղծել ԳՆ պլանից',
+    posGeneratedFromPlan: 'Գնումների պատվերները ստեղծվեցին պլանից։',
+    // A1.5
+    ingredientLookup: 'Մատակարարներ բաղկացուցիչով',
+    ingredientIdPlaceholder: 'Մուտքագրեք բաղկացուցիչի ID…',
+    findSuppliers: 'Օրոնել',
+    noSuppliersForIngredient: 'Տվյալ բաղկացուցիչի համար մատակարարներ չկան։',
   },
 
   deliveries: {
@@ -825,6 +841,19 @@
     validTo: '\u0544\u056b\u0576\u0579\u0587',
     noDiscounts: '\u0536\u0565\u0572\u056e\u056b \u056f\u0561\u0576\u0578\u0576\u0576\u0565\u0580 \u0579\u056f\u0561\u0576\u0589',
     discountAdded: '\u0536\u0565\u0572\u056e\u056b \u056f\u0561\u0576\u0578\u0576\u0568 \u0561\u057e\u0565\u056c\u0561\u0581\u057e\u0565\u0581\u0589',
+    // A1.1
+    dispute: 'Վիճարկել',
+    resolve: 'Լուծել',
+    disputed: 'Հաշիվը վիճարկվեց։',
+    resolved: 'Հաշիվը լուծվեց։',
+    disputeTitle: 'Վիճարկել հաշիվը',
+    disputeHint: 'Ներկայացրեք վիճարկի պատճառը։',
+    disputeReason: 'Վիճարկի պատճառ',
+    disputeReasonPlaceholder: 'Նկարագրեք խնդիրը…',
+    resolveTitle: 'Լուծել հաշիվը',
+    resolveHint: 'Լուծեք վիճարկված հաշիվը։',
+    resolveNotes: 'Լուծման նոտեր',
+    resolveNotesPlaceholder: 'Նկարագրեք լուծման մանրամասները…',
   },
 
   reportBuilder: {
@@ -929,6 +958,10 @@
     check: '\u054d\u057f\u0578\u0582\u0563\u0565\u056c',
     featureAllowed: '\u2705 \u0556\u056b\u0579\u0565\u0580\u0568 \u0570\u0561\u057d\u0561\u0576\u0565\u056c\u056b \u0567 \u0571\u0565\u0580 \u057a\u056c\u0561\u0576\u0578\u0582\u0574\u0589',
     featureDenied: '\u274C \u0556\u056b\u0579\u0565\u0580\u0568 \u0576\u0565\u0580\u0561\u057c\u057e\u0561\u056e \u0579\u0567 \u0571\u0565\u0580 \u057a\u056c\u0561\u0576\u0578\u0582\u0574\u0589',
+    // A1.3
+    expiringSoon: '⚠ {count} բաժանորդագրություն(ներ) լրանում է/են',
+    deactivateExpired: 'Անջատել ժամկետանցը',
+    expiredDeactivated: 'Իամկետ բաժանորդագրությունները անջատվեցին։',
   },
 
   exchangeRates: {
