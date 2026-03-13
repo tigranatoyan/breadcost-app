@@ -1,6 +1,8 @@
 package com.breadcost.multitenancy;
 
 import com.breadcost.customers.CustomerRepository;
+import com.breadcost.invoice.InvoiceEntity;
+import com.breadcost.invoice.InvoiceRepository;
 import com.breadcost.masterdata.*;
 import com.breadcost.subscription.SubscriptionService;
 import com.breadcost.subscription.TenantSubscriptionRepository;
@@ -31,6 +33,9 @@ public class TenantManagementService {
     private final OrderRepository orderRepo;
     private final ProductRepository productRepo;
     private final CustomerRepository customerRepo;
+    private final InvoiceRepository invoiceRepo;
+    private final WorkOrderRepository workOrderRepo;
+    private final ProductionPlanRepository productionPlanRepo;
 
     // ── D4.1: Tenant Onboarding ──────────────────────────────────────────────
 
@@ -213,8 +218,40 @@ public class TenantManagementService {
                 "expiresAt", s.getExpiryDate() != null ? s.getExpiryDate().toString() : ""
         )));
 
-        log.info("Exported data for tenant={}: {} products, {} customers, {} orders",
-                tenantId, products.size(), customers.size(), orders.size());
+        // Invoices
+        List<InvoiceEntity> invoices = invoiceRepo.findByTenantId(tenantId);
+        export.put("invoicesCount", invoices.size());
+        export.put("invoices", invoices.stream().map(i -> Map.of(
+                "invoiceId", i.getInvoiceId(),
+                "invoiceNumber", i.getInvoiceNumber() != null ? i.getInvoiceNumber() : "",
+                "status", i.getStatus().name(),
+                "totalAmount", i.getTotalAmount() != null ? i.getTotalAmount().toString() : "0",
+                "issuedDate", i.getIssuedDate() != null ? i.getIssuedDate().toString() : "",
+                "dueDate", i.getDueDate() != null ? i.getDueDate().toString() : ""
+        )).toList());
+
+        // Work orders
+        List<WorkOrderEntity> workOrders = workOrderRepo.findByTenantId(tenantId);
+        export.put("workOrdersCount", workOrders.size());
+        export.put("workOrders", workOrders.stream().map(w -> Map.of(
+                "workOrderId", w.getWorkOrderId(),
+                "productId", w.getProductId() != null ? w.getProductId() : "",
+                "status", w.getStatus() != null ? w.getStatus().name() : "",
+                "targetQty", String.valueOf(w.getTargetQty())
+        )).toList());
+
+        // Production plans
+        List<ProductionPlanEntity> plans = productionPlanRepo.findByTenantId(tenantId);
+        export.put("productionPlansCount", plans.size());
+        export.put("productionPlans", plans.stream().map(p -> Map.of(
+                "planId", p.getPlanId(),
+                "planDate", p.getPlanDate() != null ? p.getPlanDate().toString() : "",
+                "status", p.getStatus() != null ? p.getStatus().name() : ""
+        )).toList());
+
+        log.info("Exported data for tenant={}: {} products, {} customers, {} orders, {} invoices, {} workOrders, {} plans",
+                tenantId, products.size(), customers.size(), orders.size(),
+                invoices.size(), workOrders.size(), plans.size());
         return export;
     }
 
@@ -237,6 +274,7 @@ public class TenantManagementService {
             summary.put("tenantId", tid);
             summary.put("displayName", tenant.getDisplayName() != null ? tenant.getDisplayName() : tid);
             summary.put("currency", tenant.getMainCurrency());
+            summary.put("suspended", tenant.isSuspended());
             summary.put("productsCount", productRepo.findByTenantId(tid).size());
             summary.put("ordersCount", orderRepo.findByTenantId(tid).size());
             summary.put("customersCount", customerRepo.findByTenantId(tid).size());
@@ -251,5 +289,27 @@ public class TenantManagementService {
         overview.put("tenants", tenantSummaries);
 
         return overview;
+    }
+
+    // ── D4.4: Tenant Suspend / Activate ──────────────────────────────────────
+
+    @Transactional
+    public TenantConfigEntity suspendTenant(String tenantId) {
+        TenantConfigEntity tenant = tenantConfigRepo.findById(tenantId)
+                .orElseThrow(() -> new IllegalArgumentException("Tenant not found: " + tenantId));
+        tenant.setSuspended(true);
+        tenant.setSuspendedAt(Instant.now());
+        log.info("Suspended tenant={}", tenantId);
+        return tenantConfigRepo.save(tenant);
+    }
+
+    @Transactional
+    public TenantConfigEntity activateTenant(String tenantId) {
+        TenantConfigEntity tenant = tenantConfigRepo.findById(tenantId)
+                .orElseThrow(() -> new IllegalArgumentException("Tenant not found: " + tenantId));
+        tenant.setSuspended(false);
+        tenant.setSuspendedAt(null);
+        log.info("Activated tenant={}", tenantId);
+        return tenantConfigRepo.save(tenant);
     }
 }

@@ -31,6 +31,12 @@ public class TenantConfigEntity {
     @Builder.Default
     private String mainCurrency = "UZS";
 
+    /** Whether the tenant is suspended by platform admin */
+    @Builder.Default
+    private boolean suspended = false;
+
+    private Instant suspendedAt;
+
     private Instant updatedAt;
 
     @PrePersist

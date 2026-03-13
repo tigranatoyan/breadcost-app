@@ -1,5 +1,6 @@
 package com.breadcost.api;
 
+import com.breadcost.masterdata.TenantConfigEntity;
 import com.breadcost.multitenancy.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -118,5 +119,17 @@ public class TenantManagementController {
     @PreAuthorize("hasRole('Admin')")
     public Map<String, Object> getPlatformOverview() {
         return service.getPlatformOverview();
+    }
+
+    @PostMapping("/{tenantId}/suspend")
+    @PreAuthorize("hasRole('Admin')")
+    public TenantConfigEntity suspendTenant(@PathVariable String tenantId) {
+        return service.suspendTenant(tenantId);
+    }
+
+    @PostMapping("/{tenantId}/activate")
+    @PreAuthorize("hasRole('Admin')")
+    public TenantConfigEntity activateTenant(@PathVariable String tenantId) {
+        return service.activateTenant(tenantId);
     }
 }
