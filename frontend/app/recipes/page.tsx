@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Modal, Spinner, Alert, Field } from '@/components/ui';
-import { Badge, Button } from '@/components/design-system';
+import { Badge, Button, SectionTitle } from '@/components/design-system';
 import { Plus, BookOpen, ChevronDown, ChevronUp, Clock3, Check } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 
@@ -331,22 +331,22 @@ export default function RecipesPage() {
   };
 
   return (
-    <div className="max-w-5xl">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-6">
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">{t('recipes.workshop') ?? 'Workshop'}</div>
-          <h1 className="mt-1 text-2xl font-bold text-gray-900">{t('recipes.title')}</h1>
-          <p className="mt-1 text-sm text-gray-500">{t('recipes.subtitle') ?? 'Select a product above to view its recipes.'}</p>
-        </div>
-        <Button
-          variant="primary"
-          size="sm"
-          disabled={!selectedPid}
-          onClick={openForm}
-        >
-          <Plus className="h-4 w-4" /> {t('recipes.newRecipe')}
-        </Button>
-      </div>
+    <div className="max-w-[1800px]">
+      <SectionTitle
+        eyebrow={t('recipes.workshop') ?? 'Workshop'}
+        title={t('recipes.title')}
+        subtitle={t('recipes.subtitle') ?? 'Select a product above to view its recipes.'}
+        action={
+          <Button
+            variant="primary"
+            size="sm"
+            disabled={!selectedPid}
+            onClick={openForm}
+          >
+            <Plus className="h-4 w-4" /> {t('recipes.newRecipe')}
+          </Button>
+        }
+      />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
 
@@ -455,19 +455,16 @@ export default function RecipesPage() {
                                 <div className="flex items-center justify-between mb-2">
                                   <span className="text-xs font-semibold text-gray-600">{t('recipes.editingIngredients')}</span>
                                   <div className="flex gap-2">
-                                    <button
-                                      className="btn-xs bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                      onClick={cancelEditIngredients}
-                                    >
+                                    <Button variant="secondary" size="xs" onClick={cancelEditIngredients}>
                                       {t('common.cancel')}
-                                    </button>
-                                    <button
-                                      className="btn-xs bg-green-600 text-white hover:bg-green-700"
+                                    </Button>
+                                    <Button
+                                      variant="primary" size="xs" className="bg-green-600 hover:bg-green-700"
                                       disabled={savingIngredients}
                                       onClick={() => saveIngredients(r.recipeId)}
                                     >
                                       {savingIngredients ? t('common.saving') : t('common.save')}
-                                    </button>
+                                    </Button>
                                   </div>
                                 </div>
                                 <table className="w-full text-xs mb-2">
@@ -524,12 +521,12 @@ export default function RecipesPage() {
                                     ))}
                                   </tbody>
                                 </table>
-                                <button
-                                  className="btn-xs bg-blue-100 text-blue-700 hover:bg-blue-200"
+                                <Button
+                                  variant="secondary" size="xs" className="bg-blue-100 text-blue-700 hover:bg-blue-200"
                                   onClick={() => setEditIngRows((rows) => [...rows, newIng()])}
                                 >
                                   {t('recipes.addRow')}
-                                </button>
+                                </Button>
                               </div>
                             ) : (
                               /* ── READ MODE ── */
@@ -537,12 +534,12 @@ export default function RecipesPage() {
                                 <div className="flex items-center justify-between mb-2">
                                   <span />
                                   {r.status === 'DRAFT' && (
-                                    <button
-                                      className="btn-xs bg-amber-500 text-white hover:bg-amber-600"
+                                    <Button
+                                      variant="primary" size="xs" className="bg-amber-500 hover:bg-amber-600"
                                       onClick={() => startEditIngredients(r)}
                                     >
                                       {t('recipes.editIngredients')}
-                                    </button>
+                                    </Button>
                                   )}
                                 </div>
                                 <table className="w-full text-xs">
@@ -587,12 +584,12 @@ export default function RecipesPage() {
                           <div className="px-4 py-3">
                             <div className="flex items-center justify-between mb-3">
                               <span className="text-xs text-gray-500">{t('recipes.stepGuide')}</span>
-                              <button
-                                className="btn-xs bg-blue-600 text-white hover:bg-blue-700"
+                              <Button
+                                variant="primary" size="xs"
                                 onClick={() => openAddStep(r.recipeId)}
                               >
                                 {t('recipes.addStep')}
-                              </button>
+                              </Button>
                             </div>
                             {loadingSteps === r.recipeId ? (
                               <p className="text-xs text-gray-400">{t('common.loading')}</p>
@@ -619,8 +616,8 @@ export default function RecipesPage() {
                                       </div>
                                     </div>
                                     <div className="flex gap-1 flex-shrink-0">
-                                      <button className="btn-xs border text-gray-500 hover:bg-gray-100" onClick={() => openEditStep(step)}>{t('common.edit')}</button>
-                                      <button className="btn-xs bg-red-50 text-red-600 hover:bg-red-100" onClick={() => deleteStep(step.stepId, step.recipeId)}>×</button>
+                                      <Button variant="secondary" size="xs" onClick={() => openEditStep(step)}>{t('common.edit')}</Button>
+                                      <Button variant="danger" size="xs" onClick={() => deleteStep(step.stepId, step.recipeId)}>×</Button>
                                     </div>
                                   </div>
                                 ))}
@@ -844,16 +841,12 @@ export default function RecipesPage() {
             </div>
 
             <div className="flex justify-end gap-2 pt-2 border-t">
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={() => setOpen(false)}
-              >
+              <Button variant="secondary" size="sm" onClick={() => setOpen(false)}>
                 {t('common.cancel')}
-              </button>
-              <button type="submit" className="btn-primary" disabled={saving}>
+              </Button>
+              <Button variant="primary" size="sm" type="submit" disabled={saving}>
                 {saving ? t('common.saving') : t('common.create')}
-              </button>
+              </Button>
             </div>
           </form>
         </Modal>
@@ -903,10 +896,10 @@ export default function RecipesPage() {
             </div>
 
             <div className="flex justify-end gap-2 pt-2 border-t">
-              <button type="button" className="btn-secondary" onClick={() => setStepOpen(false)}>{t('common.cancel')}</button>
-              <button type="submit" className="btn-primary" disabled={savingStep}>
+              <Button variant="secondary" size="sm" onClick={() => setStepOpen(false)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" type="submit" disabled={savingStep}>
                 {savingStep ? t('common.saving') : editStepId ? t('common.save') : t('recipes.addStep')}
-              </button>
+              </Button>
             </div>
           </form>
         </Modal>

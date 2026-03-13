@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Modal, Table, Spinner, Alert, Badge, Field, Success } from '@/components/ui';
+import { SectionTitle, Button } from '@/components/design-system';
 
 /* ── types ─────────────────────────────────────────────── */
 interface LoyaltyTier {
@@ -157,8 +158,8 @@ export default function LoyaltyPage() {
   };
 
   return (
-    <div className="max-w-5xl">
-      <h1 className="text-2xl font-bold mb-6">{t('loyalty.title')}</h1>
+    <div className="max-w-[1800px]">
+      <SectionTitle eyebrow="Engagement" title={t('loyalty.title')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}
@@ -176,7 +177,7 @@ export default function LoyaltyPage() {
       {tab === 'tiers' && (
         <>
           <div className="flex justify-end mb-4">
-            <button className="btn btn-primary text-sm" onClick={() => setShowCreateTier(true)}>+ {t('loyalty.addTier')}</button>
+            <Button variant="primary" size="sm" onClick={() => setShowCreateTier(true)}>+ {t('loyalty.addTier')}</Button>
           </div>
           {tiersLoading ? <Spinner /> : (
             <Table
@@ -187,8 +188,8 @@ export default function LoyaltyPage() {
                 ti.discountPercent != null ? `${ti.discountPercent}%` : '—',
                 ti.perks || '—',
                 <div key={ti.tierId} className="flex gap-1">
-                  <button className="btn btn-xs" onClick={() => { setEditTier(ti); setEditTierForm({ name: ti.name, minPoints: String(ti.minPoints), discountPercent: ti.discountPercent != null ? String(ti.discountPercent) : '', perks: ti.perks || '' }); }}>{t('common.edit')}</button>
-                  <button className="btn btn-xs btn-danger" onClick={() => deleteTier(ti.tierId)}>{t('common.delete')}</button>
+                  <Button variant="secondary" size="xs" onClick={() => { setEditTier(ti); setEditTierForm({ name: ti.name, minPoints: String(ti.minPoints), discountPercent: ti.discountPercent != null ? String(ti.discountPercent) : '', perks: ti.perks || '' }); }}>{t('common.edit')}</Button>
+                  <Button variant="danger" size="xs" onClick={() => deleteTier(ti.tierId)}>{t('common.delete')}</Button>
                 </div>,
               ])}
               empty={t('loyalty.noTiers')}
@@ -202,9 +203,9 @@ export default function LoyaltyPage() {
         <>
           <div className="flex gap-2 items-end mb-4">
             <Field label={t('loyalty.customerId')}><input className="input" value={balanceCustId} onChange={e => setBalanceCustId(e.target.value)} /></Field>
-            <button className="btn btn-primary h-10" onClick={lookupBalance}>{t('common.load')}</button>
-            <button className="btn btn-success h-10" onClick={() => setShowAward(true)}>{t('loyalty.award')}</button>
-            <button className="btn btn-secondary h-10" onClick={() => setShowRedeem(true)}>{t('loyalty.redeem')}</button>
+            <Button variant="primary" size="sm" onClick={lookupBalance}>{t('common.load')}</Button>
+            <Button variant="primary" size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => setShowAward(true)}>{t('loyalty.award')}</Button>
+            <Button variant="secondary" size="sm" onClick={() => setShowRedeem(true)}>{t('loyalty.redeem')}</Button>
           </div>
           {balLoading ? <Spinner /> : balance && (
             <div className="bg-white shadow rounded p-4 space-y-2 text-sm">
@@ -221,7 +222,7 @@ export default function LoyaltyPage() {
         <>
           <div className="flex gap-2 items-end mb-4">
             <Field label={t('loyalty.customerId')}><input className="input" value={historyCustId} onChange={e => setHistoryCustId(e.target.value)} /></Field>
-            <button className="btn btn-primary h-10" onClick={loadHistory}>{t('common.load')}</button>
+            <Button variant="primary" size="sm" onClick={loadHistory}>{t('common.load')}</Button>
           </div>
           {histLoading ? <Spinner /> : (
             <Table
@@ -247,8 +248,8 @@ export default function LoyaltyPage() {
             <Field label={t('loyalty.discountPct')}><input className="input w-full" type="number" step="0.1" value={tierForm.discountPercent} onChange={e => setTierForm({ ...tierForm, discountPercent: e.target.value })} /></Field>
             <Field label={t('loyalty.perks')}><textarea className="input w-full" rows={2} value={tierForm.perks} onChange={e => setTierForm({ ...tierForm, perks: e.target.value })} /></Field>
             <div className="flex justify-end gap-2">
-              <button type="button" className="btn btn-secondary" onClick={() => setShowCreateTier(false)}>{t('common.cancel')}</button>
-              <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? t('common.saving') : t('common.save')}</button>
+              <Button variant="secondary" size="sm" onClick={() => setShowCreateTier(false)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" type="submit" disabled={saving}>{saving ? t('common.saving') : t('common.save')}</Button>
             </div>
           </form>
         </Modal>
@@ -263,8 +264,8 @@ export default function LoyaltyPage() {
             <Field label={t('loyalty.discountPct')}><input className="input w-full" type="number" step="0.1" value={editTierForm.discountPercent} onChange={e => setEditTierForm({ ...editTierForm, discountPercent: e.target.value })} /></Field>
             <Field label={t('loyalty.perks')}><textarea className="input w-full" rows={2} value={editTierForm.perks} onChange={e => setEditTierForm({ ...editTierForm, perks: e.target.value })} /></Field>
             <div className="flex justify-end gap-2">
-              <button type="button" className="btn btn-secondary" onClick={() => setEditTier(null)}>{t('common.cancel')}</button>
-              <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? t('common.saving') : t('common.save')}</button>
+              <Button variant="secondary" size="sm" onClick={() => setEditTier(null)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" type="submit" disabled={saving}>{saving ? t('common.saving') : t('common.save')}</Button>
             </div>
           </form>
         </Modal>
@@ -278,8 +279,8 @@ export default function LoyaltyPage() {
             <Field label={t('loyalty.points')}><input className="input w-full" type="number" required value={awardForm.points} onChange={e => setAwardForm({ ...awardForm, points: e.target.value })} /></Field>
             <Field label={t('loyalty.reason')}><input className="input w-full" value={awardForm.reason} onChange={e => setAwardForm({ ...awardForm, reason: e.target.value })} /></Field>
             <div className="flex justify-end gap-2">
-              <button type="button" className="btn btn-secondary" onClick={() => setShowAward(false)}>{t('common.cancel')}</button>
-              <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? t('common.saving') : t('loyalty.award')}</button>
+              <Button variant="secondary" size="sm" onClick={() => setShowAward(false)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" type="submit" disabled={saving}>{saving ? t('common.saving') : t('loyalty.award')}</Button>
             </div>
           </form>
         </Modal>
@@ -293,8 +294,8 @@ export default function LoyaltyPage() {
             <Field label={t('loyalty.points')}><input className="input w-full" type="number" required value={redeemForm.points} onChange={e => setRedeemForm({ ...redeemForm, points: e.target.value })} /></Field>
             <Field label={t('loyalty.reason')}><input className="input w-full" value={redeemForm.reason} onChange={e => setRedeemForm({ ...redeemForm, reason: e.target.value })} /></Field>
             <div className="flex justify-end gap-2">
-              <button type="button" className="btn btn-secondary" onClick={() => setShowRedeem(false)}>{t('common.cancel')}</button>
-              <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? t('common.saving') : t('loyalty.redeem')}</button>
+              <Button variant="secondary" size="sm" onClick={() => setShowRedeem(false)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" type="submit" disabled={saving}>{saving ? t('common.saving') : t('loyalty.redeem')}</Button>
             </div>
           </form>
         </Modal>

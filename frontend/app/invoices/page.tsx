@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Modal, Table, Spinner, Alert, Badge, Field, Success } from '@/components/ui';
+import { SectionTitle, Button } from '@/components/design-system';
 
 /* ── types ─────────────────────────────────────────────── */
 interface Invoice {
@@ -177,8 +178,8 @@ export default function InvoicesPage() {
   };
 
   return (
-    <div className="max-w-6xl">
-      <h1 className="text-2xl font-bold mb-6">{t('invoices.title')}</h1>
+    <div className="max-w-[1800px]">
+      <SectionTitle eyebrow="Finance" title={t('invoices.title')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}
@@ -219,11 +220,11 @@ export default function InvoicesPage() {
                 inv.dueDate || '—',
                 <div key={`a-${inv.invoiceId}`} className="flex gap-1 flex-wrap">
                   {inv.status !== 'PAID' && inv.status !== 'VOIDED' && (
-                    <button className="btn btn-xs btn-success" onClick={() => { setPayInv(inv); setPayAmount(''); }}>{t('invoices.pay')}</button>
+                    <Button variant="primary" size="xs" className="bg-green-600 hover:bg-green-700" onClick={() => { setPayInv(inv); setPayAmount(''); }}>{t('invoices.pay')}</Button>
                   )}
-                  <button className="btn btn-xs" onClick={() => creditCheck(inv.customerId)}>{t('invoices.credit')}</button>
-                  <button className="btn btn-xs" onClick={() => { setLimitModal(inv.customerId); setLimitVal(''); }}>{t('invoices.setLimit')}</button>
-                  {inv.status !== 'VOIDED' && <button className="btn btn-xs btn-danger" onClick={() => voidInvoice(inv.invoiceId)}>{t('invoices.void')}</button>}
+                  <Button variant="secondary" size="xs" onClick={() => creditCheck(inv.customerId)}>{t('invoices.credit')}</Button>
+                  <Button variant="secondary" size="xs" onClick={() => { setLimitModal(inv.customerId); setLimitVal(''); }}>{t('invoices.setLimit')}</Button>
+                  {inv.status !== 'VOIDED' && <Button variant="danger" size="xs" onClick={() => voidInvoice(inv.invoiceId)}>{t('invoices.void')}</Button>}
                 </div>,
               ])}
               empty={t('invoices.empty')}
@@ -239,8 +240,8 @@ export default function InvoicesPage() {
             <Field label={t('invoices.customerId')}>
               <input className="input" value={discountCustomerId} onChange={e => setDiscountCustomerId(e.target.value)} placeholder="customer-id" />
             </Field>
-            <button className="btn btn-primary h-10" onClick={loadDiscountRules}>{t('common.load')}</button>
-            {discountCustomerId && <button className="btn btn-secondary h-10" onClick={() => setShowAddDisc(true)}>+ {t('invoices.addDiscount')}</button>}
+            <Button variant="primary" size="sm" onClick={loadDiscountRules}>{t('common.load')}</Button>
+            {discountCustomerId && <Button variant="secondary" size="sm" onClick={() => setShowAddDisc(true)}>+ {t('invoices.addDiscount')}</Button>}
           </div>
           {discRulesLoading ? <Spinner /> : (
             <Table
@@ -280,8 +281,8 @@ export default function InvoicesPage() {
             <p className="text-sm">{t('invoices.outstanding')}: <strong>{(payInv.totalAmount - (payInv.paidAmount || 0)).toFixed(2)} {payInv.currency}</strong></p>
             <Field label={t('invoices.paymentAmount')}><input className="input w-full" type="number" step="0.01" required value={payAmount} onChange={e => setPayAmount(e.target.value)} /></Field>
             <div className="flex justify-end gap-2">
-              <button type="button" className="btn btn-secondary" onClick={() => setPayInv(null)}>{t('common.cancel')}</button>
-              <button type="submit" className="btn btn-primary" disabled={paySaving}>{paySaving ? t('common.saving') : t('invoices.pay')}</button>
+              <Button variant="secondary" size="sm" onClick={() => setPayInv(null)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" type="submit" disabled={paySaving}>{paySaving ? t('common.saving') : t('invoices.pay')}</Button>
             </div>
           </form>
         </Modal>
@@ -304,8 +305,8 @@ export default function InvoicesPage() {
           <div className="space-y-4">
             <Field label={t('invoices.newLimit')}><input className="input w-full" type="number" step="0.01" value={limitVal} onChange={e => setLimitVal(e.target.value)} /></Field>
             <div className="flex justify-end gap-2">
-              <button className="btn btn-secondary" onClick={() => setLimitModal(null)}>{t('common.cancel')}</button>
-              <button className="btn btn-primary" onClick={setCreditLimit}>{t('common.save')}</button>
+              <Button variant="secondary" size="sm" onClick={() => setLimitModal(null)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" onClick={setCreditLimit}>{t('common.save')}</Button>
             </div>
           </div>
         </Modal>
@@ -324,8 +325,8 @@ export default function InvoicesPage() {
               <Field label={t('invoices.validTo')}><input className="input w-full" type="date" value={discForm.validTo} onChange={e => setDiscForm({ ...discForm, validTo: e.target.value })} /></Field>
             </div>
             <div className="flex justify-end gap-2">
-              <button type="button" className="btn btn-secondary" onClick={() => setShowAddDisc(false)}>{t('common.cancel')}</button>
-              <button type="submit" className="btn btn-primary" disabled={discSaving}>{discSaving ? t('common.saving') : t('common.save')}</button>
+              <Button variant="secondary" size="sm" onClick={() => setShowAddDisc(false)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" type="submit" disabled={discSaving}>{discSaving ? t('common.saving') : t('common.save')}</Button>
             </div>
           </form>
         </Modal>

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Modal, Table, Spinner, Alert, Badge, Field, Success } from '@/components/ui';
+import { SectionTitle, Button } from '@/components/design-system';
 
 /* ── types ─────────────────────────────────────────────── */
 interface DeliveryRun {
@@ -139,11 +140,12 @@ export default function DeliveriesPage() {
   };
 
   return (
-    <div className="max-w-6xl">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">{t('deliveries.title')}</h1>
-        <button className="btn btn-primary text-sm" onClick={() => setShowCreate(true)}>+ {t('deliveries.createRun')}</button>
-      </div>
+    <div className="max-w-[1800px]">
+      <SectionTitle
+        eyebrow="Logistics"
+        title={t('deliveries.title')}
+        action={<Button variant="primary" size="sm" onClick={() => setShowCreate(true)}>+ {t('deliveries.createRun')}</Button>}
+      />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}
@@ -158,9 +160,9 @@ export default function DeliveriesPage() {
             r.scheduledDate || '—',
             <Badge key={`s-${r.runId}`} status={r.status} />,
             <div key={`a-${r.runId}`} className="flex gap-1 flex-wrap">
-              <button className="btn btn-xs" onClick={() => { setShowAssign(r.runId); setAssignOrderIds(''); }}>{t('deliveries.assign')}</button>
+              <Button variant="secondary" size="xs" onClick={() => { setShowAssign(r.runId); setAssignOrderIds(''); }}>{t('deliveries.assign')}</Button>
               {(r.status === 'PLANNED' || r.status === 'IN_PROGRESS') && (
-                <button className="btn btn-xs btn-success" onClick={() => completeRun(r.runId)}>{t('deliveries.complete')}</button>
+                <Button variant="primary" size="xs" className="bg-green-600 hover:bg-green-700" onClick={() => completeRun(r.runId)}>{t('deliveries.complete')}</Button>
               )}
             </div>,
           ])}
@@ -177,8 +179,8 @@ export default function DeliveriesPage() {
             <Field label={t('deliveries.scheduledDate')}><input className="input w-full" type="date" value={form.scheduledDate} onChange={e => setForm({ ...form, scheduledDate: e.target.value })} /></Field>
             <Field label={t('common.notes')}><textarea className="input w-full" rows={2} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></Field>
             <div className="flex justify-end gap-2">
-              <button type="button" className="btn btn-secondary" onClick={() => setShowCreate(false)}>{t('common.cancel')}</button>
-              <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? t('common.saving') : t('common.save')}</button>
+              <Button variant="secondary" size="sm" onClick={() => setShowCreate(false)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" type="submit" disabled={saving}>{saving ? t('common.saving') : t('common.save')}</Button>
             </div>
           </form>
         </Modal>
@@ -190,8 +192,8 @@ export default function DeliveriesPage() {
           <p className="text-sm text-gray-500 mb-3">{t('deliveries.assignHint')}</p>
           <textarea className="input w-full" rows={3} placeholder="order-id-1, order-id-2, ..." value={assignOrderIds} onChange={e => setAssignOrderIds(e.target.value)} />
           <div className="flex justify-end gap-2 mt-4">
-            <button className="btn btn-secondary" onClick={() => setShowAssign(null)}>{t('common.cancel')}</button>
-            <button className="btn btn-primary" onClick={() => assignOrders(showAssign)}>{t('deliveries.assign')}</button>
+            <Button variant="secondary" size="sm" onClick={() => setShowAssign(null)}>{t('common.cancel')}</Button>
+            <Button variant="primary" size="sm" onClick={() => assignOrders(showAssign)}>{t('deliveries.assign')}</Button>
           </div>
         </Modal>
       )}
@@ -216,9 +218,9 @@ export default function DeliveriesPage() {
                   o.address || '—',
                   <Badge key={`os-${o.orderId}`} status={o.status || ''} />,
                   <div key={`oa-${o.orderId}`} className="flex gap-1">
-                    <button className="btn btn-xs btn-danger" onClick={() => failDelivery(detailRun!.runId, o.orderId)}>{t('deliveries.fail')}</button>
-                    <button className="btn btn-xs" onClick={() => redelivery(detailRun!.runId, o.orderId)}>{t('deliveries.redeliver')}</button>
-                    <button className="btn btn-xs" onClick={() => waive(detailRun!.runId, o.orderId)}>{t('deliveries.waive')}</button>
+                    <Button variant="danger" size="xs" onClick={() => failDelivery(detailRun!.runId, o.orderId)}>{t('deliveries.fail')}</Button>
+                    <Button variant="secondary" size="xs" onClick={() => redelivery(detailRun!.runId, o.orderId)}>{t('deliveries.redeliver')}</Button>
+                    <Button variant="secondary" size="xs" onClick={() => waive(detailRun!.runId, o.orderId)}>{t('deliveries.waive')}</Button>
                   </div>,
                 ])}
                 empty={t('deliveries.noOrders')}

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Table, Spinner, Alert, Badge, Success } from '@/components/ui';
+import { SectionTitle, Button } from '@/components/design-system';
 
 /* ── types ─────────────────────────────────────────────── */
 interface PricingSuggestion {
@@ -131,7 +132,7 @@ export default function AiPricingPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">{t('aiPricing.title')}</h1>
+      <SectionTitle eyebrow="AI" title={t('aiPricing.title')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}
@@ -150,7 +151,7 @@ export default function AiPricingPage() {
       {tab === 'pricing' && (
         <div className="space-y-4">
           <div className="flex gap-2 items-center">
-            <button onClick={generatePricing} className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">{t('aiPricing.generate')}</button>
+            <Button variant="primary" size="sm" onClick={generatePricing}>{t('aiPricing.generate')}</Button>
             <label className="flex items-center gap-1 text-sm ml-auto">
               <input type="checkbox" checked={pendingOnly} onChange={e => setPendingOnly(e.target.checked)} />
               {t('aiPricing.pending')}
@@ -181,7 +182,7 @@ export default function AiPricingPage() {
       {tab === 'anomalies' && (
         <div className="space-y-4">
           <div className="flex gap-2 items-center">
-            <button onClick={generateAlerts} className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">{t('aiPricing.generate')}</button>
+            <Button variant="primary" size="sm" onClick={generateAlerts}>{t('aiPricing.generate')}</Button>
             <label className="flex items-center gap-1 text-sm ml-auto">
               <input type="checkbox" checked={activeOnly} onChange={e => setActiveOnly(e.target.checked)} />
               {t('aiPricing.active')}

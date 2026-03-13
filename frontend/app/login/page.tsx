@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { setSession, isLoggedIn, UserInfo } from '@/lib/auth';
 import { API_BASE } from '@/lib/api';
+import { Button } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
 
 export default function LoginPage() {
@@ -100,13 +101,15 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <button
+            <Button
+              variant="primary"
+              size="sm"
               type="submit"
-              className="btn-primary w-full justify-center py-2.5 text-base mt-2"
+              className="w-full justify-center py-2.5 text-base mt-2"
               disabled={loading}
             >
               {loading ? t('login.signingIn') : t('login.signIn')}
-            </button>
+            </Button>
           </form>
 
           <div className="mt-5 pt-4 border-t text-center">

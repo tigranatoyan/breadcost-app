@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Table, Spinner, Alert, Modal, Field, Success } from '@/components/ui';
+import { SectionTitle, Button } from '@/components/design-system';
 
 /* ── types ─────────────────────────────────────────────── */
 interface DeviceRegistration {
@@ -94,7 +95,7 @@ export default function MobileAdminPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">{t('mobileAdmin.title')}</h1>
+      <SectionTitle eyebrow="Mobile" title={t('mobileAdmin.title')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}
@@ -114,7 +115,7 @@ export default function MobileAdminPage() {
         <div className="space-y-4">
           <div className="flex gap-2 items-end">
             <Field label={t('mobileAdmin.customerId')}><input className="input w-full" value={custFilter} onChange={e => setCustFilter(e.target.value)} /></Field>
-            <button onClick={loadDevices} className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 h-10">{t('mobileAdmin.search')}</button>
+            <Button variant="primary" size="sm" className="h-10" onClick={loadDevices}>{t('mobileAdmin.search')}</Button>
           </div>
           {devicesLoading ? <Spinner /> : (
             <Table
@@ -137,8 +138,8 @@ export default function MobileAdminPage() {
         <div className="space-y-4">
           <div className="flex gap-2 items-end">
             <Field label={t('mobileAdmin.customerId')}><input className="input w-full" value={notifCust} onChange={e => setNotifCust(e.target.value)} /></Field>
-            <button onClick={loadNotifs} className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 h-10">{t('mobileAdmin.search')}</button>
-            <button onClick={() => setSendModal(true)} className="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700 h-10 ml-auto">{t('mobileAdmin.sendNotification')}</button>
+            <Button variant="primary" size="sm" className="h-10" onClick={loadNotifs}>{t('mobileAdmin.search')}</Button>
+            <Button variant="primary" size="sm" className="bg-green-600 hover:bg-green-700 h-10 ml-auto" onClick={() => setSendModal(true)}>{t('mobileAdmin.sendNotification')}</Button>
           </div>
           {notifsLoading ? <Spinner /> : (
             <Table
@@ -165,7 +166,7 @@ export default function MobileAdminPage() {
             <Field label={t('mobileAdmin.body')}><input className="input w-full" value={nf.body} onChange={e => setNf({ ...nf, body: e.target.value })} /></Field>
             <Field label={t('mobileAdmin.type')}><input className="input w-full" value={nf.notificationType} onChange={e => setNf({ ...nf, notificationType: e.target.value })} /></Field>
             <Field label={t('mobileAdmin.referenceId')}><input className="input w-full" value={nf.referenceId} onChange={e => setNf({ ...nf, referenceId: e.target.value })} /></Field>
-            <button onClick={sendNotification} className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 w-full">{t('mobileAdmin.send')}</button>
+            <Button variant="primary" size="sm" className="w-full" onClick={sendNotification}>{t('mobileAdmin.send')}</Button>
           </div>
         </Modal>
       )}

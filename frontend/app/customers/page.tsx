@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Modal, Table, Spinner, Alert, Badge, Field, Success } from '@/components/ui';
+import { SectionTitle, Button } from '@/components/design-system';
 
 /* ── types ─────────────────────────────────────────────── */
 interface Customer {
@@ -138,8 +139,8 @@ export default function CustomersPage() {
   };
 
   return (
-    <div className="max-w-6xl">
-      <h1 className="text-2xl font-bold mb-6">{t('customers.title')}</h1>
+    <div className="max-w-[1800px]">
+      <SectionTitle eyebrow="CRM" title={t('customers.title')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}
@@ -157,7 +158,7 @@ export default function CustomersPage() {
       {tab === 'customers' && (
         <>
           <div className="flex justify-end mb-4">
-            <button className="btn btn-primary text-sm" onClick={() => setShowRegister(true)}>+ {t('customers.register')}</button>
+            <Button variant="primary" size="sm" onClick={() => setShowRegister(true)}>+ {t('customers.register')}</Button>
           </div>
           {loading ? <Spinner /> : (
             <Table
@@ -198,7 +199,7 @@ export default function CustomersPage() {
       {tab === 'orders' && (
         <>
           <div className="flex justify-end mb-4">
-            <button className="btn btn-primary text-sm" onClick={() => { setShowCreateOrder(true); addLine(); }}>+ {t('customers.createOrder')}</button>
+            <Button variant="primary" size="sm" onClick={() => { setShowCreateOrder(true); addLine(); }}>+ {t('customers.createOrder')}</Button>
           </div>
           {ordersLoading ? <Spinner /> : (
             <Table
@@ -224,8 +225,8 @@ export default function CustomersPage() {
             <Field label={t('customers.email')}><input className="input w-full" type="email" value={regForm.email} onChange={e => setRegForm({ ...regForm, email: e.target.value })} /></Field>
             <Field label={t('customers.phone')}><input className="input w-full" value={regForm.phone} onChange={e => setRegForm({ ...regForm, phone: e.target.value })} /></Field>
             <div className="flex justify-end gap-2">
-              <button type="button" className="btn btn-secondary" onClick={() => setShowRegister(false)}>{t('common.cancel')}</button>
-              <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? t('common.saving') : t('common.save')}</button>
+              <Button variant="secondary" size="sm" onClick={() => setShowRegister(false)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" type="submit" disabled={saving}>{saving ? t('common.saving') : t('common.save')}</Button>
             </div>
           </form>
         </Modal>
@@ -252,13 +253,13 @@ export default function CustomersPage() {
                 </Field>
                 <Field label={t('suppliers.qty')}><input className="input w-full" type="number" min="1" required value={line.qty} onChange={e => updateLine(i, 'qty', e.target.value)} /></Field>
                 <div />
-                <button type="button" className="btn btn-xs btn-danger mb-1" onClick={() => removeLine(i)}>✕</button>
+                <Button variant="danger" size="xs" onClick={() => removeLine(i)}>✕</Button>
               </div>
             ))}
-            <button type="button" className="btn btn-secondary text-sm" onClick={addLine}>+ {t('customers.addItem')}</button>
+            <Button variant="secondary" size="sm" onClick={addLine}>+ {t('customers.addItem')}</Button>
             <div className="flex justify-end gap-2 pt-4">
-              <button type="button" className="btn btn-secondary" onClick={() => { setShowCreateOrder(false); setOrderLines([]); }}>{t('common.cancel')}</button>
-              <button type="submit" className="btn btn-primary" disabled={orderSaving}>{orderSaving ? t('common.saving') : t('common.save')}</button>
+              <Button variant="secondary" size="sm" onClick={() => { setShowCreateOrder(false); setOrderLines([]); }}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" type="submit" disabled={orderSaving}>{orderSaving ? t('common.saving') : t('common.save')}</Button>
             </div>
           </form>
         </Modal>

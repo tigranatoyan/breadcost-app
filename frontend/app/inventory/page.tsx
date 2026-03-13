@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Modal, Spinner, Alert, Badge, Field } from '@/components/ui';
+import { SectionTitle, Button } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
 import { getRole } from '@/lib/auth';
 import { Plus, ArrowLeftRight, SlidersHorizontal } from 'lucide-react';
@@ -390,44 +391,42 @@ export default function InventoryPage() {
   // ─── render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="max-w-6xl">
+    <div className="max-w-[1800px]">
       {/* header */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-5">
-        <div className="flex items-center gap-3">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">Inventory</div>
-            <h1 className="mt-1 text-2xl font-bold text-gray-900">{t('inventory.title')}</h1>
-            <p className="mt-1 text-sm text-gray-500">FIFO lots, stock alerts, receiving, transfers, and adjustments.</p>
+      <SectionTitle
+        eyebrow="Inventory"
+        title={t('inventory.title')}
+        subtitle="FIFO lots, stock alerts, receiving, transfers, and adjustments."
+        action={
+          <div className="flex items-center gap-2">
+            {alertCount > 0 && (
+              <span className="bg-red-100 text-red-700 text-xs font-semibold px-2.5 py-1 rounded-full">
+                {t('inventory.alerts', { count: alertCount })}
+              </span>
+            )}
+            {tab === 'stock' && (
+              <>
+                {canAdjust && (
+                  <Button variant="secondary" size="sm" onClick={() => openAdjust()}>
+                    {t('inventory.adjust')}
+                  </Button>
+                )}
+                <Button variant="secondary" size="sm" onClick={() => openTransfer()}>
+                  {t('inventory.transfer')}
+                </Button>
+                <Button variant="primary" size="sm" onClick={openReceive}>
+                  {t('inventory.receiveStock')}
+                </Button>
+              </>
+            )}
+            {tab === 'items' && (
+              <Button variant="primary" size="sm" onClick={openCreateItem}>
+                {t('inventory.newItem')}
+              </Button>
+            )}
           </div>
-          {alertCount > 0 && (
-            <span className="bg-red-100 text-red-700 text-xs font-semibold px-2.5 py-1 rounded-full">
-              {t('inventory.alerts', { count: alertCount })}
-            </span>
-          )}
-        </div>
-        <div className="flex gap-2">
-          {tab === 'stock' && (
-            <>
-              {canAdjust && (
-                <button className="btn-secondary" onClick={() => openAdjust()}>
-                  {t('inventory.adjust')}
-                </button>
-              )}
-              <button className="btn-secondary" onClick={() => openTransfer()}>
-                {t('inventory.transfer')}
-              </button>
-              <button className="btn-primary" onClick={openReceive}>
-                {t('inventory.receiveStock')}
-              </button>
-            </>
-          )}
-          {tab === 'items' && (
-            <button className="btn-primary" onClick={openCreateItem}>
-              {t('inventory.newItem')}
-            </button>
-          )}
-        </div>
-      </div>
+        }
+      />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && (
@@ -743,12 +742,12 @@ export default function InventoryPage() {
             </div>
 
             <div className="flex justify-end gap-2 pt-2 border-t">
-              <button type="button" className="btn-secondary" onClick={() => setReceiveOpen(false)}>
+              <Button variant="secondary" size="sm" onClick={() => setReceiveOpen(false)}>
                 {t('common.cancel')}
-              </button>
-              <button type="submit" className="btn-primary" disabled={receiveSaving || items.length === 0}>
+              </Button>
+              <Button variant="primary" size="sm" type="submit" disabled={receiveSaving || items.length === 0}>
                 {receiveSaving ? t('inventory.recording') : t('inventory.recordReceipt')}
-              </button>
+              </Button>
             </div>
           </form>
         </Modal>
@@ -814,12 +813,12 @@ export default function InventoryPage() {
             </Field>
 
             <div className="flex justify-end gap-2 pt-2 border-t">
-              <button type="button" className="btn-secondary" onClick={() => setTransferOpen(false)}>
+              <Button variant="secondary" size="sm" onClick={() => setTransferOpen(false)}>
                 {t('common.cancel')}
-              </button>
-              <button type="submit" className="btn-primary" disabled={transferSaving}>
+              </Button>
+              <Button variant="primary" size="sm" type="submit" disabled={transferSaving}>
                 {transferSaving ? t('inventory.transferring') : t('inventory.transferBtn')}
-              </button>
+              </Button>
             </div>
           </form>
         </Modal>
@@ -884,12 +883,12 @@ export default function InventoryPage() {
             </Field>
 
             <div className="flex justify-end gap-2 pt-2 border-t">
-              <button type="button" className="btn-secondary" onClick={() => setItemOpen(false)}>
+              <Button variant="secondary" size="sm" onClick={() => setItemOpen(false)}>
                 {t('common.cancel')}
-              </button>
-              <button type="submit" className="btn-primary" disabled={itemSaving}>
+              </Button>
+              <Button variant="primary" size="sm" type="submit" disabled={itemSaving}>
                 {itemSaving ? t('common.saving') : editItemId ? t('common.save') : t('common.create')}
-              </button>
+              </Button>
             </div>
           </form>
         </Modal>
@@ -955,12 +954,12 @@ export default function InventoryPage() {
             </div>
 
             <div className="flex justify-end gap-2 pt-2 border-t">
-              <button type="button" className="btn-secondary" onClick={() => setAdjustOpen(false)}>
+              <Button variant="secondary" size="sm" onClick={() => setAdjustOpen(false)}>
                 {t('common.cancel')}
-              </button>
-              <button type="submit" className="btn-primary" disabled={adjustSaving || !adjustForm.adjustmentQty}>
+              </Button>
+              <Button variant="primary" size="sm" type="submit" disabled={adjustSaving || !adjustForm.adjustmentQty}>
                 {adjustSaving ? t('inventory.adjusting') : t('inventory.adjustSubmit')}
-              </button>
+              </Button>
             </div>
           </form>
         </Modal>

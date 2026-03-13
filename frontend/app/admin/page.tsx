@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { apiFetch, API_BASE, TENANT_ID } from '@/lib/api';
 import { Alert, Spinner, Modal, Field, Success } from '@/components/ui';
+import { SectionTitle, Button } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
 
 // ─── master data panels ────────────────────────────────────────────────────────
@@ -195,11 +196,12 @@ export default function AdminPage() {
   ];
 
   return (
-    <div className="max-w-4xl">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold">{t('admin.title')}</h1>
-        <p className="text-sm text-gray-500 mt-1">{t('admin.subtitle')}</p>
-      </div>
+    <div className="max-w-[1800px]">
+      <SectionTitle
+        eyebrow="Settings"
+        title={t('admin.title')}
+        subtitle={t('admin.subtitle')}
+      />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}
@@ -271,9 +273,9 @@ export default function AdminPage() {
                 </select>
               </div>
               <div className="col-span-2 flex justify-end">
-                <button type="submit" className="btn-primary text-xs py-1 px-3" disabled={saving}>
+                <Button variant="primary" size="xs" type="submit" disabled={saving}>
                   {saving ? t('common.saving') : t('admin.createUser')}
-                </button>
+                </Button>
               </div>
             </form>
           )}
@@ -375,10 +377,10 @@ export default function AdminPage() {
                       onChange={(e) => setCfgForm((f) => ({ ...f, mainCurrency: e.target.value }))} />
                   </Field>
                   <div className="flex justify-end gap-2 pt-2 border-t">
-                    <button type="button" className="btn-secondary" onClick={() => setEditingConfig(false)}>{t('common.cancel')}</button>
-                    <button type="submit" className="btn-primary" disabled={cfgSaving}>
+                    <Button variant="secondary" size="sm" onClick={() => setEditingConfig(false)}>{t('common.cancel')}</Button>
+                    <Button variant="primary" size="sm" type="submit" disabled={cfgSaving}>
                       {cfgSaving ? t('common.saving') : t('common.save')}
-                    </button>
+                    </Button>
                   </div>
                 </form>
               ) : (
@@ -453,10 +455,10 @@ export default function AdminPage() {
               </label>
             </Field>
             <div className="flex justify-end gap-2 pt-2 border-t">
-              <button type="button" className="btn-secondary" onClick={() => setEditUser(null)}>{t('common.cancel')}</button>
-              <button type="submit" className="btn-primary" disabled={saving}>
+              <Button variant="secondary" size="sm" onClick={() => setEditUser(null)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" type="submit" disabled={saving}>
                 {saving ? t('common.saving') : t('common.save')}
-              </button>
+              </Button>
             </div>
           </form>
         </Modal>
@@ -473,10 +475,10 @@ export default function AdminPage() {
                 placeholder={t('admin.newPasswordPlaceholder')} />
             </Field>
             <div className="flex justify-end gap-2 pt-2 border-t">
-              <button type="button" className="btn-secondary" onClick={() => setResetUser(null)}>{t('common.cancel')}</button>
-              <button type="submit" className="btn-primary" disabled={resetSaving}>
+              <Button variant="secondary" size="sm" onClick={() => setResetUser(null)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" type="submit" disabled={resetSaving}>
                 {resetSaving ? t('common.saving') : t('admin.resetPwdBtn')}
-              </button>
+              </Button>
             </div>
           </form>
         </Modal>

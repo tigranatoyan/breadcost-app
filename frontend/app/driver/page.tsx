@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Table, Spinner, Alert, Badge, Modal, Field, Success } from '@/components/ui';
+import { SectionTitle, Button } from '@/components/design-system';
 
 /* ── types ─────────────────────────────────────────────── */
 interface DriverSession {
@@ -107,7 +108,7 @@ export default function DriverPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">{t('driver.title')}</h1>
+      <SectionTitle eyebrow="Logistics" title={t('driver.title')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}
@@ -125,7 +126,7 @@ export default function DriverPage() {
       {/* ── Active Sessions ────────────────────────────── */}
       {tab === 'sessions' && (
         <div className="space-y-4">
-          <button onClick={loadSessions} className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">{t('driver.refresh')}</button>
+          <Button variant="primary" size="sm" onClick={loadSessions}>{t('driver.refresh')}</Button>
           {sessionsLoading ? <Spinner /> : (
             <Table
               cols={[t('driver.driverName'), t('driver.runId'), t('driver.status'), t('driver.startTime'), t('driver.location'), '']}
@@ -151,7 +152,7 @@ export default function DriverPage() {
         <div className="space-y-4">
           <div className="flex gap-2 items-end">
             <Field label={t('driver.runId')}><input className="input w-full" value={paySessionId} onChange={e => setPaySessionId(e.target.value)} /></Field>
-            <button onClick={async () => {
+            <Button variant="primary" size="sm" className="h-10" onClick={async () => {
               if (!paySessionId.trim()) return;
               setPackagingLoading(true);
               try {
@@ -159,7 +160,7 @@ export default function DriverPage() {
                 setPackaging(p ? [p] : []);
               } catch (e) { setError(String(e)); }
               finally { setPackagingLoading(false); }
-            }} className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 h-10">{t('driver.lookup')}</button>
+            }}>{t('driver.lookup')}</Button>
           </div>
           {packagingLoading ? <Spinner /> : (
             <Table
@@ -182,7 +183,7 @@ export default function DriverPage() {
         <div className="space-y-4">
           <div className="flex gap-2 items-end">
             <Field label={t('driver.sessionId')}><input className="input w-full" value={paySessionId} onChange={e => setPaySessionId(e.target.value)} /></Field>
-            <button onClick={loadPayments} className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 h-10">{t('driver.lookup')}</button>
+            <Button variant="primary" size="sm" className="h-10" onClick={loadPayments}>{t('driver.lookup')}</Button>
           </div>
           {paymentsLoading ? <Spinner /> : (
             <Table

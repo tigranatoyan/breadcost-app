@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Modal, Table, Spinner, Alert, Badge, Field, Success } from '@/components/ui';
+import { SectionTitle, Button } from '@/components/design-system';
 
 /* ── types ─────────────────────────────────────────────── */
 interface SubTier {
@@ -85,8 +86,8 @@ export default function SubscriptionsPage() {
   };
 
   return (
-    <div className="max-w-5xl">
-      <h1 className="text-2xl font-bold mb-6">{t('subscriptions.title')}</h1>
+    <div className="max-w-[1800px]">
+      <SectionTitle eyebrow="Billing" title={t('subscriptions.title')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}
@@ -130,12 +131,12 @@ export default function SubscriptionsPage() {
               <div><strong>{t('common.status')}:</strong> <Badge status={tenantSub.status} /></div>
               {tenantSub.startDate && <div><strong>{t('subscriptions.start')}:</strong> {tenantSub.startDate}</div>}
               {tenantSub.endDate && <div><strong>{t('subscriptions.end')}:</strong> {tenantSub.endDate}</div>}
-              <button className="btn btn-primary text-sm mt-2" onClick={() => setShowAssign(true)}>{t('subscriptions.change')}</button>
+              <Button variant="primary" size="sm" className="mt-2" onClick={() => setShowAssign(true)}>{t('subscriptions.change')}</Button>
             </div>
           ) : (
             <div className="text-sm text-gray-500">
               <p>{t('subscriptions.noSubscription')}</p>
-              <button className="btn btn-primary text-sm mt-2" onClick={() => setShowAssign(true)}>{t('subscriptions.assign')}</button>
+              <Button variant="primary" size="sm" className="mt-2" onClick={() => setShowAssign(true)}>{t('subscriptions.assign')}</Button>
             </div>
           )}
 
@@ -144,7 +145,7 @@ export default function SubscriptionsPage() {
             <h3 className="font-semibold text-sm mb-2">{t('subscriptions.featureCheck')}</h3>
             <div className="flex gap-2 items-end">
               <Field label={t('subscriptions.featureKey')}><input className="input" value={featureKey} onChange={e => setFeatureKey(e.target.value)} placeholder="e.g. advanced_reports" /></Field>
-              <button className="btn btn-primary h-10" onClick={checkFeature}>{t('subscriptions.check')}</button>
+              <Button variant="primary" size="sm" onClick={checkFeature}>{t('subscriptions.check')}</Button>
             </div>
             {featureResult !== null && (
               <p className={`text-sm mt-2 font-medium ${featureResult ? 'text-green-600' : 'text-red-600'}`}>
@@ -166,8 +167,8 @@ export default function SubscriptionsPage() {
               </select>
             </Field>
             <div className="flex justify-end gap-2">
-              <button className="btn btn-secondary" onClick={() => setShowAssign(false)}>{t('common.cancel')}</button>
-              <button className="btn btn-primary" disabled={!assignTier || saving} onClick={assignSubscription}>{saving ? t('common.saving') : t('subscriptions.assign')}</button>
+              <Button variant="secondary" size="sm" onClick={() => setShowAssign(false)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" disabled={!assignTier || saving} onClick={assignSubscription}>{saving ? t('common.saving') : t('subscriptions.assign')}</Button>
             </div>
           </div>
         </Modal>

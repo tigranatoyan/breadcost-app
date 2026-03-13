@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Modal, Spinner, Alert, Success } from '@/components/ui';
+import { SectionTitle, Button } from '@/components/design-system';
 import { Bell, Mail, MessageCircle, Smartphone, Edit, Eye, X } from 'lucide-react';
 
 interface Template {
@@ -132,13 +133,9 @@ export default function NotificationTemplatesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('notificationTemplates.title')}</h1>
-        <button onClick={openNew}
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
-          {t('notificationTemplates.addTemplate')}
-        </button>
-      </div>
+      <SectionTitle eyebrow="Communications" title={t('notificationTemplates.title')} action={
+        <Button variant="primary" size="sm" onClick={openNew}>{t('notificationTemplates.addTemplate')}</Button>
+      } />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}
@@ -172,14 +169,12 @@ export default function NotificationTemplatesPage() {
                 <div className="flex gap-2">
                   {tpls[0] && (
                     <>
-                      <button onClick={() => openEdit(tpls[0])}
-                        className="flex items-center gap-1 rounded border px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50">
+                      <Button variant="secondary" size="xs" onClick={() => openEdit(tpls[0])}>
                         <Edit className="h-3 w-3" /> {t('common.edit')}
-                      </button>
-                      <button onClick={() => previewTemplate(tpls[0])}
-                        className="flex items-center gap-1 rounded border px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50">
+                      </Button>
+                      <Button variant="secondary" size="xs" onClick={() => previewTemplate(tpls[0])}>
                         <Eye className="h-3 w-3" /> {t('notificationTemplates.preview')}
-                      </button>
+                      </Button>
                     </>
                   )}
                 </div>
@@ -241,8 +236,8 @@ export default function NotificationTemplatesPage() {
               </label>
             )}
             <div className="flex justify-end gap-2">
-              <button onClick={() => setEditing(null)} className="rounded border px-4 py-2 text-sm">{t('common.cancel')}</button>
-              <button onClick={saveTemplate} className="rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">{t('common.save')}</button>
+              <Button variant="secondary" size="sm" onClick={() => setEditing(null)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" onClick={saveTemplate}>{t('common.save')}</Button>
             </div>
           </div>
         </Modal>
@@ -261,7 +256,7 @@ export default function NotificationTemplatesPage() {
               <div className="rounded bg-gray-50 px-3 py-2 text-sm whitespace-pre-wrap">{preview.body || '(empty)'}</div>
             </div>
             <div className="flex justify-end">
-              <button onClick={() => setPreview(null)} className="rounded border px-4 py-2 text-sm">{t('common.close')}</button>
+              <Button variant="secondary" size="sm" onClick={() => setPreview(null)}>{t('common.close')}</Button>
             </div>
           </div>
         </Modal>

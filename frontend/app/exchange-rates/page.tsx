@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Modal, Table, Spinner, Alert, Field, Success } from '@/components/ui';
+import { SectionTitle, Button } from '@/components/design-system';
 
 /* ── types ─────────────────────────────────────────────── */
 interface ExchangeRate {
@@ -120,13 +121,12 @@ export default function ExchangeRatesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('exchangeRates.title')}</h1>
+      <SectionTitle eyebrow="Currency" title={t('exchangeRates.title')} action={
         <div className="flex gap-2">
-          <button onClick={() => setShowFetch(true)} className="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700">{t('exchangeRates.fetchApi')}</button>
-          <button onClick={() => setShowAdd(true)} className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">{t('exchangeRates.addRate')}</button>
+          <Button variant="primary" size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => setShowFetch(true)}>{t('exchangeRates.fetchApi')}</Button>
+          <Button variant="primary" size="sm" onClick={() => setShowAdd(true)}>{t('exchangeRates.addRate')}</Button>
         </div>
-      </div>
+      } />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}
@@ -144,7 +144,7 @@ export default function ExchangeRatesPage() {
         <div className="flex gap-2 items-end">
           <Field label={t('exchangeRates.targetCurrency')}><input className="border rounded px-2 py-1 w-24" value={lookupCode} onChange={e => setLookupCode(e.target.value)} /></Field>
           <Field label={t('exchangeRates.rateDate')}><input type="date" className="border rounded px-2 py-1" value={lookupDate} onChange={e => setLookupDate(e.target.value)} /></Field>
-          <button onClick={doLookup} className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 h-fit">{t('exchangeRates.lookup')}</button>
+          <Button variant="primary" size="sm" onClick={doLookup} className="h-fit">{t('exchangeRates.lookup')}</Button>
         </div>
         {lookupResult && <p className="mt-2 text-sm">1 {lookupResult.baseCurrency} = {lookupResult.rate} {lookupResult.currencyCode} ({lookupResult.rateDate})</p>}
       </div>
@@ -157,7 +157,7 @@ export default function ExchangeRatesPage() {
           <Field label={t('exchangeRates.toCurrency')}><input className="border rounded px-2 py-1 w-24" value={convTo} onChange={e => setConvTo(e.target.value)} /></Field>
           <Field label={t('exchangeRates.amount')}><input type="number" className="border rounded px-2 py-1 w-32" value={convAmount} onChange={e => setConvAmount(e.target.value)} /></Field>
           <Field label={t('exchangeRates.rateDate')}><input type="date" className="border rounded px-2 py-1" value={convDate} onChange={e => setConvDate(e.target.value)} /></Field>
-          <button onClick={doConvert} className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 h-fit">{t('exchangeRates.convert')}</button>
+          <Button variant="primary" size="sm" onClick={doConvert} className="h-fit">{t('exchangeRates.convert')}</Button>
         </div>
         {convResult && <p className="mt-2 text-sm font-semibold">{convResult.amount} {convResult.from} = {convResult.converted.toFixed(2)} {convResult.to}</p>}
       </div>
@@ -171,8 +171,8 @@ export default function ExchangeRatesPage() {
             <Field label={t('exchangeRates.rate')}><input type="number" step="0.0001" className="border rounded px-2 py-1 w-full" value={form.rate} onChange={e => setForm({ ...form, rate: e.target.value })} required /></Field>
             <Field label={t('exchangeRates.rateDate')}><input type="date" className="border rounded px-2 py-1 w-full" value={form.rateDate} onChange={e => setForm({ ...form, rateDate: e.target.value })} required /></Field>
             <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => setShowAdd(false)} className="rounded border px-4 py-2">{t('common.cancel')}</button>
-              <button type="submit" disabled={saving} className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50">{t('common.save')}</button>
+              <Button variant="secondary" size="sm" onClick={() => setShowAdd(false)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" type="submit" disabled={saving}>{t('common.save')}</Button>
             </div>
           </form>
         </Modal>
@@ -185,8 +185,8 @@ export default function ExchangeRatesPage() {
             <Field label={t('exchangeRates.baseCurrency')}><input className="border rounded px-2 py-1 w-full" value={fetchBase} onChange={e => setFetchBase(e.target.value)} /></Field>
             <Field label={t('exchangeRates.fetchTargets')}><input className="border rounded px-2 py-1 w-full" value={fetchTargets} onChange={e => setFetchTargets(e.target.value)} /></Field>
             <div className="flex justify-end gap-2">
-              <button onClick={() => setShowFetch(false)} className="rounded border px-4 py-2">{t('common.cancel')}</button>
-              <button onClick={doFetch} className="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700">{t('exchangeRates.fetchApi')}</button>
+              <Button variant="secondary" size="sm" onClick={() => setShowFetch(false)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" className="bg-green-600 hover:bg-green-700" onClick={doFetch}>{t('exchangeRates.fetchApi')}</Button>
             </div>
           </div>
         </Modal>

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Table, Spinner, Alert, Success, Field } from '@/components/ui';
+import { SectionTitle, Button } from '@/components/design-system';
 
 /* ── types ─────────────────────────────────────────────── */
 interface ReplenishmentHint {
@@ -132,7 +133,7 @@ export default function AiSuggestionsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">{t('aiSuggestions.title')}</h1>
+      <SectionTitle eyebrow="AI" title={t('aiSuggestions.title')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}
@@ -157,7 +158,7 @@ export default function AiSuggestionsPage() {
                 <option value="MONTHLY">{t('aiSuggestions.monthly')}</option>
               </select>
             </Field>
-            <button onClick={generateHints} className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">{t('aiSuggestions.generate')}</button>
+            <Button variant="primary" size="sm" onClick={generateHints}>{t('aiSuggestions.generate')}</Button>
             <label className="flex items-center gap-1 text-sm ml-auto">
               <input type="checkbox" checked={pendingOnly} onChange={e => setPendingOnly(e.target.checked)} />
               {t('aiSuggestions.pending')}
@@ -191,7 +192,7 @@ export default function AiSuggestionsPage() {
                 <option value={30}>30</option>
               </select>
             </Field>
-            <button onClick={generateForecast} className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">{t('aiSuggestions.generate')}</button>
+            <Button variant="primary" size="sm" onClick={generateForecast}>{t('aiSuggestions.generate')}</Button>
           </div>
           {forecastLoading ? <Spinner /> : (
             <Table
@@ -210,7 +211,7 @@ export default function AiSuggestionsPage() {
             <Field label={t('aiSuggestions.planDate')}>
               <input type="date" className="border rounded px-2 py-1" value={planDate} onChange={e => setPlanDate(e.target.value)} />
             </Field>
-            <button onClick={generateSuggestions} className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">{t('aiSuggestions.generate')}</button>
+            <Button variant="primary" size="sm" onClick={generateSuggestions}>{t('aiSuggestions.generate')}</Button>
           </div>
           {prodLoading ? <Spinner /> : (
             <Table

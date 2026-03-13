@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Badge } from '@/components/ui';
+import { SectionTitle, Button } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
 import { Download, RefreshCw, Zap } from 'lucide-react';
 
@@ -805,26 +806,24 @@ export default function ReportsPage() {
   const hasFilters = dateFrom || dateTo || deptFilter !== 'ALL';
 
   return (
-    <div className="max-w-6xl">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-5">
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">Insights</div>
-          <h1 className="mt-1 text-2xl font-bold text-gray-900">{t('reports.title')}</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            {t('reports.lastRefreshed', { time: lastRefresh.toLocaleTimeString() })}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {csvExporters[tab] && (
-            <button className="btn-secondary" onClick={csvExporters[tab]!}>
-              <Download className="h-4 w-4" /> {t('reports.exportCsv')}
-            </button>
-          )}
-          <button className="btn-secondary" onClick={load} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> {loading ? t('common.loading') : t('common.refresh')}
-          </button>
-        </div>
-      </div>
+    <div className="max-w-[1800px]">
+      <SectionTitle
+        eyebrow="Insights"
+        title={t('reports.title')}
+        subtitle={t('reports.lastRefreshed', { time: lastRefresh.toLocaleTimeString() })}
+        action={
+          <div className="flex gap-2">
+            {csvExporters[tab] && (
+              <Button variant="secondary" size="sm" onClick={csvExporters[tab]!}>
+                <Download className="h-4 w-4" /> {t('reports.exportCsv')}
+              </Button>
+            )}
+            <Button variant="secondary" size="sm" onClick={load} disabled={loading}>
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> {loading ? t('common.loading') : t('common.refresh')}
+            </Button>
+          </div>
+        }
+      />
 
       {error && (
         <div className="mb-4 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">

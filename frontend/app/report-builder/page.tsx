@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, API_BASE, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Modal, Table, Spinner, Alert, Badge, Field, Success } from '@/components/ui';
+import { SectionTitle, Button } from '@/components/design-system';
 
 /* ── types ─────────────────────────────────────────────── */
 interface KpiBlock {
@@ -167,8 +168,8 @@ export default function ReportBuilderPage() {
   );
 
   return (
-    <div className="max-w-6xl">
-      <h1 className="text-2xl font-bold mb-6">{t('reportBuilder.title')}</h1>
+    <div className="max-w-[1800px]">
+      <SectionTitle eyebrow="Analytics" title={t('reportBuilder.title')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}
@@ -186,7 +187,7 @@ export default function ReportBuilderPage() {
       {tab === 'reports' && (
         <>
           <div className="flex justify-end mb-4">
-            <button className="btn btn-primary text-sm" onClick={() => setShowCreate(true)}>+ {t('reportBuilder.create')}</button>
+            <Button variant="primary" size="sm" onClick={() => setShowCreate(true)}>+ {t('reportBuilder.create')}</Button>
           </div>
           {loading ? <Spinner /> : (
             <Table
@@ -197,10 +198,10 @@ export default function ReportBuilderPage() {
                 r.blocks.length.toString(),
                 r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '—',
                 <div key={r.reportId} className="flex gap-1 flex-wrap">
-                  <button className="btn btn-xs btn-success" onClick={() => runReport(r.reportId)} disabled={running}>{t('reportBuilder.run')}</button>
-                  <button className="btn btn-xs" onClick={() => exportReport(r.reportId)}>{t('reportBuilder.export')}</button>
-                  <button className="btn btn-xs" onClick={() => { setEditReport(r); setEditForm({ name: r.name, description: r.description || '' }); setEditBlocks([...r.blocks]); }}>{t('common.edit')}</button>
-                  <button className="btn btn-xs btn-danger" onClick={() => deleteReport(r.reportId)}>{t('common.delete')}</button>
+                  <Button variant="primary" size="xs" className="bg-green-600 hover:bg-green-700" onClick={() => runReport(r.reportId)} disabled={running}>{t('reportBuilder.run')}</Button>
+                  <Button variant="secondary" size="xs" onClick={() => exportReport(r.reportId)}>{t('reportBuilder.export')}</Button>
+                  <Button variant="secondary" size="xs" onClick={() => { setEditReport(r); setEditForm({ name: r.name, description: r.description || '' }); setEditBlocks([...r.blocks]); }}>{t('common.edit')}</Button>
+                  <Button variant="danger" size="xs" onClick={() => deleteReport(r.reportId)}>{t('common.delete')}</Button>
                 </div>,
               ])}
               empty={t('reportBuilder.empty')}
@@ -231,8 +232,8 @@ export default function ReportBuilderPage() {
             <Field label={t('reportBuilder.selectBlocks')}><BlockPicker selected={selectedBlocks} setSelected={setSelectedBlocks} /></Field>
             <p className="text-sm text-gray-500">{selectedBlocks.length} {t('reportBuilder.blocksSelected')}</p>
             <div className="flex justify-end gap-2">
-              <button type="button" className="btn btn-secondary" onClick={() => { setShowCreate(false); setSelectedBlocks([]); }}>{t('common.cancel')}</button>
-              <button type="submit" className="btn btn-primary" disabled={saving || selectedBlocks.length === 0}>{saving ? t('common.saving') : t('common.save')}</button>
+              <Button variant="secondary" size="sm" onClick={() => { setShowCreate(false); setSelectedBlocks([]); }}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" type="submit" disabled={saving || selectedBlocks.length === 0}>{saving ? t('common.saving') : t('common.save')}</Button>
             </div>
           </form>
         </Modal>
@@ -247,8 +248,8 @@ export default function ReportBuilderPage() {
             <Field label={t('reportBuilder.selectBlocks')}><BlockPicker selected={editBlocks} setSelected={setEditBlocks} /></Field>
             <p className="text-sm text-gray-500">{editBlocks.length} {t('reportBuilder.blocksSelected')}</p>
             <div className="flex justify-end gap-2">
-              <button type="button" className="btn btn-secondary" onClick={() => setEditReport(null)}>{t('common.cancel')}</button>
-              <button type="submit" className="btn btn-primary" disabled={saving || editBlocks.length === 0}>{saving ? t('common.saving') : t('common.save')}</button>
+              <Button variant="secondary" size="sm" onClick={() => setEditReport(null)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" type="submit" disabled={saving || editBlocks.length === 0}>{saving ? t('common.saving') : t('common.save')}</Button>
             </div>
           </form>
         </Modal>

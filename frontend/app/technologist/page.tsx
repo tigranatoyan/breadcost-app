@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Badge, Alert } from '@/components/ui';
+import { SectionTitle, SelectField } from '@/components/design-system';
 import Link from 'next/link';
 import { useT } from '@/lib/i18n';
 
@@ -144,17 +145,18 @@ export default function TechnologistPage() {
   if (loading) return <Spinner />;
 
   return (
-    <div className="max-w-5xl space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">{t('technologist.title')}</h1>
-          <p className="text-sm text-gray-400 mt-0.5">{t('technologist.subtitle')}</p>
-        </div>
-        <select className="input w-48" value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)}>
-          <option value="ALL">{t('technologist.allDepartments')}</option>
-          {depts.map((d) => <option key={d.departmentId} value={d.departmentId}>{d.name}</option>)}
-        </select>
-      </div>
+    <div className="max-w-[1800px] space-y-8">
+      <SectionTitle
+        eyebrow="Quality"
+        title={t('technologist.title')}
+        subtitle={t('technologist.subtitle')}
+        action={
+          <select className="input w-48" value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)}>
+            <option value="ALL">{t('technologist.allDepartments')}</option>
+            {depts.map((d) => <option key={d.departmentId} value={d.departmentId}>{d.name}</option>)}
+          </select>
+        }
+      />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
 

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Modal, Table, Spinner, Alert, Badge, Field, Success } from '@/components/ui';
+import { SectionTitle, Button } from '@/components/design-system';
 import { Plus } from 'lucide-react';
 
 interface Dept {
@@ -93,17 +94,17 @@ export default function DepartmentsPage() {
   };
 
   return (
-    <div className="max-w-4xl">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-6">
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">Operations</div>
-          <h1 className="mt-1 text-2xl font-bold text-gray-900">{t('departments.title')}</h1>
-          <p className="mt-1 text-sm text-gray-500">Lead times, warehouse mode, and status.</p>
-        </div>
-        <button className="btn-primary" onClick={() => setOpen(true)}>
-          <Plus className="h-4 w-4" /> {t('departments.newDepartment')}
-        </button>
-      </div>
+    <div className="max-w-[1800px]">
+      <SectionTitle
+        eyebrow="Operations"
+        title={t('departments.title')}
+        subtitle="Lead times, warehouse mode, and status."
+        action={
+          <Button variant="primary" size="sm" onClick={() => setOpen(true)}>
+            <Plus className="h-4 w-4" /> {t('departments.newDepartment')}
+          </Button>
+        }
+      />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}
@@ -163,16 +164,12 @@ export default function DepartmentsPage() {
               </select>
             </Field>
             <div className="flex justify-end gap-2 pt-2 border-t">
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={() => setOpen(false)}
-              >
+              <Button variant="secondary" size="sm" onClick={() => setOpen(false)}>
                 {t('common.cancel')}
-              </button>
-              <button type="submit" className="btn-primary" disabled={saving}>
+              </Button>
+              <Button variant="primary" size="sm" type="submit" disabled={saving}>
                 {saving ? t('common.saving') : t('common.create')}
-              </button>
+              </Button>
             </div>
           </form>
         </Modal>
@@ -205,10 +202,10 @@ export default function DepartmentsPage() {
               </select>
             </Field>
             <div className="flex justify-end gap-2 pt-2 border-t">
-              <button type="button" className="btn-secondary" onClick={() => setEditDept(null)}>{t('common.cancel')}</button>
-              <button type="submit" className="btn-primary" disabled={saving}>
+              <Button variant="secondary" size="sm" onClick={() => setEditDept(null)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" type="submit" disabled={saving}>
                 {saving ? t('common.saving') : t('common.save')}
-              </button>
+              </Button>
             </div>
           </form>
         </Modal>

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, API_BASE, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Modal, Table, Spinner, Alert, Badge, Field, Success } from '@/components/ui';
+import { SectionTitle, Button } from '@/components/design-system';
 
 /* ── types ─────────────────────────────────────────────── */
 interface Supplier {
@@ -276,10 +277,8 @@ export default function SuppliersPage() {
 
   /* ── render ─────────────────────────────────────────── */
   return (
-    <div className="max-w-6xl">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">{t('suppliers.title')}</h1>
-      </div>
+    <div className="max-w-[1800px]">
+      <SectionTitle eyebrow="Supply Chain" title={t('suppliers.title')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}
@@ -298,7 +297,7 @@ export default function SuppliersPage() {
       {tab === 'suppliers' && (
         <>
           <div className="flex justify-end mb-4">
-            <button className="btn btn-primary text-sm" onClick={() => setShowCreate(true)}>+ {t('suppliers.add')}</button>
+            <Button variant="primary" size="sm" onClick={() => setShowCreate(true)}>+ {t('suppliers.add')}</Button>
           </div>
           {loading ? <Spinner /> : (
             <Table
@@ -308,9 +307,9 @@ export default function SuppliersPage() {
                 s.contactEmail || '—',
                 s.contactPhone || '—',
                 <div key={s.supplierId} className="flex gap-1 flex-wrap">
-                  <button className="btn btn-xs" onClick={() => openCatalog(s)}>{t('suppliers.catalog')}</button>
-                  <button className="btn btn-xs" onClick={() => { setEditSup(s); setEditForm({ name: s.name, contactEmail: s.contactEmail || '', contactPhone: s.contactPhone || '', notes: s.notes || '' }); }}>{t('common.edit')}</button>
-                  <button className="btn btn-xs btn-danger" onClick={() => deleteSupplier(s.supplierId)}>{t('common.delete')}</button>
+                  <Button variant="secondary" size="xs" onClick={() => openCatalog(s)}>{t('suppliers.catalog')}</Button>
+                  <Button variant="secondary" size="xs" onClick={() => { setEditSup(s); setEditForm({ name: s.name, contactEmail: s.contactEmail || '', contactPhone: s.contactPhone || '', notes: s.notes || '' }); }}>{t('common.edit')}</Button>
+                  <Button variant="danger" size="xs" onClick={() => deleteSupplier(s.supplierId)}>{t('common.delete')}</Button>
                 </div>,
               ])}
               empty={t('suppliers.empty')}
@@ -323,8 +322,8 @@ export default function SuppliersPage() {
       {tab === 'purchase-orders' && (
         <>
           <div className="flex justify-end gap-2 mb-4">
-            <button className="btn btn-secondary text-sm" onClick={suggestPOs} disabled={poSaving}>{t('suppliers.suggest')}</button>
-            <button className="btn btn-primary text-sm" onClick={() => { setShowCreatePO(true); addPOLine(); }}>+ {t('suppliers.createPO')}</button>
+            <Button variant="secondary" size="sm" onClick={suggestPOs} disabled={poSaving}>{t('suppliers.suggest')}</Button>
+            <Button variant="primary" size="sm" onClick={() => { setShowCreatePO(true); addPOLine(); }}>+ {t('suppliers.createPO')}</Button>
           </div>
           {poLoading ? <Spinner /> : (
             <Table
@@ -336,8 +335,8 @@ export default function SuppliersPage() {
                 po.totalAmount != null ? `${po.totalAmount.toFixed(2)} ${po.currency || ''}` : '—',
                 po.createdAt ? new Date(po.createdAt).toLocaleDateString() : '—',
                 <div key={`a-${po.poId}`} className="flex gap-1 flex-wrap">
-                  {po.status === 'DRAFT' && <button className="btn btn-xs btn-success" onClick={() => approvePO(po.poId)}>{t('suppliers.approve')}</button>}
-                  <button className="btn btn-xs" onClick={() => exportPO(po.poId)}>{t('suppliers.export')}</button>
+                  {po.status === 'DRAFT' && <Button variant="primary" size="xs" className="bg-green-600 hover:bg-green-700" onClick={() => approvePO(po.poId)}>{t('suppliers.approve')}</Button>}
+                  <Button variant="secondary" size="xs" onClick={() => exportPO(po.poId)}>{t('suppliers.export')}</Button>
                 </div>,
               ])}
               empty={t('suppliers.poEmpty')}
@@ -350,7 +349,7 @@ export default function SuppliersPage() {
       {tab === 'api-config' && (
         <>
           <div className="flex justify-end mb-4">
-            <button className="btn btn-primary text-sm" onClick={() => setShowApiForm(true)}>+ {t('supplierApi.addConfig')}</button>
+            <Button variant="primary" size="sm" onClick={() => setShowApiForm(true)}>+ {t('supplierApi.addConfig')}</Button>
           </div>
           {apiLoading ? <Spinner /> : (
             <Table
@@ -381,8 +380,8 @@ export default function SuppliersPage() {
             <Field label={t('suppliers.phone')}><input className="input w-full" value={form.contactPhone} onChange={e => setForm({ ...form, contactPhone: e.target.value })} /></Field>
             <Field label={t('common.notes')}><textarea className="input w-full" rows={2} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></Field>
             <div className="flex justify-end gap-2">
-              <button type="button" className="btn btn-secondary" onClick={() => setShowCreate(false)}>{t('common.cancel')}</button>
-              <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? t('common.saving') : t('common.save')}</button>
+              <Button variant="secondary" size="sm" onClick={() => setShowCreate(false)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" type="submit" disabled={saving}>{saving ? t('common.saving') : t('common.save')}</Button>
             </div>
           </form>
         </Modal>
@@ -397,8 +396,8 @@ export default function SuppliersPage() {
             <Field label={t('suppliers.phone')}><input className="input w-full" value={editForm.contactPhone} onChange={e => setEditForm({ ...editForm, contactPhone: e.target.value })} /></Field>
             <Field label={t('common.notes')}><textarea className="input w-full" rows={2} value={editForm.notes} onChange={e => setEditForm({ ...editForm, notes: e.target.value })} /></Field>
             <div className="flex justify-end gap-2">
-              <button type="button" className="btn btn-secondary" onClick={() => setEditSup(null)}>{t('common.cancel')}</button>
-              <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? t('common.saving') : t('common.save')}</button>
+              <Button variant="secondary" size="sm" onClick={() => setEditSup(null)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" type="submit" disabled={saving}>{saving ? t('common.saving') : t('common.save')}</Button>
             </div>
           </form>
         </Modal>
@@ -420,7 +419,7 @@ export default function SuppliersPage() {
                 <Field label={t('suppliers.unitPrice')}><input className="input w-full" type="number" step="0.01" required value={catForm.unitPrice} onChange={e => setCatForm({ ...catForm, unitPrice: e.target.value })} /></Field>
                 <Field label={t('suppliers.currency')}><input className="input w-full" value={catForm.currency} onChange={e => setCatForm({ ...catForm, currency: e.target.value })} /></Field>
                 <Field label={t('suppliers.leadTime')}><input className="input w-full" type="number" value={catForm.leadTimeDays} onChange={e => setCatForm({ ...catForm, leadTimeDays: e.target.value })} /></Field>
-                <button type="submit" className="btn btn-primary h-10" disabled={catSaving}>{catSaving ? '…' : `+ ${t('common.add')}`}</button>
+                <Button variant="primary" size="sm" type="submit" disabled={catSaving}>{catSaving ? '…' : `+ ${t('common.add')}`}</Button>
               </form>
             </>
           )}
@@ -450,13 +449,13 @@ export default function SuppliersPage() {
                 <Field label={t('suppliers.qty')}><input className="input w-full" type="number" step="0.01" required value={line.qty} onChange={e => updatePOLine(i, 'qty', e.target.value)} /></Field>
                 <Field label={t('suppliers.unit')}><input className="input w-full" value={line.unit} onChange={e => updatePOLine(i, 'unit', e.target.value)} /></Field>
                 <Field label={t('suppliers.unitPrice')}><input className="input w-full" type="number" step="0.01" required value={line.unitPrice} onChange={e => updatePOLine(i, 'unitPrice', e.target.value)} /></Field>
-                <button type="button" className="btn btn-xs btn-danger mb-1" onClick={() => removePOLine(i)}>✕</button>
+                <Button variant="danger" size="xs" onClick={() => removePOLine(i)}>✕</Button>
               </div>
             ))}
-            <button type="button" className="btn btn-secondary text-sm" onClick={addPOLine}>+ {t('suppliers.addLine')}</button>
+            <Button variant="secondary" size="sm" onClick={addPOLine}>+ {t('suppliers.addLine')}</Button>
             <div className="flex justify-end gap-2 pt-4">
-              <button type="button" className="btn btn-secondary" onClick={() => { setShowCreatePO(false); setPoLines([]); }}>{t('common.cancel')}</button>
-              <button type="submit" className="btn btn-primary" disabled={poSaving}>{poSaving ? t('common.saving') : t('common.save')}</button>
+              <Button variant="secondary" size="sm" onClick={() => { setShowCreatePO(false); setPoLines([]); }}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" type="submit" disabled={poSaving}>{poSaving ? t('common.saving') : t('common.save')}</Button>
             </div>
           </form>
         </Modal>
@@ -506,8 +505,8 @@ export default function SuppliersPage() {
               {t('supplierApi.enabled')}
             </label>
             <div className="flex justify-end gap-2">
-              <button type="button" className="btn btn-secondary" onClick={() => setShowApiForm(false)}>{t('common.cancel')}</button>
-              <button type="submit" className="btn btn-primary" disabled={apiSaving}>{apiSaving ? t('common.saving') : t('common.save')}</button>
+              <Button variant="secondary" size="sm" onClick={() => setShowApiForm(false)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" type="submit" disabled={apiSaving}>{apiSaving ? t('common.saving') : t('common.save')}</Button>
             </div>
           </form>
         </Modal>

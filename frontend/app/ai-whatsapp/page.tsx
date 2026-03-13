@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Modal, Table, Spinner, Alert, Badge, Success } from '@/components/ui';
+import { SectionTitle, Button } from '@/components/design-system';
 
 /* ── types ─────────────────────────────────────────────── */
 interface Conversation {
@@ -145,7 +146,7 @@ export default function AiWhatsappPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">{t('aiWhatsapp.title')}</h1>
+      <SectionTitle eyebrow="AI" title={t('aiWhatsapp.title')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}
@@ -207,8 +208,8 @@ export default function AiWhatsappPage() {
               {/* resolve buttons */}
               {selected.escalated && (
                 <div className="flex gap-2 justify-end">
-                  <button onClick={() => resolveEscalation(false)} className="rounded bg-yellow-500 px-4 py-2 text-white hover:bg-yellow-600">{t('aiWhatsapp.resolve')}</button>
-                  <button onClick={() => resolveEscalation(true)} className="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600">{t('aiWhatsapp.resolveAndClose')}</button>
+                  <Button variant="secondary" size="sm" className="bg-yellow-500 hover:bg-yellow-600 text-white border-0" onClick={() => resolveEscalation(false)}>{t('aiWhatsapp.resolve')}</Button>
+                  <Button variant="danger" size="sm" onClick={() => resolveEscalation(true)}>{t('aiWhatsapp.resolveAndClose')}</Button>
                 </div>
               )}
             </div>
