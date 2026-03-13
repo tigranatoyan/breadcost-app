@@ -3,6 +3,8 @@ package com.breadcost.masterdata;
 import com.breadcost.domain.Department;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +42,7 @@ public class DepartmentService {
     // -------------------------------------------------------------------------
 
     @Transactional
+    @CacheEvict(value = {"departments", "deptsActive", "department"}, allEntries = true)
     public DepartmentEntity create(CreateDepartmentRequest req) {
         if (departmentRepository.existsByTenantIdAndName(req.tenantId(), req.name())) {
             throw new IllegalArgumentException(
@@ -62,6 +65,7 @@ public class DepartmentService {
     }
 
     @Transactional
+    @CacheEvict(value = {"departments", "deptsActive", "department"}, allEntries = true)
     public DepartmentEntity update(String departmentId, UpdateDepartmentRequest req) {
         DepartmentEntity entity = departmentRepository.findById(departmentId)
                 .orElseThrow(() -> new IllegalArgumentException("Department not found: " + departmentId));
@@ -77,16 +81,19 @@ public class DepartmentService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "departments", key = "#tenantId")
     public List<DepartmentEntity> listByTenant(String tenantId) {
         return departmentRepository.findByTenantId(tenantId);
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "deptsActive", key = "#tenantId")
     public List<DepartmentEntity> listActive(String tenantId) {
         return departmentRepository.findByTenantIdAndStatus(tenantId, Department.DepartmentStatus.ACTIVE);
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "department", key = "#departmentId")
     public DepartmentEntity getById(String departmentId) {
         return departmentRepository.findById(departmentId)
                 .orElseThrow(() -> new IllegalArgumentException("Department not found: " + departmentId));

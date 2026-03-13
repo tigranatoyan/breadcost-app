@@ -1,0 +1,8 @@
+.git
+.github
+build
+data
+work
+*.md
+frontend/node_modules
+frontend/.next

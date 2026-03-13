@@ -18,5 +18,86 @@ services:
       timeout: 3s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: breadcost-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: breadcost-mq
+    environment:
+      RABBITMQ_DEFAULT_USER: breadcost
+      RABBITMQ_DEFAULT_PASS: breadcost_dev
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - mqdata:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: breadcost-kc
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/breadcost
+      KC_DB_USERNAME: breadcost
+      KC_DB_PASSWORD: breadcost_dev
+    ports:
+      - "8180:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: breadcost-app
+    environment:
+      SPRING_PROFILES_ACTIVE: redis
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/breadcost
+      SPRING_DATASOURCE_USERNAME: breadcost
+      SPRING_DATASOURCE_PASSWORD: breadcost_dev
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: breadcost-fe
+    environment:
+      NEXT_PUBLIC_API_URL: http://app:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      - app
+
 volumes:
   pgdata:
+  redisdata:
+  mqdata:

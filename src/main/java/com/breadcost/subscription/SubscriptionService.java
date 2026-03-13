@@ -1,5 +1,7 @@
 package com.breadcost.subscription;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,11 +63,13 @@ public class SubscriptionService {
         ));
     }
 
+    @Cacheable("subTiers")
     @Transactional(readOnly = true)
     public List<SubscriptionTierEntity> listTiers() {
         return tierRepo.findAll();
     }
 
+    @Cacheable(value = "subTier", key = "#tierLevel")
     @Transactional(readOnly = true)
     public SubscriptionTierEntity getTier(String tierLevel) {
         return tierRepo.findByLevel(SubscriptionTierEntity.TierLevel.valueOf(tierLevel.toUpperCase()))
@@ -78,6 +82,7 @@ public class SubscriptionService {
      * Assign (or update) a subscription tier for a tenant.
      * BC-1701: Super-admin action.
      */
+    @CacheEvict(value = {"activeSub", "subFeature", "subFeatures", "subMaxUsers", "subMaxProducts"}, allEntries = true)
     public TenantSubscriptionEntity assignTier(String tenantId, String tierLevel,
                                                 String assignedBy,
                                                 LocalDate startDate, LocalDate expiryDate) {
@@ -102,6 +107,7 @@ public class SubscriptionService {
         return tenantSubRepo.save(sub);
     }
 
+    @Cacheable(value = "activeSub", key = "#tenantId")
     @Transactional(readOnly = true)
     public Optional<TenantSubscriptionEntity> getActiveSub(String tenantId) {
         return tenantSubRepo.findByTenantIdAndActive(tenantId, true);
@@ -113,6 +119,7 @@ public class SubscriptionService {
      * Check if a tenant has access to a specific feature key.
      * BC-1702: Feature access enforcement by subscription tier.
      */
+    @Cacheable(value = "subFeature", key = "#tenantId + ':' + #featureKey")
     @Transactional(readOnly = true)
     public boolean hasFeature(String tenantId, String featureKey) {
         Optional<TenantSubscriptionEntity> sub = tenantSubRepo.findByTenantIdAndActive(tenantId, true);
@@ -133,6 +140,7 @@ public class SubscriptionService {
      * Get all enabled features for a tenant.
      * BC-1702 — G-5: returns empty features if subscription expired.
      */
+    @Cacheable(value = "subFeatures", key = "#tenantId")
     @Transactional(readOnly = true)
     public Map<String, Object> getFeatureAccess(String tenantId) {
         Optional<TenantSubscriptionEntity> sub = tenantSubRepo.findByTenantIdAndActive(tenantId, true);
@@ -171,6 +179,7 @@ public class SubscriptionService {
      * Get the max users limit for a tenant (0 = unlimited).
      * BC-3102 — G-5: returns 0 if subscription expired.
      */
+    @Cacheable(value = "subMaxUsers", key = "#tenantId")
     @Transactional(readOnly = true)
     public int getMaxUsers(String tenantId) {
         return tenantSubRepo.findByTenantIdAndActive(tenantId, true)
@@ -184,6 +193,7 @@ public class SubscriptionService {
      * Get the max products limit for a tenant (0 = unlimited).
      * BC-3102 — G-5: returns 0 if subscription expired.
      */
+    @Cacheable(value = "subMaxProducts", key = "#tenantId")
     @Transactional(readOnly = true)
     public int getMaxProducts(String tenantId) {
         return tenantSubRepo.findByTenantIdAndActive(tenantId, true)
@@ -200,6 +210,7 @@ public class SubscriptionService {
      * Returns the number of subscriptions deactivated.
      * Designed to be called by a scheduled job or admin endpoint.
      */
+    @CacheEvict(value = {"activeSub", "subFeature", "subFeatures", "subMaxUsers", "subMaxProducts"}, allEntries = true)
     @Transactional
     public int deactivateExpired() {
         List<TenantSubscriptionEntity> active = tenantSubRepo.findAll().stream()

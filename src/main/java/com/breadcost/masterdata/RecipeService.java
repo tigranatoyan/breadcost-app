@@ -4,6 +4,8 @@ import com.breadcost.domain.Recipe;
 import com.breadcost.domain.RecipeIngredient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,6 +65,7 @@ public class RecipeService {
      * Create a new recipe version for a product.
      * Version number is auto-incremented. New recipe starts in DRAFT status.
      */
+    @CacheEvict(value = {"recipes", "activeRecipe", "recipe", "recipeMaterials"}, allEntries = true)
     @Transactional
     public RecipeEntity createVersion(CreateRecipeRequest req) {
         productRepository.findById(req.productId())
@@ -108,6 +111,7 @@ public class RecipeService {
      * - Archives any previously ACTIVE recipe for the same product
      * - Updates product's activeRecipeId
      */
+    @CacheEvict(value = {"recipes", "activeRecipe", "recipe", "recipeMaterials"}, allEntries = true)
     @Transactional
     public RecipeEntity activate(String tenantId, String recipeId) {
         RecipeEntity target = recipeRepository.findById(recipeId)
@@ -145,6 +149,7 @@ public class RecipeService {
     /**
      * Get all recipe versions for a product (full history).
      */
+    @Cacheable(value = "recipes", key = "#tenantId + ':' + #productId")
     @Transactional(readOnly = true)
     public List<RecipeEntity> getVersionHistory(String tenantId, String productId) {
         return recipeRepository.findByTenantIdAndProductId(tenantId, productId);
@@ -153,6 +158,7 @@ public class RecipeService {
     /**
      * Get the active recipe for a product.
      */
+    @Cacheable(value = "activeRecipe", key = "#tenantId + ':' + #productId")
     @Transactional(readOnly = true)
     public RecipeEntity getActiveRecipe(String tenantId, String productId) {
         return recipeRepository
@@ -166,6 +172,7 @@ public class RecipeService {
     /**
      * Get a single recipe by ID.
      */
+    @Cacheable(value = "recipe", key = "#tenantId + ':' + #recipeId")
     @Transactional(readOnly = true)
     public RecipeEntity getById(String tenantId, String recipeId) {
         return recipeRepository.findById(recipeId)
@@ -177,6 +184,7 @@ public class RecipeService {
      * Calculate total purchasing units needed per ingredient for a given batch multiplier.
      * e.g., batchMultiplier=3 means "produce 3 batches"
      */
+    @Cacheable(value = "recipeMaterials", key = "#tenantId + ':' + #recipeId + ':' + #batchMultiplier")
     @Transactional(readOnly = true)
     public List<MaterialRequirement> calculateMaterialRequirements(
             String tenantId, String recipeId, BigDecimal batchMultiplier) {
@@ -229,6 +237,7 @@ public class RecipeService {
      * Replace all ingredients on a DRAFT recipe with the provided list.
      * Not allowed on ACTIVE or ARCHIVED recipes.
      */
+    @CacheEvict(value = {"recipes", "activeRecipe", "recipe", "recipeMaterials"}, allEntries = true)
     @Transactional
     public RecipeEntity updateIngredients(String tenantId, String recipeId, List<IngredientRequest> ingredientRequests) {
         RecipeEntity recipe = getById(tenantId, recipeId);

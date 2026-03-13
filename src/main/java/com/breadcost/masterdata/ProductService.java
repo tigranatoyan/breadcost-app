@@ -4,6 +4,8 @@ import com.breadcost.domain.Product;
 import com.breadcost.subscription.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +53,7 @@ public class ProductService {
     // -------------------------------------------------------------------------
 
     @Transactional
+    @CacheEvict(value = {"products", "product"}, allEntries = true)
     public ProductEntity create(CreateProductRequest req) {
         // Validate department exists and belongs to tenant
         departmentRepository.findById(req.departmentId())
@@ -94,6 +97,7 @@ public class ProductService {
     }
 
     @Transactional
+    @CacheEvict(value = {"products", "product"}, allEntries = true)
     public ProductEntity update(String productId, UpdateProductRequest req) {
         ProductEntity entity = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
@@ -112,6 +116,7 @@ public class ProductService {
     }
 
     @Transactional
+    @CacheEvict(value = {"products", "product"}, allEntries = true)
     public ProductEntity setActiveRecipe(String productId, String recipeId) {
         ProductEntity entity = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
@@ -120,16 +125,19 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "products", key = "#tenantId")
     public List<ProductEntity> listByTenant(String tenantId) {
         return productRepository.findByTenantId(tenantId);
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "products", key = "#tenantId + ':dept:' + #departmentId")
     public List<ProductEntity> listByDepartment(String tenantId, String departmentId) {
         return productRepository.findByTenantIdAndDepartmentId(tenantId, departmentId);
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "product", key = "#productId")
     public ProductEntity getById(String productId) {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
