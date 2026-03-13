@@ -43,6 +43,10 @@ frontend/yarn-debug.log*
 frontend/yarn-error.log*
 frontend/.pnpm-debug.log*
 
+# ─── Playwright ───────────────────────────────────────────────────────────────
+frontend/playwright-report/
+frontend/test-results/
+
 # ─── OS ───────────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
