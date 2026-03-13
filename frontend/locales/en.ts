@@ -91,10 +91,12 @@ const en = {
     aiWhatsapp: '💬 AI WhatsApp',
     aiSuggestions: '🤖 AI Suggestions',
     aiPricing: '📊 AI Pricing',
+    qualityPredictions: '🛡️ Quality Predictions',
     driverSection: 'Driver',
     driver: '🚗 Driver Sessions',
     exchangeRates: '💱 Exchange Rates',
     mobileAdmin: '📱 Mobile Admin',
+    tenantManagement: '🏢 Tenant Management',
     notificationTemplates: '🔔 Notification Templates',
   },
 

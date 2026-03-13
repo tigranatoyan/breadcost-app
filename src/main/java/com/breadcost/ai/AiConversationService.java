@@ -134,6 +134,7 @@ public class AiConversationService {
     }
 
     private ParsedOrderLine resolveProduct(String tenantId, String rawName, double qty, String unit) {
+        // D3.3: Enhanced product matching with fuzzy search
         List<ProductEntity> matches = productRepo.findByTenantIdAndNameContainingIgnoreCase(tenantId, rawName);
         ParsedOrderLine line = new ParsedOrderLine();
         line.rawName = rawName;
@@ -144,8 +145,45 @@ public class AiConversationService {
             line.productId = best.getProductId();
             line.resolvedName = best.getName();
             line.unitPrice = best.getPrice();
+        } else {
+            // Fuzzy fallback: find closest match by edit distance
+            List<ProductEntity> allProducts = productRepo.findByTenantId(tenantId);
+            ProductEntity fuzzyMatch = null;
+            int bestDistance = Integer.MAX_VALUE;
+            String lowerRaw = rawName.toLowerCase();
+            for (ProductEntity p : allProducts) {
+                int dist = levenshtein(lowerRaw, p.getName().toLowerCase());
+                // Also check if the product name starts with or contains any word from raw
+                boolean partialMatch = p.getName().toLowerCase().contains(lowerRaw)
+                        || lowerRaw.contains(p.getName().toLowerCase().split("\\s+")[0]);
+                if (partialMatch) dist = Math.max(0, dist - 3); // boost partial matches
+                if (dist < bestDistance && dist <= Math.max(3, rawName.length() / 2)) {
+                    bestDistance = dist;
+                    fuzzyMatch = p;
+                }
+            }
+            if (fuzzyMatch != null) {
+                line.productId = fuzzyMatch.getProductId();
+                line.resolvedName = fuzzyMatch.getName();
+                line.unitPrice = fuzzyMatch.getPrice();
+            }
         }
         return line;
+    }
+
+    /** Levenshtein edit distance for fuzzy matching. */
+    static int levenshtein(String a, String b) {
+        int[][] dp = new int[a.length() + 1][b.length() + 1];
+        for (int i = 0; i <= a.length(); i++) dp[i][0] = i;
+        for (int j = 0; j <= b.length(); j++) dp[0][j] = j;
+        for (int i = 1; i <= a.length(); i++) {
+            for (int j = 1; j <= b.length(); j++) {
+                int cost = a.charAt(i - 1) == b.charAt(j - 1) ? 0 : 1;
+                dp[i][j] = Math.min(dp[i - 1][j] + 1,
+                        Math.min(dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost));
+            }
+        }
+        return dp[a.length()][b.length()];
     }
 
     private String normalizeUnit(String raw) {

@@ -98,4 +98,42 @@ public class AiSuggestionController {
         @NotBlank String tenantId;
         LocalDate planDate;
     }
+
+    // ── D3.1: Advanced Forecasting ───────────────────────────────────────────
+
+    private final AiAdvancedForecastService advancedForecastService;
+    private final QualityPredictionService qualityPredictionService;
+
+    @PostMapping("/forecast/advanced/generate")
+    @ResponseStatus(HttpStatus.CREATED)
+    public List<AiDemandForecastEntity> generateAdvancedForecast(@RequestBody @Valid GenerateForecastRequest req) {
+        return advancedForecastService.generateAdvancedForecast(req.tenantId,
+                req.forecastDays != null ? req.forecastDays : 7);
+    }
+
+    // ── D3.4: Quality Predictions ────────────────────────────────────────────
+
+    @PostMapping("/quality/generate")
+    @ResponseStatus(HttpStatus.CREATED)
+    public List<AiQualityPredictionEntity> generateQualityPredictions(@RequestBody @Valid QualityRequest req) {
+        return qualityPredictionService.generatePredictions(req.tenantId);
+    }
+
+    @GetMapping("/quality")
+    public List<AiQualityPredictionEntity> getQualityPredictions(@RequestParam String tenantId) {
+        return qualityPredictionService.getPredictions(tenantId);
+    }
+
+    @GetMapping("/quality/high-risk")
+    public List<AiQualityPredictionEntity> getHighRiskPredictions(@RequestParam String tenantId) {
+        return qualityPredictionService.getHighRiskPredictions(tenantId);
+    }
+
+    @PostMapping("/quality/{predictionId}/dismiss")
+    public AiQualityPredictionEntity dismissQualityPrediction(@PathVariable String predictionId) {
+        return qualityPredictionService.dismissPrediction(predictionId);
+    }
+
+    @Data
+    static class QualityRequest { @NotBlank String tenantId; }
 }

@@ -80,6 +80,16 @@ public class AiPricingAnomalyController {
         return service.dismissAlert(alertId);
     }
 
+    // ── D3.2: Dynamic Pricing ────────────────────────────────────────────────
+
+    private final DynamicPricingService dynamicPricingService;
+
+    @PostMapping("/pricing/dynamic/generate")
+    @ResponseStatus(HttpStatus.CREATED)
+    public List<AiPricingSuggestionEntity> generateDynamicPricing(@RequestBody @Valid TenantRequest req) {
+        return dynamicPricingService.generateDynamicPricing(req.tenantId);
+    }
+
     @Data
     static class TenantRequest {
         @NotBlank String tenantId;

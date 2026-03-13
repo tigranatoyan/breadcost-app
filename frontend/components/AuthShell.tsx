@@ -9,7 +9,7 @@ import {
   LayoutDashboard, ShoppingCart, CreditCard, Factory, HardHat, BookOpen,
   Package, Building2, Warehouse, BarChart3, Settings, MessageCircle,
   Sparkles, TrendingUp, Truck, FileText, Users, Star, MapPin, Smartphone,
-  ArrowLeftRight, Crown, Bell, User, LogOut, Globe, Menu, X, ChefHat, Lock,
+  ArrowLeftRight, Crown, Bell, User, LogOut, Globe, Menu, X, ChefHat, Lock, ShieldCheck,
   type LucideIcon,
 } from 'lucide-react';
 import { cn, SidebarItem } from './design-system';
@@ -115,6 +115,7 @@ const SECTIONS: NavSection[] = [
       { href: '/ai-whatsapp', labelKey: 'nav.aiWhatsapp', icon: MessageCircle, featureKey: 'AI_BOT' },
       { href: '/ai-suggestions', labelKey: 'nav.aiSuggestions', icon: Sparkles, featureKey: 'AI_BOT' },
       { href: '/ai-pricing', labelKey: 'nav.aiPricing', icon: TrendingUp, featureKey: 'AI_BOT' },
+      { href: '/quality-predictions', labelKey: 'nav.qualityPredictions', icon: ShieldCheck, featureKey: 'AI_BOT' },
     ],
     roles: ['admin', 'management'],
   },
@@ -130,6 +131,7 @@ const SECTIONS: NavSection[] = [
       { href: '/subscriptions', labelKey: 'nav.subscriptions', icon: Crown },
       { href: '/exchange-rates', labelKey: 'nav.exchangeRates', icon: ArrowLeftRight },
       { href: '/mobile-admin', labelKey: 'nav.mobileAdmin', icon: Smartphone },
+      { href: '/tenant-management', labelKey: 'nav.tenantManagement', icon: Building2 },
     ],
     roles: ['admin'],
   },
