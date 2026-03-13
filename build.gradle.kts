@@ -123,6 +123,17 @@ tasks.jacocoTestReport {
     }
 }
 
+tasks.jacocoTestCoverageVerification {
+    dependsOn(tasks.jacocoTestReport)
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.50".toBigDecimal() // 50% line coverage minimum
+            }
+        }
+    }
+}
+
 // ── OWASP Dependency-Check ────────────────────────────────────────────────
 dependencyCheck {
     failBuildOnCVSS = 9.0f          // only fail on CRITICAL initially
