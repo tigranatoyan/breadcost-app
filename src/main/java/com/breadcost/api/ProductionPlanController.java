@@ -153,7 +153,13 @@ public class ProductionPlanController {
     @PreAuthorize("hasAnyRole('Admin','ProductionUser')")
     public ResponseEntity<WorkOrderEntity> completeWorkOrder(
             @PathVariable String workOrderId,
-            @RequestParam String tenantId) {
+            @RequestParam String tenantId,
+            @RequestBody(required = false) CompleteWorkOrderRequest body) {
+        if (body != null && body.getActualYield() != null) {
+            return ResponseEntity.ok(planService.completeWorkOrder(tenantId, workOrderId,
+                    body.getActualYield(), body.getWasteQty(),
+                    body.getQualityScore(), body.getQualityNotes()));
+        }
         return ResponseEntity.ok(planService.completeWorkOrder(tenantId, workOrderId));
     }
 
@@ -186,5 +192,13 @@ public class ProductionPlanController {
     public static class SchedulePatchRequest {
         private Integer startOffsetHours;
         private Integer durationHours;
+    }
+
+    @Data
+    public static class CompleteWorkOrderRequest {
+        private Double actualYield;
+        private Double wasteQty;
+        private String qualityScore;
+        private String qualityNotes;
     }
 }

@@ -1,6 +1,7 @@
 package com.breadcost.api;
 
 import com.breadcost.purchaseorder.*;
+import com.breadcost.supplier.SupplierCatalogItemEntity;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -191,5 +192,24 @@ public class PurchaseOrderController {
                                 .findFirst()
                                 .map(p -> p.getPoId()).orElse(poId));
         return ResponseEntity.ok(purchaseOrderService.getDeliveryLines(delivery.getDeliveryId()));
+    }
+
+    // ── G-10: Reverse lookup + auto-PO from plan ─────────────────────────────
+
+    /** GET /v2/purchase-orders/ingredients/{ingredientId}/suppliers?tenantId=... — reverse lookup */
+    @GetMapping("/ingredients/{ingredientId}/suppliers")
+    public ResponseEntity<List<SupplierCatalogItemEntity>> suppliersForIngredient(
+            @PathVariable String ingredientId,
+            @RequestParam String tenantId) {
+        return ResponseEntity.ok(purchaseOrderService.findSuppliersForIngredient(tenantId, ingredientId));
+    }
+
+    /** POST /v2/purchase-orders/from-plan?tenantId=...&planId=... — auto-generate POs from plan */
+    @PostMapping("/from-plan")
+    public ResponseEntity<List<PurchaseOrderEntity>> generateFromPlan(
+            @RequestParam String tenantId,
+            @RequestParam String planId) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(purchaseOrderService.generatePOsFromPlan(tenantId, planId));
     }
 }

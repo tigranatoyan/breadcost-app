@@ -64,6 +64,17 @@ public class InvoiceEntity {
 
     private String notes;
 
+    // ── G-4: Invoice dispute fields ─────────────────────────────────────────
+    @Column(columnDefinition = "TEXT")
+    private String disputeReason;
+    private Instant disputedAt;
+    private String disputedBy;
+    @Column(columnDefinition = "TEXT")
+    private String resolutionNotes;
+    private Instant resolvedAt;
+    /** Credit note amount if dispute was accepted (partial/full). */
+    private BigDecimal creditNoteAmount;
+
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -80,6 +91,6 @@ public class InvoiceEntity {
     }
 
     public enum InvoiceStatus {
-        DRAFT, ISSUED, PAID, OVERDUE, CANCELLED
+        DRAFT, ISSUED, PAID, OVERDUE, CANCELLED, DISPUTED
     }
 }

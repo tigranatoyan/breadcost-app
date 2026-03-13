@@ -46,6 +46,10 @@ public class SupplierCatalogItemEntity {
 
     private String unit; // kg, litre, piece
 
+    /** G-10: Whether this supplier is the preferred source for this ingredient. */
+    @Builder.Default
+    private boolean preferred = false;
+
     private Instant createdAt;
     private Instant updatedAt;
 

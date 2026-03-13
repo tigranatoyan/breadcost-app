@@ -175,6 +175,60 @@ public class InvoiceService {
         return invoiceRepo.save(invoice);
     }
 
+    // ── G-4: Invoice dispute workflow ────────────────────────────────────────
+
+    /**
+     * Raise a dispute on an ISSUED or OVERDUE invoice.
+     * Transitions to DISPUTED and records reason.
+     */
+    public InvoiceEntity disputeInvoice(String tenantId, String invoiceId,
+                                        String reason, String disputedBy) {
+        InvoiceEntity invoice = getById(tenantId, invoiceId);
+        if (invoice.getStatus() != InvoiceEntity.InvoiceStatus.ISSUED
+                && invoice.getStatus() != InvoiceEntity.InvoiceStatus.OVERDUE) {
+            throw new IllegalStateException("Only ISSUED or OVERDUE invoices can be disputed, current: " + invoice.getStatus());
+        }
+        invoice.setStatus(InvoiceEntity.InvoiceStatus.DISPUTED);
+        invoice.setDisputeReason(reason);
+        invoice.setDisputedAt(Instant.now());
+        invoice.setDisputedBy(disputedBy);
+        return invoiceRepo.save(invoice);
+    }
+
+    /**
+     * Resolve a DISPUTED invoice.
+     * If accepted (creditNoteAmount > 0): issue credit note, adjust outstanding balance, revert to ISSUED.
+     * If rejected (creditNoteAmount == null or 0): revert to ISSUED (or OVERDUE if past due).
+     */
+    public InvoiceEntity resolveDispute(String tenantId, String invoiceId,
+                                        String resolutionNotes, BigDecimal creditNoteAmount) {
+        InvoiceEntity invoice = getById(tenantId, invoiceId);
+        if (invoice.getStatus() != InvoiceEntity.InvoiceStatus.DISPUTED) {
+            throw new IllegalStateException("Only DISPUTED invoices can be resolved");
+        }
+        invoice.setResolutionNotes(resolutionNotes);
+        invoice.setResolvedAt(Instant.now());
+
+        if (creditNoteAmount != null && creditNoteAmount.compareTo(BigDecimal.ZERO) > 0) {
+            invoice.setCreditNoteAmount(creditNoteAmount);
+            // Reduce outstanding balance by credit note amount
+            customerRepo.findById(invoice.getCustomerId()).ifPresent(customer -> {
+                BigDecimal newBalance = customer.getOutstandingBalance().subtract(creditNoteAmount)
+                        .max(BigDecimal.ZERO);
+                customer.setOutstandingBalance(newBalance);
+                customerRepo.save(customer);
+            });
+        }
+
+        // Revert to ISSUED (or OVERDUE if past due)
+        if (invoice.getDueDate() != null && LocalDate.now().isAfter(invoice.getDueDate())) {
+            invoice.setStatus(InvoiceEntity.InvoiceStatus.OVERDUE);
+        } else {
+            invoice.setStatus(InvoiceEntity.InvoiceStatus.ISSUED);
+        }
+        return invoiceRepo.save(invoice);
+    }
+
     // ── BC-1504: Credit limit enforcement ────────────────────────────────────
 
     /**

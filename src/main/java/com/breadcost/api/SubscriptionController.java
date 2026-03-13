@@ -89,4 +89,20 @@ public class SubscriptionController {
     public Map<String, Object> getFeatureAccess(@PathVariable String tenantId) {
         return subscriptionService.getFeatureAccess(tenantId);
     }
+
+    // ── G-5: Subscription expiry management ──────────────────────────────────
+
+    /** POST /v2/subscriptions/deactivate-expired — deactivate all expired subscriptions */
+    @PostMapping("/deactivate-expired")
+    public Map<String, Object> deactivateExpired() {
+        int count = subscriptionService.deactivateExpired();
+        return Map.of("deactivated", count);
+    }
+
+    /** GET /v2/subscriptions/expiring-soon?withinDays=7 — find subscriptions expiring soon */
+    @GetMapping("/expiring-soon")
+    public List<TenantSubscriptionEntity> expiringSoon(
+            @RequestParam(defaultValue = "7") int withinDays) {
+        return subscriptionService.findExpiringSoon(withinDays);
+    }
 }

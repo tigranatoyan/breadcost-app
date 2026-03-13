@@ -231,12 +231,42 @@ public class ProductionPlanService {
 
     @Transactional
     public WorkOrderEntity completeWorkOrder(String tenantId, String workOrderId) {
+        return completeWorkOrder(tenantId, workOrderId, null, null, null, null);
+    }
+
+    /**
+     * Complete a work order with optional yield/quality data (G-9).
+     */
+    @Transactional
+    public WorkOrderEntity completeWorkOrder(String tenantId, String workOrderId,
+                                              Double actualYield, Double wasteQty,
+                                              String qualityScore, String qualityNotes) {
         WorkOrderEntity wo = findWorkOrder(tenantId, workOrderId);
         if (wo.getStatus() != WorkOrder.Status.STARTED) {
             throw new IllegalStateException("Only STARTED work orders can be completed.");
         }
         wo.setStatus(WorkOrder.Status.COMPLETED);
         wo.setCompletedAt(Instant.now());
+
+        // ── G-9: Record yield/quality metrics ─────────────────────────────
+        if (actualYield != null) {
+            wo.setActualYield(actualYield);
+            // Calculate variance against recipe expectedYield × batchCount
+            if (wo.getRecipeId() != null) {
+                recipeRepository.findById(wo.getRecipeId()).ifPresent(recipe -> {
+                    if (recipe.getExpectedYield() != null) {
+                        double expected = recipe.getExpectedYield().doubleValue() * wo.getBatchCount();
+                        if (expected > 0) {
+                            wo.setYieldVariancePct(((actualYield - expected) / expected) * 100.0);
+                        }
+                    }
+                });
+            }
+        }
+        if (wasteQty != null) wo.setWasteQty(wasteQty);
+        if (qualityScore != null) wo.setQualityScore(qualityScore);
+        if (qualityNotes != null) wo.setQualityNotes(qualityNotes);
+
         WorkOrderEntity saved = workOrderRepository.save(wo);
 
         // ── G-2: Backflush — consume ingredients on WO completion ─────────

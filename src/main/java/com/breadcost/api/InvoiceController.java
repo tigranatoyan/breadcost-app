@@ -112,6 +112,35 @@ public class InvoiceController {
         return ResponseEntity.ok(invoiceService.markOverdue(tenantId, id));
     }
 
+    // ── G-4: Invoice dispute endpoints ────────────────────────────────────────
+
+    /**
+     * PUT /v2/invoices/{id}/dispute
+     * Body: {tenantId, reason, disputedBy}
+     */
+    @PutMapping("/invoices/{id}/dispute")
+    public ResponseEntity<InvoiceEntity> disputeInvoice(@PathVariable String id,
+                                                         @RequestBody Map<String, Object> body) {
+        String tenantId = (String) body.get("tenantId");
+        String reason = (String) body.get("reason");
+        String disputedBy = (String) body.getOrDefault("disputedBy", "system");
+        return ResponseEntity.ok(invoiceService.disputeInvoice(tenantId, id, reason, disputedBy));
+    }
+
+    /**
+     * PUT /v2/invoices/{id}/resolve
+     * Body: {tenantId, resolutionNotes, creditNoteAmount}
+     */
+    @PutMapping("/invoices/{id}/resolve")
+    public ResponseEntity<InvoiceEntity> resolveDispute(@PathVariable String id,
+                                                         @RequestBody Map<String, Object> body) {
+        String tenantId = (String) body.get("tenantId");
+        String resolutionNotes = (String) body.get("resolutionNotes");
+        BigDecimal creditNoteAmount = body.get("creditNoteAmount") != null
+                ? new BigDecimal(body.get("creditNoteAmount").toString()) : null;
+        return ResponseEntity.ok(invoiceService.resolveDispute(tenantId, id, resolutionNotes, creditNoteAmount));
+    }
+
     // ── BC-1502: Payment terms per customer ───────────────────────────────────
 
     /**

@@ -54,6 +54,24 @@ public class WorkOrderEntity {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
+    // ── G-9: Yield/quality tracking fields ─────────────────────────────────
+
+    /** Actual quantity produced when the WO was completed. */
+    private Double actualYield;
+
+    /** Yield variance percentage: ((actualYield - expectedYield) / expectedYield) * 100 */
+    private Double yieldVariancePct;
+
+    /** Waste / scrap quantity recorded at completion. */
+    private Double wasteQty;
+
+    /** Quality assessment: PASS, FAIL, or REWORK */
+    private String qualityScore;
+
+    /** Free-text quality notes from the production operator. */
+    @Column(columnDefinition = "TEXT")
+    private String qualityNotes;
+
     /**
      * How many hours after the plan's notional start time this work order begins.
      * 0 = starts immediately. Used for parallel and offset scheduling.

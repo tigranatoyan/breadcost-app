@@ -131,7 +131,7 @@ public class SubscriptionService {
 
     /**
      * Get all enabled features for a tenant.
-     * BC-1702
+     * BC-1702 — G-5: returns empty features if subscription expired.
      */
     @Transactional(readOnly = true)
     public Map<String, Object> getFeatureAccess(String tenantId) {
@@ -143,12 +143,22 @@ public class SubscriptionService {
             result.put("features", List.of());
             result.put("maxUsers", 0);
             result.put("maxProducts", 0);
+            result.put("expired", false);
             return result;
         }
         TenantSubscriptionEntity s = sub.get();
+        boolean expired = s.getExpiryDate() != null && LocalDate.now().isAfter(s.getExpiryDate());
         result.put("tier", s.getTierLevel().name());
         result.put("subscriptionId", s.getSubscriptionId());
         result.put("expiryDate", s.getExpiryDate());
+        result.put("expired", expired);
+
+        if (expired) {
+            result.put("features", List.of());
+            result.put("maxUsers", 0);
+            result.put("maxProducts", 0);
+            return result;
+        }
 
         Optional<SubscriptionTierEntity> tier = tierRepo.findByLevel(s.getTierLevel());
         result.put("features", tier.map(SubscriptionTierEntity::featureList).orElse(List.of()));
@@ -159,11 +169,12 @@ public class SubscriptionService {
 
     /**
      * Get the max users limit for a tenant (0 = unlimited).
-     * BC-3102
+     * BC-3102 — G-5: returns 0 if subscription expired.
      */
     @Transactional(readOnly = true)
     public int getMaxUsers(String tenantId) {
         return tenantSubRepo.findByTenantIdAndActive(tenantId, true)
+                .filter(sub -> sub.getExpiryDate() == null || !LocalDate.now().isAfter(sub.getExpiryDate()))
                 .flatMap(sub -> tierRepo.findByLevel(sub.getTierLevel()))
                 .map(SubscriptionTierEntity::getMaxUsers)
                 .orElse(0);
@@ -171,13 +182,49 @@ public class SubscriptionService {
 
     /**
      * Get the max products limit for a tenant (0 = unlimited).
-     * BC-3102
+     * BC-3102 — G-5: returns 0 if subscription expired.
      */
     @Transactional(readOnly = true)
     public int getMaxProducts(String tenantId) {
         return tenantSubRepo.findByTenantIdAndActive(tenantId, true)
+                .filter(sub -> sub.getExpiryDate() == null || !LocalDate.now().isAfter(sub.getExpiryDate()))
                 .flatMap(sub -> tierRepo.findByLevel(sub.getTierLevel()))
                 .map(SubscriptionTierEntity::getMaxProducts)
                 .orElse(0);
+    }
+
+    // ── G-5: Proactive expiry enforcement ─────────────────────────────────────
+
+    /**
+     * Scan active subscriptions and deactivate those whose expiryDate has passed.
+     * Returns the number of subscriptions deactivated.
+     * Designed to be called by a scheduled job or admin endpoint.
+     */
+    @Transactional
+    public int deactivateExpired() {
+        List<TenantSubscriptionEntity> active = tenantSubRepo.findAll().stream()
+                .filter(TenantSubscriptionEntity::isActive)
+                .filter(s -> s.getExpiryDate() != null && LocalDate.now().isAfter(s.getExpiryDate()))
+                .toList();
+        for (TenantSubscriptionEntity sub : active) {
+            sub.setActive(false);
+            tenantSubRepo.save(sub);
+        }
+        return active.size();
+    }
+
+    /**
+     * Find subscriptions expiring within the given days from now.
+     * Useful for pre-expiry warning notifications.
+     */
+    @Transactional(readOnly = true)
+    public List<TenantSubscriptionEntity> findExpiringSoon(int withinDays) {
+        LocalDate cutoff = LocalDate.now().plusDays(withinDays);
+        return tenantSubRepo.findAll().stream()
+                .filter(TenantSubscriptionEntity::isActive)
+                .filter(s -> s.getExpiryDate() != null
+                        && !s.getExpiryDate().isBefore(LocalDate.now())
+                        && !s.getExpiryDate().isAfter(cutoff))
+                .toList();
     }
 }
