@@ -192,4 +192,64 @@ public class FinanceService {
         return invoiceRepo.findByTenantIdAndStatus(tenantId, InvoiceEntity.InvoiceStatus.OVERDUE)
                 .size();
     }
+
+    // ── D1: Extended KPI methods ──────────────────────────────────────────
+
+    /** Invoice aging buckets: 0-30, 31-60, 61-90, 90+ days. D1.2 */
+    public java.util.Map<String, Long> invoiceAgingBuckets(String tenantId) {
+        LocalDate today = LocalDate.now();
+        List<InvoiceEntity> unpaid = invoiceRepo.findByTenantId(tenantId).stream()
+                .filter(inv -> inv.getStatus() == InvoiceEntity.InvoiceStatus.ISSUED
+                        || inv.getStatus() == InvoiceEntity.InvoiceStatus.OVERDUE)
+                .toList();
+        long b0_30 = 0, b31_60 = 0, b61_90 = 0, b90plus = 0;
+        for (InvoiceEntity inv : unpaid) {
+            long days = inv.getDueDate() != null
+                    ? java.time.temporal.ChronoUnit.DAYS.between(inv.getDueDate(), today)
+                    : 0;
+            if (days <= 30) b0_30++;
+            else if (days <= 60) b31_60++;
+            else if (days <= 90) b61_90++;
+            else b90plus++;
+        }
+        return java.util.Map.of("0-30", b0_30, "31-60", b31_60, "61-90", b61_90, "90+", b90plus);
+    }
+
+    /** Customer count with at least one order. D1.4 */
+    public long activeCustomerCount(String tenantId, LocalDate dateFrom, LocalDate dateTo) {
+        return invoiceRepo.findByTenantId(tenantId).stream()
+                .filter(inv -> inv.getIssuedDate() != null
+                        && (dateFrom == null || !inv.getIssuedDate().isBefore(dateFrom))
+                        && (dateTo == null || !inv.getIssuedDate().isAfter(dateTo)))
+                .map(InvoiceEntity::getCustomerId)
+                .distinct()
+                .count();
+    }
+
+    /** Average order frequency (orders per customer). D1.4 */
+    public BigDecimal orderFrequency(String tenantId, LocalDate dateFrom, LocalDate dateTo) {
+        long customers = activeCustomerCount(tenantId, dateFrom, dateTo);
+        if (customers == 0) return BigDecimal.ZERO;
+        long orders = totalOrderCount(tenantId, dateFrom, dateTo);
+        return new BigDecimal(orders).divide(new BigDecimal(customers), 2, RoundingMode.HALF_UP);
+    }
+
+    /** Average customer lifetime value (total revenue / unique customers). D1.4 */
+    public BigDecimal customerLifetimeValue(String tenantId, LocalDate dateFrom, LocalDate dateTo) {
+        long customers = activeCustomerCount(tenantId, dateFrom, dateTo);
+        if (customers == 0) return BigDecimal.ZERO;
+        return totalRevenue(tenantId, dateFrom, dateTo)
+                .divide(new BigDecimal(customers), 2, RoundingMode.HALF_UP);
+    }
+
+    /** Disputed invoice rate (%). D1.2 */
+    public BigDecimal disputedInvoiceRate(String tenantId) {
+        List<InvoiceEntity> all = invoiceRepo.findByTenantId(tenantId);
+        if (all.isEmpty()) return BigDecimal.ZERO;
+        long disputed = all.stream()
+                .filter(inv -> inv.getStatus() == InvoiceEntity.InvoiceStatus.DISPUTED)
+                .count();
+        return new BigDecimal(disputed * 100)
+                .divide(new BigDecimal(all.size()), 2, RoundingMode.HALF_UP);
+    }
 }

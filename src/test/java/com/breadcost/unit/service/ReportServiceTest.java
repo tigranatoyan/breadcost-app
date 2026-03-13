@@ -36,14 +36,14 @@ class ReportServiceTest {
     }
 
     @Test
-    void seedKpiBlocks_empty_seeds10Blocks() {
+    void seedKpiBlocks_empty_seeds15Blocks() {
         when(kpiBlockRepo.count()).thenReturn(0L);
         when(kpiBlockRepo.saveAll(any())).thenAnswer(inv -> inv.getArgument(0));
 
         svc.seedKpiBlocks();
 
         verify(kpiBlockRepo).saveAll(argThat(list ->
-                ((List<?>) list).size() == 10));
+                ((List<?>) list).size() == 15));
     }
 
     // ── addKpiBlock ──────────────────────────────────────────────────────────

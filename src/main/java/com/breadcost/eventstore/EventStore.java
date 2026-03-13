@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class EventStore {
+public class EventStore implements EventPublisher {
     private final ObjectMapper objectMapper;
     private final Map<Long, StoredEvent> eventsByLedgerSeq = new ConcurrentHashMap<>();
     private final Map<String, LedgerEntry> ledgerEntriesById = new ConcurrentHashMap<>();
@@ -66,6 +66,11 @@ public class EventStore {
         notifyListeners(storedEvent, ledgerEntry);
         
         return ledgerSeq;
+    }
+
+    @Override
+    public Long publish(DomainEvent event, LedgerEntry.EntryClass entryClass) {
+        return appendEvent(event, entryClass);
     }
 
     /**

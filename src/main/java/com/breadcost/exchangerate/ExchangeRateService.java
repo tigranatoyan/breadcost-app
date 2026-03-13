@@ -1,5 +1,7 @@
 package com.breadcost.exchangerate;
 
+import com.breadcost.masterdata.TenantConfigEntity;
+import com.breadcost.masterdata.TenantConfigRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,6 +26,7 @@ import java.util.*;
 public class ExchangeRateService {
 
     private final ExchangeRateRepository repository;
+    private final TenantConfigRepository tenantConfigRepo;
     private final RestClient.Builder restClientBuilder;
 
     private static final String API_URL = "https://open.er-api.com/v6/latest/";
@@ -152,5 +155,25 @@ public class ExchangeRateService {
         log.info("Fetched {} exchange rates from API for tenantId={} base={}",
                 saved.size(), tenantId, baseCurrency);
         return saved;
+    }
+
+    /**
+     * Refresh exchange rates for all tenants. Each tenant's mainCurrency is used as base.
+     * Returns total number of rates refreshed across all tenants.
+     */
+    @Transactional
+    public int refreshAllTenantRates() {
+        List<String> defaultTargets = List.of("USD", "EUR", "RUB", "GEL", "AMD");
+        int total = 0;
+        for (TenantConfigEntity config : tenantConfigRepo.findAll()) {
+            try {
+                String base = config.getMainCurrency() != null ? config.getMainCurrency() : "UZS";
+                List<ExchangeRateEntity> fetched = fetchRatesFromApi(config.getTenantId(), base, defaultTargets);
+                total += fetched.size();
+            } catch (Exception e) {
+                log.error("Failed to refresh rates for tenant {}: {}", config.getTenantId(), e.getMessage());
+            }
+        }
+        return total;
     }
 }

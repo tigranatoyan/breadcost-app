@@ -367,6 +367,24 @@ public class InvoiceService {
         return invoiceLineRepo.findByInvoiceId(invoiceId);
     }
 
+    /**
+     * Scan all ISSUED invoices across all tenants and mark overdue those past dueDate.
+     * Returns count of invoices marked overdue.
+     */
+    @Transactional
+    public int markAllOverdue() {
+        LocalDate today = LocalDate.now();
+        List<InvoiceEntity> overdue = invoiceRepo.findAll().stream()
+                .filter(inv -> inv.getStatus() == InvoiceEntity.InvoiceStatus.ISSUED)
+                .filter(inv -> inv.getDueDate() != null && today.isAfter(inv.getDueDate()))
+                .toList();
+        for (InvoiceEntity inv : overdue) {
+            inv.setStatus(InvoiceEntity.InvoiceStatus.OVERDUE);
+            invoiceRepo.save(inv);
+        }
+        return overdue.size();
+    }
+
     // ── Private helpers ───────────────────────────────────────────────────────
 
     private InvoiceEntity getById(String tenantId, String invoiceId) {

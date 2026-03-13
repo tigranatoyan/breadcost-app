@@ -63,7 +63,22 @@ public class ReportService {
                         ReportKpiBlockEntity.KpiCategory.FINANCIAL, ReportKpiBlockEntity.QueryType.AGGREGATE, "GBP"),
                 kpi("overdue_invoices", "Overdue Invoices",
                         "Count of past-due unpaid invoices",
-                        ReportKpiBlockEntity.KpiCategory.FINANCIAL, ReportKpiBlockEntity.QueryType.COUNT, "count")
+                        ReportKpiBlockEntity.KpiCategory.FINANCIAL, ReportKpiBlockEntity.QueryType.COUNT, "count"),
+                kpi("active_customers", "Active Customers",
+                        "Unique customers with at least one order",
+                        ReportKpiBlockEntity.KpiCategory.CUSTOMER, ReportKpiBlockEntity.QueryType.COUNT, "count"),
+                kpi("order_frequency", "Order Frequency",
+                        "Average orders per customer",
+                        ReportKpiBlockEntity.KpiCategory.CUSTOMER, ReportKpiBlockEntity.QueryType.RATIO, "x"),
+                kpi("customer_lifetime_value", "Customer Lifetime Value",
+                        "Average revenue per customer",
+                        ReportKpiBlockEntity.KpiCategory.CUSTOMER, ReportKpiBlockEntity.QueryType.RATIO, "GBP"),
+                kpi("disputed_invoice_rate", "Disputed Invoice Rate",
+                        "Percentage of invoices that are disputed",
+                        ReportKpiBlockEntity.KpiCategory.FINANCIAL, ReportKpiBlockEntity.QueryType.RATIO, "%"),
+                kpi("invoice_aging", "Invoice Aging",
+                        "Invoice count by aging bucket (0-30, 31-60, 61-90, 90+)",
+                        ReportKpiBlockEntity.KpiCategory.FINANCIAL, ReportKpiBlockEntity.QueryType.AGGREGATE, "count")
         ));
     }
 
@@ -303,6 +318,11 @@ public class ReportService {
             case "production_efficiency" -> financeService.productionEfficiency(tenantId, dateFrom, dateTo);
             case "outstanding_invoices" -> financeService.outstandingInvoices(tenantId);
             case "overdue_invoices" -> financeService.overdueInvoiceCount(tenantId);
+            case "active_customers" -> financeService.activeCustomerCount(tenantId, dateFrom, dateTo);
+            case "order_frequency" -> financeService.orderFrequency(tenantId, dateFrom, dateTo);
+            case "customer_lifetime_value" -> financeService.customerLifetimeValue(tenantId, dateFrom, dateTo);
+            case "disputed_invoice_rate" -> financeService.disputedInvoiceRate(tenantId);
+            case "invoice_aging" -> financeService.invoiceAgingBuckets(tenantId);
             default -> BigDecimal.ZERO;
         };
     }
