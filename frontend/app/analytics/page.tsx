@@ -8,6 +8,10 @@ import {
   DollarSign, Users, ShoppingCart, TrendingUp,
   AlertTriangle, BarChart3, RefreshCw, Package,
 } from 'lucide-react';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, PieChart, Pie, Cell, Legend,
+} from 'recharts';
 
 interface KpiResult {
   blockKey: string;
@@ -165,7 +169,51 @@ export default function AnalyticsPage() {
         </div>
       </Card>
 
-      {/* ── Top Products ──────────────────────────────────────────────────── */}
+      {/* ── Top Products Chart ─────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card title="Top Products — Revenue">
+          {topProducts.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={topProducts.slice(0, 8).map((p) => ({
+                name: String(p.name || p.productName || '').slice(0, 15),
+                revenue: Number(p.totalRevenue ?? 0),
+                qty: Number(p.totalQty ?? 0),
+              }))}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" fontSize={12} />
+                <YAxis fontSize={12} />
+                <Tooltip />
+                <Bar dataKey="revenue" fill="#3b82f6" name="Revenue" radius={[4,4,0,0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : <p className="text-gray-400 text-sm py-8 text-center">No data</p>}
+        </Card>
+
+        <Card title="Top Products — Distribution">
+          {topProducts.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={topProducts.slice(0, 6).map((p) => ({
+                    name: String(p.name || p.productName || ''),
+                    value: Number(p.totalRevenue ?? 0),
+                  }))}
+                  cx="50%" cy="50%" outerRadius={100}
+                  dataKey="value" label={({ name }) => name?.slice(0, 12)}
+                >
+                  {topProducts.slice(0, 6).map((_, i) => (
+                    <Cell key={i} fill={['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899'][i % 6]} />
+                  ))}
+                </Pie>
+                <Legend />
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : <p className="text-gray-400 text-sm py-8 text-center">No data</p>}
+        </Card>
+      </div>
+
+      {/* ── Top Products Table ────────────────────────────────────────────── */}
       <Card title="Top Products">
         <Table
           cols={['Product', 'Qty Sold', 'Revenue', 'Orders']}
