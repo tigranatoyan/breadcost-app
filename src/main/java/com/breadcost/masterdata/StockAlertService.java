@@ -4,6 +4,10 @@ import com.breadcost.domain.ProductionPlan;
 import com.breadcost.domain.Recipe;
 import com.breadcost.domain.WorkOrder;
 import com.breadcost.projections.InventoryProjection;
+import com.breadcost.purchaseorder.PurchaseOrderEntity;
+import com.breadcost.purchaseorder.PurchaseOrderService;
+import com.breadcost.supplier.SupplierCatalogItemEntity;
+import com.breadcost.supplier.SupplierCatalogItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,6 +37,8 @@ public class StockAlertService {
     private final ProductionPlanRepository planRepository;
     private final WorkOrderRepository workOrderRepository;
     private final InventoryService inventoryService;
+    private final PurchaseOrderService purchaseOrderService;
+    private final SupplierCatalogItemRepository catalogItemRepo;
 
     /**
      * Detect all items below their minimum stock threshold.
@@ -194,6 +200,69 @@ public class StockAlertService {
 
     public record AutoPlanResult(
             ProductionPlanEntity plan,
+            List<String> warnings,
+            String message
+    ) {}
+
+    /**
+     * R5: Auto-generate purchase orders for low-stock ingredients.
+     * Finds ingredients below threshold, matches to preferred suppliers,
+     * and creates POs grouped by supplier.
+     */
+    @Transactional
+    public AutoPurchaseOrderResult autoGeneratePurchaseOrders(String tenantId) {
+        List<LowStockAlert> alerts = detectLowStock(tenantId);
+        if (alerts.isEmpty()) {
+            return new AutoPurchaseOrderResult(List.of(), List.of(), "No low-stock items detected");
+        }
+
+        List<String> warnings = new ArrayList<>();
+        // Group order lines by supplier
+        Map<String, List<PurchaseOrderService.LineInput>> bySupplierId = new LinkedHashMap<>();
+
+        for (LowStockAlert alert : alerts) {
+            List<SupplierCatalogItemEntity> suppliers =
+                    catalogItemRepo.findByTenantIdAndIngredientId(tenantId, alert.itemId());
+            if (suppliers.isEmpty()) {
+                warnings.add("No supplier for " + alert.itemName());
+                continue;
+            }
+            // Pick preferred or cheapest
+            SupplierCatalogItemEntity best = suppliers.stream()
+                    .sorted(Comparator.<SupplierCatalogItemEntity, Boolean>comparing(s -> !s.isPreferred())
+                            .thenComparing(SupplierCatalogItemEntity::getUnitPrice))
+                    .findFirst().orElse(suppliers.get(0));
+
+            BigDecimal orderQty = alert.threshold().subtract(alert.onHand()).max(BigDecimal.ONE);
+
+            bySupplierId.computeIfAbsent(best.getSupplierId(), k -> new ArrayList<>())
+                    .add(new PurchaseOrderService.LineInput(
+                            alert.itemId(), alert.itemName(),
+                            orderQty.doubleValue(), alert.uom(),
+                            best.getUnitPrice(), best.getCurrency()));
+        }
+
+        if (bySupplierId.isEmpty()) {
+            return new AutoPurchaseOrderResult(List.of(), warnings, "No suppliers available for low-stock items");
+        }
+
+        List<PurchaseOrderEntity> createdPOs = new ArrayList<>();
+        for (var entry : bySupplierId.entrySet()) {
+            PurchaseOrderEntity po = purchaseOrderService.createPO(
+                    tenantId, entry.getKey(), entry.getValue(),
+                    "Auto-generated from stock alerts", 1.0, "USD");
+            createdPOs.add(po);
+        }
+
+        log.info("Auto-generated {} POs for {} low-stock ingredients (tenant={})",
+                createdPOs.size(), alerts.size(), tenantId);
+
+        return new AutoPurchaseOrderResult(createdPOs, warnings,
+                "Generated " + createdPOs.size() + " purchase orders");
+    }
+
+    public record AutoPurchaseOrderResult(
+            List<PurchaseOrderEntity> purchaseOrders,
             List<String> warnings,
             String message
     ) {}

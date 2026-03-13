@@ -24,7 +24,7 @@
 ## Arc 1: Order Lifecycle — Customer places order → Order delivered & invoiced
 
 **Actors:** Customer, Admin, Manager, Floor Worker, Driver, Finance
-**Status:** `[R1-R3]` core CRUD + confirm + production link; `[R4]` portal checkout, tracking, timeline; `[R5+]` email notifications
+**Status:** `[R1-R3]` core CRUD + confirm + production link; `[R4]` portal checkout, tracking, timeline; `[R5]` email notifications on status change
 **Depends on:** Arc 2 (production), Arc 3 (stock check), Arc 6 (invoicing)
 
 ### Happy Path
@@ -120,7 +120,7 @@
 ## Arc 3: Inventory & Supply Chain — Stock management → Procurement → Receiving
 
 **Actors:** Warehouse, Admin, Manager, System, Supplier (external)
-**Status:** `[R1-R2]` manual CRUD + PO workflow; `[R3]` AI replenishment hints; `[R5+]` auto-reorder
+**Status:** `[R1-R2]` manual CRUD + PO workflow; `[R3]` AI replenishment hints; `[R5]` auto-PO from stock alerts
 **Depends on:** Arc 2 (production consumes stock), Arc 6 (supplier invoicing)
 
 ### Happy Path
@@ -229,7 +229,7 @@
 | Step | Failure | Recovery | Stories |
 |------|---------|----------|---------|
 | 3 | Insufficient cash | Cashier removes items or customer adds cash | — |
-| 5 | Product not in stock | POS should check stock and warn/block | `[R5+]` BC-TBD |
+| 5 | Product not in stock | **POS checks ingredient stock and logs warning** (warn-only, not blocking) | `[R5]` Implemented |
 
 ### Cross-Arc Dependencies
 
@@ -423,11 +423,11 @@ Arc 8 (Platform) ──gates features──→ All Arcs                     │
 
 | Arc | Name | Status | Key Release |
 |-----|------|--------|-------------|
-| 1 | Order Lifecycle | `[R1-R3]` partial, `[R4]` portal + tracking | R4 completes portal path |
+| 1 | Order Lifecycle | `[R1-R3]` partial, `[R4]` portal + tracking, `[R5]` email notifications | R5 adds email on status change |
 | 2 | Production Planning | `[DONE]` | R1 |
-| 3 | Inventory & Supply Chain | `[R1-R2]` manual, `[R3]` AI hints | R5+ for auto-reorder |
+| 3 | Inventory & Supply Chain | `[R1-R2]` manual, `[R3]` AI hints, `[R5]` auto-PO | R5 auto-PO from stock alerts |
 | 4 | Customer Self-Service Portal | `[R2]` BE stubs, `[R4-S1]` security, `[R4]` full portal | R4 is the key release |
-| 5 | POS & Walk-in Sales | `[DONE]` | R1 |
+| 5 | POS & Walk-in Sales | `[DONE]`, `[R5]` stock pre-check | R5 adds ingredient availability warning |
 | 6 | Financial Operations | `[DONE]` | R2 |
 | 7 | AI Assistance | `[R3]` BE done, `[R4]` visual refresh | R5+ for real ML |
 | 8 | Platform Administration | `[R1-R2]` config, `[R4-S1]` RBAC, `[R4]` enforcement | R4 wires subscription gates |

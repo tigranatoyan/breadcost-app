@@ -8,6 +8,7 @@ import com.breadcost.events.OrderCreatedEvent;
 import com.breadcost.domain.LedgerEntry;
 import com.breadcost.eventstore.EventStore;
 import com.breadcost.mobile.MobileAppService;
+import com.breadcost.notifications.EmailNotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +35,7 @@ public class OrderService {
     private final EventStore eventStore;
     private final OrderStatusHistoryRepository orderStatusHistoryRepository;
     private final MobileAppService mobileAppService;
+    private final EmailNotificationService emailNotificationService;
 
     /** Hour of day (0-23) after which new standard orders are blocked (default 22 = 10 PM) */
     @Value("${breadcost.order.cutoff-hour:22}")
@@ -257,11 +259,14 @@ public class OrderService {
 
         recordHistory(tenantId, orderId, targetStatus.name(), "Status changed to " + targetStatus.name());
 
-        // G-3: Auto-notify customer on status change
+        // G-3: Auto-notify customer on status change (push + email)
         try {
             String customerId = saved.getCustomerId();
             if (customerId != null && !customerId.isBlank()) {
                 mobileAppService.notifyOrderStatusChange(tenantId, customerId, orderId, targetStatus.name());
+                emailNotificationService.sendOrderStatusEmail(
+                        tenantId, customerId, orderId,
+                        saved.getCustomerName(), targetStatus.name());
             }
         } catch (Exception e) {
             log.warn("Failed to send order status notification for {}: {}", orderId, e.getMessage());

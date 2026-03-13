@@ -205,4 +205,22 @@ public class InventoryController {
         }
         return ResponseEntity.ok(response);
     }
+
+    /**
+     * R5: Auto-generate purchase orders for low-stock ingredients.
+     */
+    @PostMapping("/auto-purchase-orders")
+    @PreAuthorize("hasAnyRole('Admin','Manager')")
+    public ResponseEntity<Map<String, Object>> autoGeneratePurchaseOrders(
+            @RequestParam String tenantId) {
+        var result = stockAlertService.autoGeneratePurchaseOrders(tenantId);
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("message", result.message());
+        response.put("warnings", result.warnings());
+        response.put("poCount", result.purchaseOrders().size());
+        response.put("poIds", result.purchaseOrders().stream()
+                .map(po -> po.getPoId()).toList());
+        return ResponseEntity.ok(response);
+    }
 }

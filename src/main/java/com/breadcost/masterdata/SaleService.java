@@ -31,6 +31,22 @@ public class SaleService {
                                   BigDecimal cashReceived, String cardReference,
                                   String cashierId) {
 
+        // R5: Pre-check ingredient availability before completing sale
+        for (SaleLineInput input : lineInputs) {
+            var recipes = recipeRepository.findByTenantIdAndProductIdAndStatus(
+                    tenantId, input.productId(), Recipe.RecipeStatus.ACTIVE);
+            if (!recipes.isEmpty()) {
+                RecipeEntity recipe = recipes.get(0);
+                var shortages = inventoryService.checkMaterialAvailability(
+                        tenantId, recipe.getRecipeId(),
+                        input.quantity().divide(recipe.getBatchSize(), 0,
+                                java.math.RoundingMode.CEILING).intValue());
+                if (!shortages.isEmpty()) {
+                    log.warn("POS stock warning for {}: {}", input.productName(), shortages);
+                }
+            }
+        }
+
         // Build lines
         List<SaleLineEntity> lines = lineInputs.stream().map(l -> {
             BigDecimal total = l.unitPrice().multiply(l.quantity());

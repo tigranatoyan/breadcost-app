@@ -151,9 +151,7 @@ class GapClosureTest extends FunctionalTestBase {
         // Create order so that generateWorkOrders picks it up
         var orderService = new OrderService(orderRepository, departmentRepository,
                 productRepository, recipeRepository,
-                org.springframework.test.util.ReflectionTestUtils.getField(
-                        planService, "inventoryService") != null
-                        ? null : null, null, null);
+                null, null, null, null);
 
         // Manually add a WO to the plan
         var wo = WorkOrderEntity.builder()
