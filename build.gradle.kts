@@ -4,6 +4,10 @@ plugins {
     java
     id("org.springframework.boot") version "3.4.2"
     id("io.spring.dependency-management") version "1.1.6"
+    id("com.github.spotbugs") version "6.0.9"
+    checkstyle
+    jacoco
+    id("org.owasp.dependencycheck") version "10.0.3"
 }
 
 group = "com.breadcost"
@@ -58,6 +62,9 @@ dependencies {
     // Apache POI (Excel export)
     implementation("org.apache.poi:poi-ooxml:5.2.5")
 
+    // OpenAPI / Swagger documentation
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
+
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
@@ -83,3 +90,38 @@ tasks {
 
 // Extra properties for multi-module builds
 ext["java.version"] = "21"
+
+// ── Checkstyle ────────────────────────────────────────────────────────────
+checkstyle {
+    toolVersion = "10.14.2"
+    isIgnoreFailures = true          // warn only, don't block builds initially
+    configFile = file("config/checkstyle/checkstyle.xml")
+}
+
+// ── SpotBugs ──────────────────────────────────────────────────────────────
+spotbugs {
+    ignoreFailures = true            // warn only
+    effort = com.github.spotbugs.snom.Effort.MAX
+    reportLevel = com.github.spotbugs.snom.Confidence.MEDIUM
+}
+tasks.withType<com.github.spotbugs.snom.SpotBugsTask> {
+    reports {
+        create("html") { required = true }
+        create("xml")  { required = false }
+    }
+}
+
+// ── JaCoCo ────────────────────────────────────────────────────────────────
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+// ── OWASP Dependency-Check ────────────────────────────────────────────────
+dependencyCheck {
+    failBuildOnCVSS = 9.0f          // only fail on CRITICAL initially
+    formats = listOf("HTML", "JSON")
+}

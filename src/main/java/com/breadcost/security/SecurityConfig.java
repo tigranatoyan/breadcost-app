@@ -42,6 +42,8 @@ public class SecurityConfig {
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/h2-console/**").permitAll()
+                // OpenAPI / Swagger UI
+                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                 // v1 public
                 .requestMatchers(HttpMethod.POST, "/v1/auth/login").permitAll()
                 // v2 public: customer register, login, catalog browse
