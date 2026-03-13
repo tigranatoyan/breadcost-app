@@ -3,6 +3,7 @@ package com.breadcost.api;
 import com.breadcost.commands.*;
 import com.breadcost.masterdata.ItemEntity;
 import com.breadcost.masterdata.ItemRepository;
+import com.breadcost.masterdata.StockAlertService;
 import com.breadcost.projections.InventoryProjection;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -30,6 +31,7 @@ public class InventoryController {
     private final TransferInventoryCommandHandler transferInventoryHandler;
     private final InventoryProjection inventoryProjection;
     private final ItemRepository itemRepository;
+    private final StockAlertService stockAlertService;
 
     // ─── POSITIONS ───────────────────────────────────────────────────────────
 
@@ -156,5 +158,39 @@ public class InventoryController {
         }
 
         return ResponseEntity.ok(alerts);
+    }
+
+    // ─── LOW STOCK + AUTO PLAN ──────────────────────────────────────────────
+
+    /**
+     * G-6: Enhanced low-stock alerts with affected products.
+     */
+    @GetMapping("/low-stock")
+    @PreAuthorize("hasAnyRole('Admin','Manager','Warehouse')")
+    public ResponseEntity<List<StockAlertService.LowStockAlert>> getLowStock(
+            @RequestParam String tenantId) {
+        return ResponseEntity.ok(stockAlertService.detectLowStock(tenantId));
+    }
+
+    /**
+     * G-6: Auto-create a DRAFT production plan based on confirmed orders and stock levels.
+     */
+    @PostMapping("/auto-plan")
+    @PreAuthorize("hasAnyRole('Admin','Manager')")
+    public ResponseEntity<Map<String, Object>> autoCreatePlan(
+            @RequestParam String tenantId,
+            @RequestParam(required = false) String siteId,
+            org.springframework.security.core.Authentication auth) {
+        String userId = auth != null ? auth.getName() : "system";
+        var result = stockAlertService.autoCreateProductionPlan(tenantId, siteId, userId);
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("message", result.message());
+        response.put("warnings", result.warnings());
+        if (result.plan() != null) {
+            response.put("planId", result.plan().getPlanId());
+            response.put("workOrderCount", result.plan().getWorkOrders().size());
+        }
+        return ResponseEntity.ok(response);
     }
 }

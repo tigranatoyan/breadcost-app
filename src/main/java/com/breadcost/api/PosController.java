@@ -33,6 +33,8 @@ public class PosController {
 
     private final SaleRepository saleRepository;
     private final SaleService saleService;
+    private final InventoryService inventoryService;
+    private final RecipeRepository recipeRepository;
 
     // ─── DTOs ────────────────────────────────────────────────────────────────
 
@@ -102,6 +104,50 @@ public class PosController {
                 cashierId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    /**
+     * BC-5002: Check stock availability for products before POS sale.
+     * Returns warnings (not blocking) for products with low or zero stock.
+     */
+    @PostMapping("/stock-check")
+    @PreAuthorize("hasAnyRole('Admin','Cashier')")
+    public ResponseEntity<List<Map<String, Object>>> checkStock(
+            @RequestParam String tenantId,
+            @RequestBody List<SaleLineRequest> lines) {
+
+        List<Map<String, Object>> warnings = new java.util.ArrayList<>();
+        for (SaleLineRequest line : lines) {
+            var recipes = recipeRepository.findByTenantIdAndProductIdAndStatus(
+                    tenantId, line.getProductId(),
+                    com.breadcost.domain.Recipe.RecipeStatus.ACTIVE);
+            if (recipes.isEmpty()) continue;
+
+            RecipeEntity recipe = recipes.get(0);
+            int batchCount = line.getQuantity()
+                    .divide(recipe.getBatchSize(), 0, java.math.RoundingMode.CEILING)
+                    .intValue();
+            if (batchCount < 1) batchCount = 1;
+
+            var shortages = inventoryService.checkMaterialAvailability(
+                    tenantId, recipe.getRecipeId(), batchCount);
+
+            if (!shortages.isEmpty()) {
+                warnings.add(Map.of(
+                        "productId", line.getProductId(),
+                        "productName", line.getProductName(),
+                        "shortages", shortages.stream().map(s -> Map.of(
+                                "itemId", s.itemId(),
+                                "itemName", s.itemName(),
+                                "required", s.required(),
+                                "onHand", s.onHand(),
+                                "shortage", s.shortage(),
+                                "uom", s.uom()
+                        )).toList()
+                ));
+            }
+        }
+        return ResponseEntity.ok(warnings);
     }
 
     @PostMapping("/reconcile")

@@ -3,6 +3,10 @@ package com.breadcost.api;
 import com.breadcost.domain.Product;
 import com.breadcost.masterdata.ProductEntity;
 import com.breadcost.masterdata.ProductRepository;
+import com.breadcost.masterdata.RecipeEntity;
+import com.breadcost.masterdata.RecipeRepository;
+import com.breadcost.masterdata.InventoryService;
+import com.breadcost.domain.Recipe;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -34,6 +38,8 @@ import java.util.Set;
 public class CustomerCatalogController {
 
     private final ProductRepository productRepository;
+    private final RecipeRepository recipeRepository;
+    private final InventoryService inventoryService;
 
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("name", "price");
 
@@ -47,7 +53,8 @@ public class CustomerCatalogController {
             String description,
             String saleUnit,
             BigDecimal price,
-            double vatRatePct
+            double vatRatePct,
+            boolean inStock
     ) {
         static CatalogProduct from(ProductEntity e) {
             return new CatalogProduct(
@@ -57,8 +64,13 @@ public class CustomerCatalogController {
                     e.getDescription(),
                     e.getSaleUnit() != null ? e.getSaleUnit().name() : null,
                     e.getPrice(),
-                    e.getVatRatePct()
+                    e.getVatRatePct(),
+                    true // default; enriched by controller
             );
+        }
+        CatalogProduct withInStock(boolean stock) {
+            return new CatalogProduct(productId, departmentId, name, description,
+                    saleUnit, price, vatRatePct, stock);
         }
     }
 
@@ -99,7 +111,10 @@ public class CustomerCatalogController {
         Pageable pageable = PageRequest.of(page, Math.min(size, 100), Sort.by(dir, sortField));
 
         Page<CatalogProduct> result = productRepository.findAll(spec, pageable)
-                .map(CatalogProduct::from);
+                .map(e -> {
+                    CatalogProduct cp = CatalogProduct.from(e);
+                    return cp.withInStock(isProductInStock(tenantId, e));
+                });
 
         log.debug("Catalog search: tenantId={} search={} dept={} page={} results={}",
                 tenantId, search, departmentId, page, result.getTotalElements());
@@ -125,10 +140,30 @@ public class CustomerCatalogController {
         CatalogProduct product = productRepository.findById(productId)
                 .filter(p -> p.getTenantId().equals(tenantId))
                 .filter(p -> p.getStatus() == Product.ProductStatus.ACTIVE)
-                .map(CatalogProduct::from)
+                .map(e -> CatalogProduct.from(e).withInStock(isProductInStock(tenantId, e)))
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Product not found or unavailable: " + productId));
 
         return ResponseEntity.ok(product);
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    /**
+     * G-7: Check if a product has sufficient ingredients for at least 1 batch.
+     * Products without an active recipe are assumed in-stock.
+     */
+    private boolean isProductInStock(String tenantId, ProductEntity product) {
+        try {
+            var recipes = recipeRepository.findByTenantIdAndProductIdAndStatus(
+                    tenantId, product.getProductId(), Recipe.RecipeStatus.ACTIVE);
+            if (recipes.isEmpty()) return true;
+            var shortages = inventoryService.checkMaterialAvailability(
+                    tenantId, recipes.get(0).getRecipeId(), 1);
+            return shortages.isEmpty();
+        } catch (Exception e) {
+            log.warn("Stock check failed for product {}: {}", product.getProductId(), e.getMessage());
+            return true; // fail-open: show as available
+        }
     }
 }
