@@ -10,10 +10,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * REST API for read model queries
  * Implements view endpoints from API_SURFACE.yaml
  */
+@Tag(name = "Views", description = "Materialized view endpoints for dashboards")
 @RestController
 @RequestMapping("/v1/views")
 @Slf4j

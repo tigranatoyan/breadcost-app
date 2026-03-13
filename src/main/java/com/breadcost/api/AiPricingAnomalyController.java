@@ -12,9 +12,12 @@ import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
 import com.breadcost.subscription.SubscriptionRequired;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * AI pricing + anomaly endpoints — BC-2001 (FR-12.5), BC-2002 (FR-12.6)
  */
+@Tag(name = "AI Pricing & Anomaly", description = "Pricing suggestions and anomaly detection")
 @RestController
 @RequestMapping("/v3/ai")
 @RequiredArgsConstructor

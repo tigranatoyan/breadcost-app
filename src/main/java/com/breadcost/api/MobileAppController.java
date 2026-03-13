@@ -11,9 +11,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * Mobile customer app endpoints — BC-2301 (FR-2.1 mobile)
  */
+@Tag(name = "Mobile App", description = "Push notifications and mobile device management")
 @RestController
 @RequestMapping("/v3/mobile")
 @RequiredArgsConstructor

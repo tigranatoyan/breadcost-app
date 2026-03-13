@@ -19,9 +19,14 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * REST API for inventory operations — FR-5.1 through FR-5.11
  */
+@Tag(name = "Inventory", description = "Stock positions, receipts, transfers, and alerts")
 @RestController
 @RequestMapping("/v1/inventory")
 @Slf4j
@@ -35,6 +40,8 @@ public class InventoryController {
 
     // ─── POSITIONS ───────────────────────────────────────────────────────────
 
+    @Operation(summary = "Get inventory positions", description = "Aggregated on-hand quantities per item, optionally filtered by site")
+    @ApiResponse(responseCode = "200", description = "Inventory positions returned")
     @GetMapping("/positions")
     @PreAuthorize("hasAnyRole('Admin','Manager','ProductionUser','FinanceUser','Viewer','Warehouse')")
     public ResponseEntity<List<InventoryProjection.InventoryPosition>> getPositions(
@@ -54,6 +61,8 @@ public class InventoryController {
 
     // ─── RECEIVE ─────────────────────────────────────────────────────────────
 
+    @Operation(summary = "Receive inventory lot", description = "Record an incoming inventory receipt with lot-level tracking")
+    @ApiResponse(responseCode = "200", description = "Lot received and inventory updated")
     @PostMapping("/receipts")
     @PreAuthorize("hasAnyRole('Admin','Warehouse')")
     public ResponseEntity<CommandResult> receiveLot(@Valid @RequestBody ReceiveLotCommand command) {
@@ -64,6 +73,7 @@ public class InventoryController {
 
     // ─── TRANSFER ────────────────────────────────────────────────────────────
 
+    @Operation(summary = "Transfer inventory", description = "Move inventory between sites or locations")
     @PostMapping("/transfers")
     @PreAuthorize("hasAnyRole('Admin','Warehouse','ProductionUser')")
     public ResponseEntity<CommandResult> transferInventory(@Valid @RequestBody TransferInventoryCommand command) {
@@ -95,6 +105,7 @@ public class InventoryController {
         private String reasonCode;
     }
 
+    @Operation(summary = "Adjust inventory", description = "Apply manual adjustment (positive or negative) with reason code")
     @PostMapping("/adjust")
     @PreAuthorize("hasAnyRole('Admin','Warehouse')")
     public ResponseEntity<AdjustResponse> adjustInventory(@Valid @RequestBody AdjustRequest req) {
@@ -125,6 +136,7 @@ public class InventoryController {
         String severity; // LOW / CRITICAL
     }
 
+    @Operation(summary = "Get stock alerts", description = "Items below minimum stock threshold with severity levels")
     @GetMapping("/alerts")
     @PreAuthorize("hasAnyRole('Admin','Manager','ProductionUser','FinanceUser','Viewer','Warehouse')")
     public ResponseEntity<List<StockAlert>> getAlerts(@RequestParam String tenantId) {

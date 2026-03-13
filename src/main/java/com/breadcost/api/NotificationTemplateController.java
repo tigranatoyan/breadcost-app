@@ -17,12 +17,15 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * Notification Templates CRUD — /v3/notifications/templates
  *
  * BC-3002: Admin/Management can manage notification templates.
  * Templates support variable placeholders: {{orderNumber}}, {{customerName}}, {{status}}.
  */
+@Tag(name = "Notification Templates", description = "Notification template CRUD and rendering")
 @RestController
 @RequestMapping("/v3/notifications/templates")
 @RequiredArgsConstructor

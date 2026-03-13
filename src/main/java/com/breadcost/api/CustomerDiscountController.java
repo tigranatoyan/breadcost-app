@@ -17,6 +17,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Customer Discounts", description = "Discount rules and tiered pricing per customer")
 @RestController
 @RequestMapping("/v2/customers/{customerId}/discounts")
 @RequiredArgsConstructor

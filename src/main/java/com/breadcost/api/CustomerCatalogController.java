@@ -21,6 +21,8 @@ import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Set;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * Customer Portal — Product Catalog API
  *
@@ -31,6 +33,7 @@ import java.util.Set;
  * Read-only, unauthenticated (any-request-permitted by SecurityConfig).
  * Returns a slim CatalogProduct projection (no cost internals).
  */
+@Tag(name = "Customer Catalog", description = "Customer-facing product catalog with stock visibility")
 @RestController
 @RequestMapping("/v2/products")
 @RequiredArgsConstructor

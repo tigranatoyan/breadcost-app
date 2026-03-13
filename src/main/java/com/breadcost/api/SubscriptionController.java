@@ -12,11 +12,14 @@ import java.util.Map;
 import java.util.Optional;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * Subscription REST controller.
  * BC-1701 – Subscription tier assignment by super-admin
  * BC-1702 – Feature access check by tenant
  */
+@Tag(name = "Subscriptions", description = "Subscription tier management and feature access")
 @RestController
 @RequestMapping("/v2/subscriptions")
 @PreAuthorize("hasAnyRole('Admin')")

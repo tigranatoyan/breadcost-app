@@ -15,9 +15,12 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * Exchange rate endpoints — BC-2201 (FR-6.7, FR-9.7)
  */
+@Tag(name = "Exchange Rates", description = "Currency exchange rate management")
 @RestController
 @RequestMapping("/v3/exchange-rates")
 @RequiredArgsConstructor

@@ -20,6 +20,8 @@ import java.util.List;
 
 import com.breadcost.subscription.SubscriptionRequired;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * Customer Portal — Loyalty API  /v2/loyalty
  *
@@ -32,6 +34,7 @@ import com.breadcost.subscription.SubscriptionRequired;
  *          GET  /v2/loyalty/history            — transaction history
  * BC-1206: covered by tiers CRUD above
  */
+@Tag(name = "Loyalty", description = "Customer loyalty program and rewards")
 @RestController
 @RequestMapping("/v2/loyalty")
 @RequiredArgsConstructor

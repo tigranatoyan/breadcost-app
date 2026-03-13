@@ -14,6 +14,8 @@ import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
 import com.breadcost.subscription.SubscriptionRequired;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * Supplier REST API — BC-1301: Supplier catalog CRUD
  *
@@ -25,6 +27,7 @@ import com.breadcost.subscription.SubscriptionRequired;
  * POST   /v2/suppliers/{id}/catalog?tenantId=... — add catalog item
  * GET    /v2/suppliers/{id}/catalog?tenantId=... — list catalog items
  */
+@Tag(name = "Suppliers", description = "Supplier master data and catalog management")
 @RestController
 @RequestMapping("/v2/suppliers")
 @RequiredArgsConstructor

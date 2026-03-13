@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Technology Steps", description = "Production technology step definitions")
 @RestController
 @RequestMapping("/v1/technology-steps")
 @RequiredArgsConstructor

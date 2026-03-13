@@ -18,10 +18,13 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * REST API for Recipe management (FR-4.1 → FR-4.9)
  * Only Technologist (or Admin) can create/activate recipes
  */
+@Tag(name = "Recipes", description = "Recipe definitions, ingredient lines, and batch sizing")
 @RestController
 @RequestMapping("/v1/recipes")
 @Slf4j

@@ -14,9 +14,12 @@ import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
 import com.breadcost.subscription.SubscriptionRequired;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * AI WhatsApp ordering endpoints — BC-1801..1804 (FR-12.x)
  */
+@Tag(name = "AI Conversation", description = "WhatsApp NLP ordering endpoints")
 @RestController
 @RequestMapping("/v3/ai")
 @RequiredArgsConstructor

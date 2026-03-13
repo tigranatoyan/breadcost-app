@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Items", description = "Raw material and ingredient master data")
 @RestController
 @RequestMapping("/v1/items")
 @RequiredArgsConstructor

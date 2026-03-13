@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * Delivery run REST API — BC-E14
  *
@@ -28,6 +30,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
  * GET  /v2/delivery-runs?tenantId=...                  — list runs
  * PUT  /v2/delivery-runs/{id}/orders/{orderId}/waive   — BC-1406: waive charge
  */
+@Tag(name = "Deliveries", description = "Delivery runs, routing, and driver manifests")
 @RestController
 @RequestMapping("/v2/delivery-runs")
 @RequiredArgsConstructor

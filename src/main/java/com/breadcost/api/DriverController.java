@@ -17,9 +17,12 @@ import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
 import com.breadcost.subscription.SubscriptionRequired;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * Driver mobile app endpoints — BC-2101..2103 (FR-7.7, FR-8.7, FR-8.8)
  */
+@Tag(name = "Drivers", description = "Driver management, assignments, and performance")
 @RestController
 @RequestMapping("/v3/driver")
 @RequiredArgsConstructor

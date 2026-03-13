@@ -17,10 +17,13 @@ import org.springframework.web.bind.annotation.*;
 import com.breadcost.domain.Department;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * REST API for Department management
  * Departments are configurable from the UI — up to 10 per tenant (FR-11.1, FR-11.2)
  */
+@Tag(name = "Departments", description = "Department CRUD for organizational structure")
 @RestController
 @RequestMapping("/v1/departments")
 @Slf4j

@@ -15,10 +15,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * User management — FR-11.4
  * POST/PUT /v1/users
  */
+@Tag(name = "Users", description = "User CRUD, roles, and access management")
 @RestController
 @RequestMapping("/v1/users")
 @RequiredArgsConstructor

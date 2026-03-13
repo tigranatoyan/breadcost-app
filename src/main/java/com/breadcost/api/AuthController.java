@@ -17,9 +17,14 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * POST /v1/auth/login  — returns JWT token
  */
+@Tag(name = "Authentication", description = "Login and JWT token management")
 @RestController
 @RequestMapping("/v1/auth")
 @RequiredArgsConstructor
@@ -46,6 +51,9 @@ public class AuthController {
         private String primaryRole;
     }
 
+    @Operation(summary = "Authenticate user", description = "Returns a JWT token for valid credentials")
+    @ApiResponse(responseCode = "200", description = "Login successful — JWT token returned")
+    @ApiResponse(responseCode = "401", description = "Invalid credentials or deactivated account")
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest req) {
         log.info("Login attempt: {}", req.getUsername());

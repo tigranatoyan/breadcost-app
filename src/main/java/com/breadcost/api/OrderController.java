@@ -17,6 +17,11 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Orders", description = "Order lifecycle: creation, confirmation, status tracking")
 @RestController
 @RequestMapping("/v1/orders")
 @RequiredArgsConstructor
@@ -26,6 +31,8 @@ public class OrderController {
 
     // ─── GET ALL ─────────────────────────────────────────────────────────────────
 
+    @Operation(summary = "List orders", description = "List all orders for a tenant, optionally filtered by status or customer")
+    @ApiResponse(responseCode = "200", description = "Orders retrieved")
     @GetMapping
     @PreAuthorize("hasAnyRole('Admin','Manager','ProductionUser','FinanceUser','Viewer')")
     public ResponseEntity<List<OrderEntity>> getOrders(
@@ -44,6 +51,7 @@ public class OrderController {
 
     // ─── GET ALL (PAGINATED) ─────────────────────────────────────────────────────
 
+    @Operation(summary = "List orders (paginated)", description = "Server-side paginated order list, sorted by placement date descending")
     @GetMapping("/paged")
     @PreAuthorize("hasAnyRole('Admin','Manager','ProductionUser','FinanceUser','Viewer')")
     public ResponseEntity<org.springframework.data.domain.Page<OrderEntity>> getOrdersPaged(
@@ -68,6 +76,8 @@ public class OrderController {
 
     // ─── CREATE ─────────────────────────────────────────────────────────────────
 
+    @Operation(summary = "Create order", description = "Place a new order with line items. Auto-detects rush orders based on cutoff hour.")
+    @ApiResponse(responseCode = "201", description = "Order created")
     @PostMapping
     @PreAuthorize("hasAnyRole('Admin','ProductionUser')")
     public ResponseEntity<OrderEntity> createOrder(@RequestBody CreateOrderRequest req) {
@@ -89,6 +99,7 @@ public class OrderController {
 
     // ─── CONFIRM ─────────────────────────────────────────────────────────────────
 
+    @Operation(summary = "Confirm order", description = "Transition order from DRAFT to CONFIRMED")
     @PostMapping("/{orderId}/confirm")
     @PreAuthorize("hasAnyRole('Admin','ProductionUser')")
     public ResponseEntity<OrderEntity> confirmOrder(
@@ -100,6 +111,7 @@ public class OrderController {
 
     // ─── CANCEL ─────────────────────────────────────────────────────────────────
 
+    @Operation(summary = "Cancel order", description = "Cancel a DRAFT or CONFIRMED order with optional reason")
     @PostMapping("/{orderId}/cancel")
     @PreAuthorize("hasAnyRole('Admin','ProductionUser')")
     public ResponseEntity<OrderEntity> cancelOrder(
@@ -112,6 +124,7 @@ public class OrderController {
 
     // ─── STATUS ADVANCE ───────────────────────────────────────────────────────────
 
+    @Operation(summary = "Advance order status", description = "Transition order through the lifecycle: CONFIRMED → IN_PRODUCTION → READY → OUT_FOR_DELIVERY → DELIVERED")
     @PostMapping("/{orderId}/status")
     @PreAuthorize("hasAnyRole('Admin','ProductionUser')")
     public ResponseEntity<OrderEntity> advanceStatus(

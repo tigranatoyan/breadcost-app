@@ -22,9 +22,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * POS Controller — FR-8.1 through FR-8.6
  */
+@Tag(name = "POS", description = "Point-of-sale transactions and reconciliation")
 @RestController
 @RequestMapping("/v1/pos")
 @RequiredArgsConstructor
@@ -69,6 +74,7 @@ public class PosController {
 
     // ─── ENDPOINTS ───────────────────────────────────────────────────────────
 
+    @Operation(summary = "List sales", description = "List POS sales, optionally filtered by date")
     @GetMapping("/sales")
     @PreAuthorize("hasAnyRole('Admin','Cashier','FinanceUser')")
     public ResponseEntity<List<SaleEntity>> getSales(
@@ -83,6 +89,8 @@ public class PosController {
         return ResponseEntity.ok(saleRepository.findByTenantIdOrderByCreatedAtDesc(tenantId));
     }
 
+    @Operation(summary = "Create POS sale", description = "Process a point-of-sale transaction with automatic inventory deduction")
+    @ApiResponse(responseCode = "201", description = "Sale recorded and inventory consumed")
     @PostMapping("/sales")
     @PreAuthorize("hasAnyRole('Admin','Cashier')")
     public ResponseEntity<SaleEntity> createSale(

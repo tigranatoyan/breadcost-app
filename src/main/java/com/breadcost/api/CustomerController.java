@@ -19,6 +19,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.List;
 import java.util.Map;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * Customer Portal API — /v2/customers
  *
@@ -30,6 +32,7 @@ import java.util.Map;
  * Public endpoints — no staff authentication required.
  * FR-2.2, FR-2.3 satisfied.
  */
+@Tag(name = "Customers", description = "Customer CRUD and management")
 @RestController
 @RequestMapping("/v2/customers")
 @RequiredArgsConstructor

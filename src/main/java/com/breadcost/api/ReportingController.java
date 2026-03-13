@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * Reporting REST controller.
  * BC-1601 – KPI block catalog
@@ -18,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
  * BC-1603 – Advanced financial KPIs
  * BC-1604 – Report export (Excel / CSV)
  */
+@Tag(name = "Reporting", description = "KPI dashboards, revenue, and operational reports")
 @RestController
 @RequestMapping("/v2/reports")
 @PreAuthorize("hasAnyRole('Admin','Manager','FinanceUser','Viewer')")

@@ -8,10 +8,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * REST API for batch/production operations
  * Implements batch-related endpoints from API_SURFACE.yaml
  */
+@Tag(name = "Batches", description = "Production batch cost tracking")
 @RestController
 @RequestMapping("/v1/batches")
 @Slf4j

@@ -6,10 +6,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * BC-3103: Public (any authenticated user) endpoint for tenant features.
  * Used by the frontend to gate navigation sections by subscription tier.
  */
+@Tag(name = "Tenant Features", description = "Tenant feature flags and subscription checks")
 @RestController
 @RequestMapping("/v2/tenant")
 public class TenantFeatureController {

@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Production Plans", description = "Production planning, work orders, scheduling, and material requirements")
 @RestController
 @RequestMapping("/v1/production-plans")
 @RequiredArgsConstructor

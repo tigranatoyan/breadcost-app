@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * Purchase order REST API — BC-E13
  *
@@ -29,6 +31,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
  * POST /v2/purchase-orders/{id}/deliveries     — BC-1305: match delivery
  * GET  /v2/purchase-orders/{id}/deliveries     — list deliveries for PO
  */
+@Tag(name = "Purchase Orders", description = "Supplier purchase orders, approvals, and delivery matching")
 @RestController
 @RequestMapping("/v2/purchase-orders")
 @RequiredArgsConstructor

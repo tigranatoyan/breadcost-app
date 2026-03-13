@@ -8,10 +8,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * Tenant configuration — FR-11.5
  * GET/PUT /v1/config
  */
+@Tag(name = "Configuration", description = "Tenant configuration management")
 @RestController
 @RequestMapping("/v1/config")
 @RequiredArgsConstructor

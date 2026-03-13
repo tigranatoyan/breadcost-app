@@ -13,9 +13,12 @@ import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
 import com.breadcost.subscription.SubscriptionRequired;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * REST controller for BC-E15 Invoicing, Credit Limits and Customer Pricing.
  */
+@Tag(name = "Invoices", description = "Invoice lifecycle: generation, issuance, payment, disputes")
 @RestController
 @RequestMapping("/v2")
 @PreAuthorize("hasAnyRole('Admin','Manager','FinanceUser')")

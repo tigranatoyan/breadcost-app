@@ -13,9 +13,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * D4 — Tenant management endpoints: onboarding, branding, data export, cross-tenant admin.
  */
+@Tag(name = "Tenant Management", description = "Multi-tenant administration and onboarding")
 @RestController
 @RequestMapping("/v3/tenants")
 @RequiredArgsConstructor

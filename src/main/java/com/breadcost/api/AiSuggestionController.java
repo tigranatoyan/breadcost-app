@@ -12,9 +12,12 @@ import java.time.LocalDate;
 import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * AI suggestion endpoints — BC-1901..1903 (FR-12.3, FR-12.4, FR-12.7)
  */
+@Tag(name = "AI Suggestions", description = "AI-driven replenishment and forecast suggestions")
 @RestController
 @RequestMapping("/v3/ai/suggestions")
 @RequiredArgsConstructor

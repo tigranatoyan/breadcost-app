@@ -16,9 +16,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * REST API for Product management (FR-4.1, FR-4.7, FR-4.8)
  */
+@Tag(name = "Products", description = "Product master data and catalog management")
 @RestController
 @RequestMapping("/v1/products")
 @Slf4j

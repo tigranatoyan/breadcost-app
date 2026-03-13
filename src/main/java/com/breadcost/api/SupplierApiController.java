@@ -14,9 +14,12 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * Supplier API integration endpoints — BC-2202 (FR-6.4)
  */
+@Tag(name = "Supplier API", description = "External supplier integration API")
 @RestController
 @RequestMapping("/v3/supplier-api")
 @RequiredArgsConstructor

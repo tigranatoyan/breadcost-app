@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * Customer Portal — Order Placement API
  *
@@ -31,6 +33,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
  *
  * Public (customer JWT optional in future; currently tenant-scoped by tenantId).
  */
+@Tag(name = "Customer Orders", description = "Customer portal order placement and tracking")
 @RestController
 @RequestMapping("/v2/orders")
 @RequiredArgsConstructor

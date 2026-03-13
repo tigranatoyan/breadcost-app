@@ -15,11 +15,14 @@ import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * Reports + Dashboard data — FR-10.1, FR-10.4, FR-10.5
  * Covers: GET /v1/reports/revenue-summary, /top-products, /production-summary, /inventory-valuation
  * and GET /v1/inventory/alerts (min-stock threshold)
  */
+@Tag(name = "Reports", description = "Legacy report views")
 @RestController
 @RequiredArgsConstructor
 @Slf4j
