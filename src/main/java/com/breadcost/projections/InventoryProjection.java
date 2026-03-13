@@ -2,6 +2,7 @@ package com.breadcost.projections;
 
 import com.breadcost.domain.LedgerEntry;
 import com.breadcost.events.DomainEvent;
+import com.breadcost.events.BackflushConsumptionEvent;
 import com.breadcost.events.ReceiveLotEvent;
 import com.breadcost.events.IssueToBatchEvent;
 import com.breadcost.events.TransferInventoryEvent;
@@ -18,6 +19,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Comparator;
 
 /**
  * In-memory projection for inventory valuation
@@ -71,6 +73,9 @@ public class InventoryProjection {
                 break;
             case "TransferInventory":
                 handleTransferInventory((TransferInventoryEvent) event);
+                break;
+            case "BackflushConsumption":
+                handleBackflushConsumption((BackflushConsumptionEvent) event);
                 break;
             default:
                 // Ignore other event types for inventory projection
@@ -174,6 +179,32 @@ public class InventoryProjection {
         }
     }
 
+    private void handleBackflushConsumption(BackflushConsumptionEvent event) {
+        // Deduct from the first position that has stock for this item (FIFO across lots/locations)
+        BigDecimal remaining = event.getQty();
+        List<Map.Entry<String, InventoryPosition>> matching = positions.entrySet().stream()
+                .filter(e -> event.getTenantId().equals(e.getValue().tenantId)
+                        && event.getItemId().equals(e.getValue().itemId)
+                        && e.getValue().onHandQty.compareTo(BigDecimal.ZERO) > 0)
+                .sorted(Comparator.comparing(e -> e.getValue().id)) // stable order
+                .toList();
+
+        for (Map.Entry<String, InventoryPosition> entry : matching) {
+            if (remaining.compareTo(BigDecimal.ZERO) <= 0) break;
+            InventoryPosition pos = entry.getValue();
+            BigDecimal deduct = remaining.min(pos.onHandQty);
+            BigDecimal deductValue = pos.avgUnitCost.multiply(deduct);
+            pos.onHandQty = pos.onHandQty.subtract(deduct);
+            pos.valuationAmount = pos.valuationAmount.subtract(deductValue);
+            remaining = remaining.subtract(deduct);
+            if (pos.onHandQty.compareTo(BigDecimal.ZERO) <= 0) {
+                positions.remove(entry.getKey());
+            }
+        }
+        log.debug("Backflush consumption: item={}, qty={}, source={}, ref={}",
+                event.getItemId(), event.getQty(), event.getSource(), event.getReferenceId());
+    }
+
     /**
      * Apply a manual adjustment (positive = add, negative = reduce).
      * Used by /v1/inventory/adjust — FR-5.5
@@ -200,6 +231,16 @@ public class InventoryProjection {
             positions.remove(key);
         }
         log.info("Inventory adjustment applied: item={}, qty={}, reason={}", itemId, qty, reasonCode);
+    }
+
+    /**
+     * Get total on-hand quantity for an item across all lots/locations for a tenant.
+     */
+    public BigDecimal getTotalOnHand(String tenantId, String itemId) {
+        return positions.values().stream()
+                .filter(p -> tenantId.equals(p.tenantId) && itemId.equals(p.itemId))
+                .map(p -> p.onHandQty)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     /**

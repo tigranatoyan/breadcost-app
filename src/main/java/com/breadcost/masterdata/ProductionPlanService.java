@@ -4,6 +4,7 @@ import com.breadcost.domain.ProductionPlan;
 import com.breadcost.domain.WorkOrder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProductionPlanService {
 
     private final ProductionPlanRepository planRepository;
@@ -23,6 +25,7 @@ public class ProductionPlanService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final RecipeRepository recipeRepository;
+    private final InventoryService inventoryService;
 
     // ─── CREATE EMPTY PLAN ────────────────────────────────────────────────────
 
@@ -207,6 +210,19 @@ public class ProductionPlanService {
         if (wo.getStatus() != WorkOrder.Status.PENDING) {
             throw new IllegalStateException("Only PENDING work orders can be started.");
         }
+
+        // ── G-2: Check material availability before starting ──────────────
+        if (wo.getRecipeId() != null) {
+            var shortages = inventoryService.checkMaterialAvailability(
+                    tenantId, wo.getRecipeId(), wo.getBatchCount());
+            if (!shortages.isEmpty()) {
+                StringBuilder msg = new StringBuilder("Insufficient materials: ");
+                shortages.forEach(s -> msg.append(String.format("%s (need %.2f, have %.2f %s); ",
+                        s.itemName(), s.required(), s.onHand(), s.uom())));
+                throw new IllegalStateException(msg.toString().trim());
+            }
+        }
+
         wo.setStatus(WorkOrder.Status.STARTED);
         wo.setStartedAt(Instant.now());
         wo.setAssignedToUserId(byUserId);
@@ -222,6 +238,19 @@ public class ProductionPlanService {
         wo.setStatus(WorkOrder.Status.COMPLETED);
         wo.setCompletedAt(Instant.now());
         WorkOrderEntity saved = workOrderRepository.save(wo);
+
+        // ── G-2: Backflush — consume ingredients on WO completion ─────────
+        if (wo.getRecipeId() != null) {
+            try {
+                String siteId = wo.getPlan() != null ? wo.getPlan().getSiteId() : null;
+                inventoryService.consumeIngredients(
+                        tenantId, siteId,
+                        wo.getRecipeId(), wo.getBatchCount(),
+                        "PRODUCTION", wo.getWorkOrderId());
+            } catch (Exception e) {
+                log.error("Backflush failed for WO {}: {}", workOrderId, e.getMessage());
+            }
+        }
 
         // Auto-advance plan to IN_PROGRESS when first WO starts; auto-complete when all WOs done
         ProductionPlanEntity plan = wo.getPlan();

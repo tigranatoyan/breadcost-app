@@ -32,6 +32,7 @@ import java.util.UUID;
 public class PosController {
 
     private final SaleRepository saleRepository;
+    private final SaleService saleService;
 
     // ─── DTOs ────────────────────────────────────────────────────────────────
 
@@ -86,52 +87,20 @@ public class PosController {
             @Valid @RequestBody CreateSaleRequest req,
             Authentication auth) {
 
-        // Build lines
-        List<SaleLineEntity> lines = req.getLines().stream().map(l -> {
-            BigDecimal total = l.getUnitPrice().multiply(l.getQuantity());
-            return SaleLineEntity.builder()
-                    .lineId(UUID.randomUUID().toString())
-                    .productId(l.getProductId())
-                    .productName(l.getProductName())
-                    .quantity(l.getQuantity())
-                    .unit(l.getUnit())
-                    .unitPrice(l.getUnitPrice())
-                    .lineTotal(total)
-                    .build();
-        }).toList();
+        String cashierId = auth != null ? auth.getName() : "system";
 
-        BigDecimal subtotal = lines.stream()
-                .map(SaleLineEntity::getLineTotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        List<SaleService.SaleLineInput> lineInputs = req.getLines().stream()
+                .map(l -> new SaleService.SaleLineInput(
+                        l.getProductId(), l.getProductName(),
+                        l.getQuantity(), l.getUnit(), l.getUnitPrice()))
+                .toList();
 
-        BigDecimal cashReceived = req.getCashReceived();
-        BigDecimal changeGiven = BigDecimal.ZERO;
-        if (req.getPaymentMethod() == SaleEntity.PaymentMethod.CASH && cashReceived != null) {
-            changeGiven = cashReceived.subtract(subtotal).max(BigDecimal.ZERO);
-        }
+        SaleEntity saved = saleService.createSale(
+                req.getTenantId(), req.getSiteId(),
+                lineInputs, req.getPaymentMethod(),
+                req.getCashReceived(), req.getCardReference(),
+                cashierId);
 
-        SaleEntity sale = SaleEntity.builder()
-                .saleId(UUID.randomUUID().toString())
-                .tenantId(req.getTenantId())
-                .siteId(req.getSiteId())
-                .cashierId(auth != null ? auth.getName() : "system")
-                .cashierName(auth != null ? auth.getName() : "system")
-                .status(SaleEntity.Status.COMPLETED)
-                .paymentMethod(req.getPaymentMethod())
-                .subtotal(subtotal)
-                .totalAmount(subtotal)
-                .cashReceived(cashReceived)
-                .changeGiven(changeGiven)
-                .cardReference(req.getCardReference())
-                .completedAt(Instant.now())
-                .build();
-
-        // Link lines to sale
-        lines.forEach(l -> l.setSale(sale));
-        sale.setLines(new java.util.ArrayList<>(lines));
-
-        SaleEntity saved = saleRepository.save(sale);
-        log.info("POS sale completed: {} - {} - total={}", saved.getSaleId(), saved.getPaymentMethod(), saved.getTotalAmount());
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
