@@ -10,8 +10,8 @@ export class SubscriptionsPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.tiersTab = page.getByRole('button', { name: /tiers/i }).first();
-    this.assignmentTab = page.getByRole('button', { name: /assignment/i }).first();
+    this.tiersTab = page.getByRole('button', { name: /available.?plans/i }).first();
+    this.assignmentTab = page.getByRole('button', { name: /current.?subscription/i }).first();
     this.changeButton = page.getByRole('button', { name: /change|assign/i }).first();
     this.featureKeyInput = page.getByPlaceholder(/advanced_reports/i);
     this.checkButton = page.getByRole('button', { name: /check/i });

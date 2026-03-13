@@ -9,7 +9,7 @@ test.describe('Floor', () => {
   test('floor page loads with production title', async ({ page }) => {
     const floor = new FloorPage(page);
     await floor.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await expect(page.getByText(/floor|production/i).first()).toBeVisible();
   });
@@ -17,7 +17,7 @@ test.describe('Floor', () => {
   test('today date is displayed', async ({ page }) => {
     const floor = new FloorPage(page);
     await floor.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // The page shows today's date or plan info
     await expect(page).toHaveURL(/floor/);
@@ -26,7 +26,7 @@ test.describe('Floor', () => {
   test('plan cards render with shift info', async ({ page }) => {
     const floor = new FloorPage(page);
     await floor.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Plans have shift indicators (MORNING/AFTERNOON/NIGHT) or empty state
     const content = page.locator('div').filter({ hasText: /morning|afternoon|night|no plans/i }).first();
@@ -39,7 +39,7 @@ test.describe('Floor', () => {
   test('clicking a work order opens the detail panel', async ({ page }) => {
     const floor = new FloorPage(page);
     await floor.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Find a WO card to click (they have status icons)
     const woCard = page.locator('[class*="cursor-pointer"], [role="button"]').filter({ hasText: /pending|started|completed/i }).first();
@@ -52,13 +52,9 @@ test.describe('Floor', () => {
   });
 
   test('production role can access floor page', async ({ page, loginAs }) => {
-    await page.evaluate(() => {
-      localStorage.removeItem('bc_token');
-      localStorage.removeItem('bc_user');
-    });
     await loginAs('production');
     await page.goto('/floor');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await expect(page).toHaveURL(/floor/);
   });

@@ -9,7 +9,7 @@ test.describe('Dashboard', () => {
   test('dashboard loads with KPI stat cards', async ({ page }) => {
     const dash = new DashboardPage(page);
     await dash.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Should see the BreadCost brand
     await expect(dash.brandLabel).toBeVisible();
@@ -20,7 +20,7 @@ test.describe('Dashboard', () => {
   test('dashboard shows order-related widgets', async ({ page }) => {
     const dash = new DashboardPage(page);
     await dash.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Look for common dashboard text
     const content = page.locator('main, [class*="content"]').first();
@@ -30,7 +30,7 @@ test.describe('Dashboard', () => {
   test('language toggle switches between EN and HY', async ({ page }) => {
     const dash = new DashboardPage(page);
     await dash.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Click HY locale button
     const hyButton = page.getByRole('button', { name: 'HY', exact: true });

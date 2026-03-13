@@ -21,6 +21,12 @@ export class LoginPage {
     await this.page.goto('/login');
   }
 
+  /** Wait for React hydration — uses a brief delay since Next.js dev mode
+   *  concurrent hydration makes deterministic checks unreliable */
+  async waitForHydration() {
+    await this.page.waitForTimeout(2000);
+  }
+
   async login(username: string, password: string) {
     await this.usernameInput.fill(username);
     await this.passwordInput.fill(password);

@@ -19,7 +19,9 @@ export const users: Record<string, UserCredentials> = {
   viewer:     { username: 'viewer',     password: 'viewer',     role: 'viewer' },
 };
 
-/** Log in via the API and inject session into localStorage, then navigate to baseURL. */
+/** Log in via the API and inject session into localStorage via addInitScript.
+ *  This sets auth tokens BEFORE any page JS runs, preventing race
+ *  conditions with the login page's auto-redirect or AuthShell checks. */
 async function loginViaAPI(page: Page, creds: UserCredentials): Promise<void> {
   const res = await page.request.post(`${API_BASE}/v1/auth/login`, {
     data: { username: creds.username, password: creds.password },
@@ -32,13 +34,16 @@ async function loginViaAPI(page: Page, creds: UserCredentials): Promise<void> {
   const data = await res.json();
   const userInfo = {
     username: data.username,
+    displayName: data.displayName ?? data.username,
     roles: data.roles,
     tenantId: data.tenantId ?? TENANT_ID,
     primaryRole: data.primaryRole,
   };
 
-  await page.goto('/');
-  await page.evaluate(
+  // Use addInitScript so localStorage is set before the page's React code runs.
+  // This avoids race conditions where the login page detects isLoggedIn() and
+  // triggers router.replace('/dashboard'), conflicting with the test's navigation.
+  await page.addInitScript(
     ({ token, user }) => {
       localStorage.setItem('bc_token', token);
       localStorage.setItem('bc_user', JSON.stringify(user));

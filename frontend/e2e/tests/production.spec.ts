@@ -9,7 +9,7 @@ test.describe('Production Plans', () => {
   test('production plans page loads with new-plan button', async ({ page }) => {
     const prod = new ProductionPage(page);
     await prod.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await expect(prod.newPlanButton).toBeVisible();
   });
@@ -17,7 +17,7 @@ test.describe('Production Plans', () => {
   test('status filter is visible', async ({ page }) => {
     const prod = new ProductionPage(page);
     await prod.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await expect(prod.statusFilter).toBeVisible();
   });
@@ -25,7 +25,7 @@ test.describe('Production Plans', () => {
   test('create plan modal opens with form fields', async ({ page }) => {
     const prod = new ProductionPage(page);
     await prod.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await prod.newPlanButton.click();
     const modal = page.locator('[class*="modal"], [role="dialog"], .fixed.inset-0').last();
@@ -37,14 +37,14 @@ test.describe('Production Plans', () => {
   test('create a new production plan', async ({ page }) => {
     const prod = new ProductionPage(page);
     await prod.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const dateStr = tomorrow.toISOString().split('T')[0];
 
     await prod.createPlan({ date: dateStr, notes: 'E2E test plan' });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Should still be on production plans page
     await expect(page).toHaveURL(/production-plans/);
@@ -53,10 +53,10 @@ test.describe('Production Plans', () => {
   test('filter plans by status', async ({ page }) => {
     const prod = new ProductionPage(page);
     await prod.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await prod.statusFilter.selectOption({ index: 1 }).catch(() => {});
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
     await expect(page).toHaveURL(/production-plans/);
   });
 });

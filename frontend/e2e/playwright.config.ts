@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
+  globalSetup: require.resolve('./global-setup'),
   testDir: './tests',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
@@ -24,18 +25,25 @@ export default defineConfig({
     },
   ],
 
-  webServer: [
-    {
-      command: 'cd .. && gradlew.bat bootRun',
-      url: 'http://localhost:8085/actuator/health',
-      reuseExistingServer: true,
-      timeout: 120_000,
-    },
-    {
-      command: 'npm run dev',
-      url: 'http://localhost:3000',
-      reuseExistingServer: true,
-      timeout: 30_000,
-    },
-  ],
+  /* Web servers — only used when they are not already running.
+     Set SKIP_WEB_SERVER=1 to suppress auto-start entirely. */
+  ...(!process.env.SKIP_WEB_SERVER ? {
+    webServer: [
+      {
+        command: process.platform === 'win32'
+          ? 'cd .. && .\\gradlew.bat bootRun'
+          : 'cd .. && ./gradlew bootRun',
+        url: 'http://localhost:8085/',
+        ignoreHTTPSErrors: true,
+        reuseExistingServer: !process.env.CI,
+        timeout: 120_000,
+      },
+      {
+        command: 'npm run dev',
+        url: 'http://localhost:3000',
+        reuseExistingServer: !process.env.CI,
+        timeout: 30_000,
+      },
+    ],
+  } : {}),
 });

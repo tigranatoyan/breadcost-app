@@ -30,7 +30,7 @@ export class ProductionPage {
       }
     }
     if (opts.notes) {
-      await modal.getByPlaceholder(/notes/i).fill(opts.notes);
+      await modal.getByPlaceholder(/optional|instructions/i).fill(opts.notes);
     }
     await modal.getByRole('button', { name: /create|save|submit/i }).click();
   }

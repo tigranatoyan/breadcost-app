@@ -9,7 +9,7 @@ export class NavPage {
   constructor(page: Page) {
     this.page = page;
     this.brand = page.locator('text=BreadCost').first();
-    this.logoutButton = page.locator('button').filter({ has: page.locator('svg.lucide-log-out, [class*="log-out"]') });
+    this.logoutButton = page.locator('button').filter({ has: page.locator('svg.lucide-log-out, [class*="log-out"]') }).first();
     this.mobileMenuButton = page.locator('button').filter({ has: page.locator('svg.lucide-menu') });
   }
 
@@ -18,9 +18,15 @@ export class NavPage {
     await this.page.getByRole('link', { name: new RegExp(linkText, 'i') }).first().click();
   }
 
-  /** Check if a nav link is visible */
+  /** Check if a nav link is visible (waits up to 5 s for React render) */
   async isNavLinkVisible(linkText: string): Promise<boolean> {
-    return this.page.getByRole('link', { name: new RegExp(linkText, 'i') }).first().isVisible();
+    try {
+      await this.page.locator('nav a').filter({ hasText: new RegExp(linkText, 'i') }).first()
+        .waitFor({ state: 'visible', timeout: 5_000 });
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   /** Logout via the sidebar button */

@@ -8,6 +8,7 @@ import { SectionTitle, Button } from '@/components/design-system';
 /* ── types ─────────────────────────────────────────────── */
 interface SubTier {
   tierId: string;
+  level: string;
   name: string;
   monthlyPrice?: number;
   currency?: string;
@@ -54,16 +55,31 @@ export default function SubscriptionsPage() {
   const loadTiers = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await apiFetch<SubTier[]>(`/v2/subscriptions/tiers?tenantId=${TENANT_ID}`);
-      setTiers(data);
+      const raw = await apiFetch<any[]>(`/v2/subscriptions/tiers?tenantId=${TENANT_ID}`);
+      setTiers(raw.map(t => ({
+        tierId: t.tierId,
+        level: t.level,
+        name: t.name,
+        monthlyPrice: t.monthlyPrice,
+        currency: t.currency,
+        features: typeof t.enabledFeatures === 'string' ? t.enabledFeatures.split(',').filter(Boolean) : (t.features ?? []),
+        maxUsers: t.maxUsers,
+      })));
     } catch (e) { setError(String(e)); } finally { setLoading(false); }
   }, []);
 
   const loadAssignment = useCallback(async () => {
     try {
       setSubLoading(true);
-      const data = await apiFetch<TenantSub>(`/v2/subscriptions/current?tenantId=${TENANT_ID}`);
-      setTenantSub(data);
+      const raw = await apiFetch<any>(`/v2/subscriptions/tenants/${TENANT_ID}`);
+      setTenantSub({
+        tenantId: raw.tenantId,
+        tierId: raw.tierLevel ?? raw.tierId,
+        tierName: raw.tierLevel ?? raw.tierName,
+        status: raw.active ? 'ACTIVE' : 'INACTIVE',
+        startDate: raw.startDate,
+        endDate: raw.endDate ?? raw.expiryDate,
+      });
     } catch { setTenantSub(null); } finally { setSubLoading(false); }
   }, []);
 
@@ -81,7 +97,7 @@ export default function SubscriptionsPage() {
     if (!assignTier) return;
     try {
       setSaving(true);
-      await apiFetch('/v2/subscriptions/assign', { method: 'POST', body: JSON.stringify({ tenantId: TENANT_ID, tierId: assignTier }) });
+      await apiFetch(`/v2/subscriptions/tenants/${TENANT_ID}`, { method: 'PUT', body: JSON.stringify({ tierLevel: assignTier, assignedBy: 'admin' }) });
       setSuccess(t('subscriptions.assigned'));
       setShowAssign(false);
       loadAssignment();
@@ -101,7 +117,7 @@ export default function SubscriptionsPage() {
   const checkFeature = async () => {
     if (!featureKey) return;
     try {
-      const data = await apiFetch<{ allowed: boolean }>(`/v2/subscriptions/features/${featureKey}?tenantId=${TENANT_ID}`);
+      const data = await apiFetch<{ allowed: boolean }>(`/v2/subscriptions/tenants/${TENANT_ID}/features/${featureKey}`);
       setFeatureResult(data.allowed);
     } catch (e) { setError(String(e)); }
   };
@@ -196,7 +212,7 @@ export default function SubscriptionsPage() {
             <Field label={t('subscriptions.selectTier')}>
               <select className="input w-full" value={assignTier} onChange={e => setAssignTier(e.target.value)}>
                 <option value="">— {t('common.select')} —</option>
-                {tiers.map(ti => <option key={ti.tierId} value={ti.tierId}>{ti.name}</option>)}
+                {tiers.map(ti => <option key={ti.tierId} value={ti.level}>{ti.name}</option>)}
               </select>
             </Field>
             <div className="flex justify-end gap-2">

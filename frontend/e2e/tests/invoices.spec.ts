@@ -9,7 +9,7 @@ test.describe('Invoices', () => {
   test('invoices page loads with tabs', async ({ page }) => {
     const inv = new InvoicesPage(page);
     await inv.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await expect(page.getByText(/invoices/i).first()).toBeVisible();
   });
@@ -17,7 +17,7 @@ test.describe('Invoices', () => {
   test('status filter dropdown is visible', async ({ page }) => {
     const inv = new InvoicesPage(page);
     await inv.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await expect(inv.statusFilter).toBeVisible();
   });
@@ -25,19 +25,19 @@ test.describe('Invoices', () => {
   test('DISPUTED status option available in filter', async ({ page }) => {
     const inv = new InvoicesPage(page);
     await inv.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
-    const options = await inv.statusFilter.locator('option').allInnerTexts();
-    expect(options.some(o => o.includes('DISPUTED'))).toBe(true);
+    await expect(inv.statusFilter).toBeVisible();
+    await expect(inv.statusFilter.locator('option', { hasText: 'DISPUTED' })).toBeAttached();
   });
 
   test('switch to discounts tab', async ({ page }) => {
     const inv = new InvoicesPage(page);
     await inv.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await inv.discountsTab.click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Should see customer ID input field
     await expect(page.getByPlaceholder(/customer/i)).toBeVisible();
@@ -46,7 +46,7 @@ test.describe('Invoices', () => {
   test('invoice row shows action buttons when invoices exist', async ({ page }) => {
     const inv = new InvoicesPage(page);
     await inv.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const rowCount = await page.locator('tbody tr').count();
     if (rowCount > 0) {
@@ -60,11 +60,11 @@ test.describe('Invoices', () => {
   test('dispute button visible for ISSUED invoices', async ({ page }) => {
     const inv = new InvoicesPage(page);
     await inv.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Filter to ISSUED status
     await inv.statusFilter.selectOption('ISSUED');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const rowCount = await page.locator('tbody tr').count();
     if (rowCount > 0) {
@@ -77,7 +77,7 @@ test.describe('Invoices', () => {
   test('clicking invoice ID opens detail modal', async ({ page }) => {
     const inv = new InvoicesPage(page);
     await inv.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const link = page.locator('tbody tr button.text-blue-600').first();
     if (await link.isVisible({ timeout: 3_000 }).catch(() => false)) {

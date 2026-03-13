@@ -9,7 +9,7 @@ test.describe('Departments', () => {
   test('departments page loads with title', async ({ page }) => {
     const dept = new DepartmentsPage(page);
     await dept.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await expect(page.getByText(/departments/i).first()).toBeVisible();
   });
@@ -17,7 +17,7 @@ test.describe('Departments', () => {
   test('new department button is visible', async ({ page }) => {
     const dept = new DepartmentsPage(page);
     await dept.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await expect(dept.newDepartmentButton).toBeVisible();
   });
@@ -25,7 +25,7 @@ test.describe('Departments', () => {
   test('department table renders with rows', async ({ page }) => {
     const dept = new DepartmentsPage(page);
     await dept.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const rows = await dept.departmentRowCount();
     expect(rows).toBeGreaterThanOrEqual(0);
@@ -34,7 +34,7 @@ test.describe('Departments', () => {
   test('new department modal opens with form fields', async ({ page }) => {
     const dept = new DepartmentsPage(page);
     await dept.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await dept.newDepartmentButton.click();
     const modal = page.locator('[class*="modal"], [role="dialog"], .fixed.inset-0').last();
@@ -46,7 +46,7 @@ test.describe('Departments', () => {
   test('edit button opens edit modal when departments exist', async ({ page }) => {
     const dept = new DepartmentsPage(page);
     await dept.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const rows = await dept.departmentRowCount();
     if (rows > 0) {
@@ -59,7 +59,7 @@ test.describe('Departments', () => {
   test('department table shows name and status columns', async ({ page }) => {
     const dept = new DepartmentsPage(page);
     await dept.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const rows = await dept.departmentRowCount();
     if (rows > 0) {

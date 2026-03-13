@@ -9,7 +9,7 @@ test.describe('Subscriptions', () => {
   test('subscriptions page loads with tiers tab', async ({ page }) => {
     const sub = new SubscriptionsPage(page);
     await sub.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await expect(page.getByText(/subscriptions/i).first()).toBeVisible();
   });
@@ -17,7 +17,7 @@ test.describe('Subscriptions', () => {
   test('tier cards are rendered', async ({ page }) => {
     const sub = new SubscriptionsPage(page);
     await sub.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Should show tier cards or a "no tiers" message
     const content = page.locator('.grid, table, p');
@@ -27,10 +27,10 @@ test.describe('Subscriptions', () => {
   test('switch to assignment tab shows current subscription', async ({ page }) => {
     const sub = new SubscriptionsPage(page);
     await sub.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await sub.assignmentTab.click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Should see either current subscription info or assign button
     const assignOrChange = page.getByRole('button', { name: /assign|change/i }).first();
@@ -40,10 +40,10 @@ test.describe('Subscriptions', () => {
   test('feature check input is visible on assignment tab', async ({ page }) => {
     const sub = new SubscriptionsPage(page);
     await sub.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await sub.assignmentTab.click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await expect(sub.featureKeyInput).toBeVisible();
     await expect(sub.checkButton).toBeVisible();
@@ -52,34 +52,34 @@ test.describe('Subscriptions', () => {
   test('feature check returns allowed/denied', async ({ page }) => {
     const sub = new SubscriptionsPage(page);
     await sub.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await sub.assignmentTab.click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
-    await sub.featureKeyInput.fill('advanced_reports');
+    await sub.featureKeyInput.fill('ORDERS');
     await sub.checkButton.click();
-    await page.waitForLoadState('networkidle');
 
     // Should show allowed or denied message
-    const result = page.locator('p').filter({ hasText: /allowed|denied/i }).first();
+    const result = page.locator('p').filter({ hasText: /allowed|not included/i }).first();
     await expect(result).toBeVisible({ timeout: 10_000 });
   });
 
   test('assign modal opens when clicking assign/change', async ({ page }) => {
     const sub = new SubscriptionsPage(page);
     await sub.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await sub.assignmentTab.click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
-    const assignBtn = page.getByRole('button', { name: /assign|change/i }).first();
+    // Scope to main to avoid matching sidebar "Exchange Rates" (contains "change")
+    const assignBtn = page.locator('main').getByRole('button', { name: /assign|change/i }).first();
     await assignBtn.click();
 
-    const modal = page.locator('[class*="modal"], [role="dialog"], .fixed.inset-0').last();
-    await expect(modal).toBeVisible();
+    // Modal title should appear
+    await expect(page.getByRole('heading', { name: /assign.*tier/i })).toBeVisible({ timeout: 5_000 });
     // Should have tier selector
-    await expect(modal.locator('select')).toBeVisible();
+    await expect(page.locator('.fixed select').first()).toBeVisible();
   });
 });

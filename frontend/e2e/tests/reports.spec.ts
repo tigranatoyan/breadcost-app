@@ -9,7 +9,7 @@ test.describe('Reports', () => {
   test('reports page loads with tabs', async ({ page }) => {
     const rpt = new ReportsPage(page);
     await rpt.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await expect(page.getByText(/reports/i).first()).toBeVisible();
   });
@@ -17,7 +17,7 @@ test.describe('Reports', () => {
   test('orders tab is active by default', async ({ page }) => {
     const rpt = new ReportsPage(page);
     await rpt.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Revenue summary banner should be visible
     const kpis = page.locator('div').filter({ hasText: /total|revenue|orders/i }).first();
@@ -27,12 +27,12 @@ test.describe('Reports', () => {
   test('switch between all 6 report tabs', async ({ page }) => {
     const rpt = new ReportsPage(page);
     await rpt.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const tabs = [rpt.inventoryTab, rpt.productionTab, rpt.materialTab, rpt.costTab, rpt.revenueTab, rpt.ordersTab];
     for (const tab of tabs) {
       await tab.click();
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
       await expect(page).toHaveURL(/reports/);
     }
   });
@@ -40,7 +40,7 @@ test.describe('Reports', () => {
   test('date filters are visible', async ({ page }) => {
     const rpt = new ReportsPage(page);
     await rpt.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await expect(rpt.dateFromInput).toBeVisible();
     await expect(rpt.dateToInput).toBeVisible();
@@ -49,7 +49,7 @@ test.describe('Reports', () => {
   test('export CSV button is visible', async ({ page }) => {
     const rpt = new ReportsPage(page);
     await rpt.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await expect(rpt.exportButton).toBeVisible();
   });
@@ -57,10 +57,10 @@ test.describe('Reports', () => {
   test('inventory tab shows stock data', async ({ page }) => {
     const rpt = new ReportsPage(page);
     await rpt.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await rpt.inventoryTab.click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Should show inventory KPIs or table
     const content = page.locator('table, div').filter({ hasText: /position|value|item|stock/i }).first();
@@ -70,10 +70,10 @@ test.describe('Reports', () => {
   test('production tab shows plan data', async ({ page }) => {
     const rpt = new ReportsPage(page);
     await rpt.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await rpt.productionTab.click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const content = page.locator('table, div').filter({ hasText: /plan|production|status/i }).first();
     await expect(content).toBeVisible();

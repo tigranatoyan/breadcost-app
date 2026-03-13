@@ -9,10 +9,11 @@ export class OrdersPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.newOrderButton = page.getByRole('button', { name: /new order/i });
-    this.statusFilter = page.locator('select').first();
-    this.searchInput = page.getByPlaceholder(/search|customer/i);
-    this.orderTable = page.locator('table').first();
+    const main = page.locator('main');
+    this.newOrderButton = main.getByRole('button', { name: /new order/i });
+    this.statusFilter = main.locator('select').first();
+    this.searchInput = main.getByPlaceholder(/search|customer/i);
+    this.orderTable = main.locator('table').first();
   }
 
   async goto() {
@@ -33,7 +34,7 @@ export class OrdersPage {
   }) {
     // Fill customer name
     const modal = this.page.locator('[class*="modal"], [role="dialog"], .fixed.inset-0').last();
-    await modal.getByPlaceholder(/customer/i).fill(opts.customerName);
+    await modal.getByPlaceholder(/supermarket/i).fill(opts.customerName);
 
     if (opts.notes) {
       await modal.getByPlaceholder(/notes/i).fill(opts.notes);
@@ -68,7 +69,7 @@ export class OrdersPage {
     }
 
     // Submit the modal
-    const submitBtn = modal.getByRole('button', { name: /create|save|submit/i });
+    const submitBtn = modal.getByRole('button', { name: /create|save|submit|new.?order/i });
     await submitBtn.click();
   }
 

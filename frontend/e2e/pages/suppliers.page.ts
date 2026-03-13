@@ -32,6 +32,6 @@ export class SuppliersPage {
   }
 
   findSuppliersButton(): Locator {
-    return this.page.getByRole('button', { name: /find suppliers/i });
+    return this.page.getByRole('button', { name: /lookup/i });
   }
 }

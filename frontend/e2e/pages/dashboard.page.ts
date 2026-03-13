@@ -7,7 +7,7 @@ export class DashboardPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.brandLabel = page.locator('text=BreadCost');
+    this.brandLabel = page.locator('text=BreadCost').first();
     this.refreshButton = page.locator('button:has(svg.lucide-refresh-cw), button:has(svg.lucide-rotate-cw)');
   }
 

@@ -15,16 +15,17 @@ export class ReportsPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.ordersTab = page.getByRole('button', { name: /^orders$/i }).first();
-    this.inventoryTab = page.getByRole('button', { name: /inventory/i }).first();
-    this.productionTab = page.getByRole('button', { name: /production/i }).first();
-    this.materialTab = page.getByRole('button', { name: /material/i }).first();
-    this.costTab = page.getByRole('button', { name: /cost/i }).first();
-    this.revenueTab = page.getByRole('button', { name: /revenue/i }).first();
-    this.exportButton = page.getByRole('button', { name: /export/i }).first();
-    this.dateFromInput = page.locator('input[type="date"]').first();
-    this.dateToInput = page.locator('input[type="date"]').nth(1);
-    this.departmentFilter = page.locator('select').first();
+    const main = page.locator('main');
+    this.ordersTab = main.getByRole('button', { name: /orders/i }).first();
+    this.inventoryTab = main.getByRole('button', { name: /inventory/i }).first();
+    this.productionTab = main.getByRole('button', { name: /production/i }).first();
+    this.materialTab = main.getByRole('button', { name: /material/i }).first();
+    this.costTab = main.getByRole('button', { name: /cost/i }).first();
+    this.revenueTab = main.getByRole('button', { name: /revenue/i }).first();
+    this.exportButton = main.getByRole('button', { name: /export/i }).first();
+    this.dateFromInput = main.locator('input[type="date"]').first();
+    this.dateToInput = main.locator('input[type="date"]').nth(1);
+    this.departmentFilter = main.locator('select').first();
   }
 
   async goto() {

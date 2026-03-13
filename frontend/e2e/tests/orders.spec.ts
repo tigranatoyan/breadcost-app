@@ -9,7 +9,7 @@ test.describe('Orders', () => {
   test('orders page loads with header and new-order button', async ({ page }) => {
     const orders = new OrdersPage(page);
     await orders.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await expect(orders.newOrderButton).toBeVisible();
     await expect(page.getByText(/orders/i).first()).toBeVisible();
@@ -18,7 +18,7 @@ test.describe('Orders', () => {
   test('status filter dropdown is visible', async ({ page }) => {
     const orders = new OrdersPage(page);
     await orders.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await expect(orders.statusFilter).toBeVisible();
   });
@@ -26,19 +26,19 @@ test.describe('Orders', () => {
   test('new order modal opens and has form fields', async ({ page }) => {
     const orders = new OrdersPage(page);
     await orders.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
     await orders.openNewOrderModal();
 
     // Modal should be visible with customer name field
     const modal = page.locator('[class*="modal"], [role="dialog"], .fixed.inset-0').last();
     await expect(modal).toBeVisible();
-    await expect(modal.getByPlaceholder(/customer/i)).toBeVisible();
+    await expect(modal.getByPlaceholder(/supermarket/i)).toBeVisible();
   });
 
   test('create a new order', async ({ page }) => {
     const orders = new OrdersPage(page);
     await orders.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const initialCount = await orders.orderRowCount();
 
@@ -49,7 +49,7 @@ test.describe('Orders', () => {
     });
 
     // Wait for modal to close and list to refresh
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
     // Order count should increase or a success indication should appear
     const newCount = await orders.orderRowCount();
     expect(newCount).toBeGreaterThanOrEqual(initialCount);
@@ -58,21 +58,21 @@ test.describe('Orders', () => {
   test('confirm a draft order', async ({ page }) => {
     const orders = new OrdersPage(page);
     await orders.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Filter to DRAFT orders
     await orders.statusFilter.selectOption({ label: 'DRAFT' }).catch(() => {
       // Some implementations use value instead of label
       return orders.statusFilter.selectOption('DRAFT');
     });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Try to confirm the first draft order if available
     const firstRow = page.locator('tbody tr, [class*="order-row"]').first();
     const confirmBtn = firstRow.getByRole('button', { name: /confirm/i });
     if (await confirmBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
       await confirmBtn.click();
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
       // After confirming, the order should no longer be DRAFT
     }
   });
@@ -80,7 +80,7 @@ test.describe('Orders', () => {
   test('cancel an order with reason', async ({ page }) => {
     const orders = new OrdersPage(page);
     await orders.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Look for a cancel button on any order
     const cancelBtn = page.getByRole('button', { name: /cancel/i }).first();
@@ -92,18 +92,18 @@ test.describe('Orders', () => {
         await reasonInput.fill('E2E test cancellation');
         await page.getByRole('button', { name: /confirm|submit|ok/i }).click();
       }
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
     }
   });
 
   test('filter orders by status', async ({ page }) => {
     const orders = new OrdersPage(page);
     await orders.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Change status filter
     await orders.statusFilter.selectOption({ index: 1 }).catch(() => {});
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Page should still be on orders
     await expect(page).toHaveURL(/orders/);
@@ -112,7 +112,7 @@ test.describe('Orders', () => {
   test('search orders by customer name', async ({ page }) => {
     const orders = new OrdersPage(page);
     await orders.goto();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     if (await orders.searchInput.isVisible({ timeout: 3_000 }).catch(() => false)) {
       await orders.searchInput.fill('Test');

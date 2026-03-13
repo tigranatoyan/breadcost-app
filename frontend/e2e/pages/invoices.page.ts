@@ -9,10 +9,11 @@ export class InvoicesPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.invoicesTab = page.getByRole('button', { name: /^invoices$/i }).first();
-    this.discountsTab = page.getByRole('button', { name: /discounts/i }).first();
-    this.statusFilter = page.locator('select').first();
-    this.invoiceTable = page.locator('table').first();
+    const main = page.locator('main');
+    this.invoicesTab = main.getByRole('button', { name: /^invoices$/i }).first();
+    this.discountsTab = main.getByRole('button', { name: /discount/i }).first();
+    this.statusFilter = main.locator('select').first();
+    this.invoiceTable = main.locator('table').first();
   }
 
   async goto() {
