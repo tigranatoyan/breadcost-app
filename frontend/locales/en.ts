@@ -1170,6 +1170,15 @@ const en = {
     sessionEnded: 'Session ended.',
     packagingConfirmed: 'Packaging confirmed.',
     paymentCollected: 'Payment collected.',
+    refresh: 'Refresh',
+    startTime: 'Started At',
+    location: 'Location',
+    lookup: 'Look Up',
+    confirmed: 'Confirmed',
+    confirmedAt: 'Confirmed At',
+    date: 'Date',
+    customer: 'Customer',
+    noManifest: 'No manifest items.',
   },
 
   // ── Mobile Admin ───────────────────────────────────────────────────────────
