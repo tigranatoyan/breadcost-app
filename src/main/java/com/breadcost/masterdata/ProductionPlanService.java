@@ -1,5 +1,6 @@
 package com.breadcost.masterdata;
 
+import com.breadcost.domain.Order;
 import com.breadcost.domain.ProductionPlan;
 import com.breadcost.domain.WorkOrder;
 import lombok.Data;
@@ -23,6 +24,7 @@ public class ProductionPlanService {
     private final ProductionPlanRepository planRepository;
     private final WorkOrderRepository workOrderRepository;
     private final OrderRepository orderRepository;
+    private final OrderService orderService;
     private final ProductRepository productRepository;
     private final RecipeRepository recipeRepository;
     private final InventoryService inventoryService;
@@ -199,7 +201,42 @@ public class ProductionPlanService {
             throw new IllegalStateException("Only IN_PROGRESS plans can be completed.");
         }
         plan.setStatus(ProductionPlan.Status.COMPLETED);
+        advanceLinkedOrders(tenantId, plan);
         return planRepository.save(plan);
+    }
+
+    /**
+     * Advance linked orders to READY when a plan completes.
+     * Collects sourceOrderLineIds from all work orders and advances the parent orders.
+     */
+    private void advanceLinkedOrders(String tenantId, ProductionPlanEntity plan) {
+        Set<String> lineIds = new HashSet<>();
+        for (WorkOrderEntity wo : plan.getWorkOrders()) {
+            if (wo.getSourceOrderLineIds() != null && !wo.getSourceOrderLineIds().isBlank()) {
+                for (String id : wo.getSourceOrderLineIds().split(",")) {
+                    lineIds.add(id.trim());
+                }
+            }
+        }
+        if (lineIds.isEmpty()) return;
+
+        List<OrderEntity> orders = orderRepository.findByTenantIdAndOrderLineIds(tenantId, lineIds);
+        for (OrderEntity order : orders) {
+            try {
+                Order.Status target;
+                String status = order.getStatus();
+                if (Order.Status.CONFIRMED.name().equals(status)) {
+                    target = Order.Status.READY;
+                } else if (Order.Status.IN_PRODUCTION.name().equals(status)) {
+                    target = Order.Status.READY;
+                } else {
+                    continue;
+                }
+                orderService.advanceStatus(tenantId, order.getOrderId(), target, "system");
+            } catch (Exception e) {
+                log.warn("Failed to advance order {} on plan completion: {}", order.getOrderId(), e.getMessage());
+            }
+        }
     }
 
     // ─── WORK ORDER STATUS TRANSITIONS ───────────────────────────────────────
@@ -290,6 +327,7 @@ public class ProductionPlanService {
                             || w.getStatus() == WorkOrder.Status.CANCELLED);
             if (allDone && plan.getStatus() == ProductionPlan.Status.IN_PROGRESS) {
                 plan.setStatus(ProductionPlan.Status.COMPLETED);
+                advanceLinkedOrders(tenantId, plan);
                 planRepository.save(plan);
             }
         }
