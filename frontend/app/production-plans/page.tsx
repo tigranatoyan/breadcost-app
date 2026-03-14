@@ -112,6 +112,7 @@ export default function ProductionPlansPage() {
   };
 
   const planAction = async (planId: string, action: string) => {
+    if (actionId) return;
     if (action === 'approve' && !confirm(t('productionPlans.confirmApprove'))) return;
     try {
       setActionId(`${planId}-${action}`);
