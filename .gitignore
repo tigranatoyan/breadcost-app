@@ -1,6 +1,7 @@
 # ─── Java / Maven / Gradle ────────────────────────────────────────────────────
 target/
 build/
+bin/
 .gradle/
 *.class
 *.jar
