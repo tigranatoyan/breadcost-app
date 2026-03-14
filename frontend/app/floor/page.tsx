@@ -382,6 +382,7 @@ export default function FloorPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [now, setNow] = useState(new Date());
+  const [viewDate, setViewDate] = useState(new Date().toISOString().substring(0, 10));
 
   // Selected WO panel
   const [selectedWo, setSelectedWo] = useState<{ wo: WorkOrder; planId: string } | null>(null);
@@ -407,15 +408,14 @@ export default function FloorPage() {
       setLoading(true);
       setError('');
       const all = await apiFetch<Plan[]>(`/v1/production-plans?tenantId=${TENANT_ID}`);
-      // Today's plans + any still IN_PROGRESS
-      const relevant = all.filter((p) => p.planDate === today || p.status === 'IN_PROGRESS');
+      const relevant = all.filter((p) => p.planDate === viewDate || p.status === 'IN_PROGRESS');
       setPlans(relevant);
     } catch (e) {
       setError(String(e));
     } finally {
       setLoading(false);
     }
-  }, [today]);
+  }, [viewDate]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -511,6 +511,44 @@ export default function FloorPage() {
         title={t('floor.title')}
         subtitle={now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) + (activePlan ? ` · ${t('floor.activeShift', {shift: activePlan.shift})}` : '')}
       />
+
+      {/* Date navigation */}
+      <div className="flex items-center gap-2">
+        <button
+          className="px-2 py-1 rounded border border-gray-300 text-sm hover:bg-gray-100"
+          onClick={() => {
+            const d = new Date(viewDate + 'T00:00:00');
+            d.setDate(d.getDate() - 1);
+            setViewDate(d.toISOString().substring(0, 10));
+          }}
+        >
+          ←
+        </button>
+        <input
+          type="date"
+          className="border border-gray-300 rounded px-2 py-1 text-sm"
+          value={viewDate}
+          onChange={(e) => setViewDate(e.target.value)}
+        />
+        <button
+          className="px-2 py-1 rounded border border-gray-300 text-sm hover:bg-gray-100"
+          onClick={() => {
+            const d = new Date(viewDate + 'T00:00:00');
+            d.setDate(d.getDate() + 1);
+            setViewDate(d.toISOString().substring(0, 10));
+          }}
+        >
+          →
+        </button>
+        {viewDate !== today && (
+          <button
+            className="text-xs text-blue-600 hover:underline ml-1"
+            onClick={() => setViewDate(today)}
+          >
+            {t('common.today')}
+          </button>
+        )}
+      </div>
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
 
