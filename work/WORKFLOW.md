@@ -61,10 +61,9 @@
 
 ## Phase 6 — Update Docs
 
-27. Mark the item completed in `work/BACKLOG.md` (prefix with ✅, add date) — keeps local file in sync with Jira
-28. If the fix changes behavior documented in `requirements/` or `architecture/`, update those docs
-29. Update `work/NEXT_STEPS.md` if release scope changed (new test count, new endpoint count, etc.)
-30. Commit doc updates on `main`: `docs: update BACKLOG + NEXT_STEPS after BC-124`
+27. If the fix changes behavior documented in `requirements/` or `architecture/`, update those docs
+28. Update `work/NEXT_STEPS.md` if release scope changed (new test count, new endpoint count, etc.)
+29. Commit doc updates on `main`: `docs: update NEXT_STEPS after BC-124`
 
 ## Phase 7 — Repeat
 
@@ -101,13 +100,13 @@ To start working on R6 (or any future release):
 
 For future releases:
 1. **Create Release** in Jira (version = `R7`, etc.)
-2. **Create tickets** in Jira (Jira is source of truth — sync to BACKLOG.md, not the other way)
+2. **Create tickets** in Jira (Jira is the sole source of truth for all work items)
 3. Follow steps 1–5 above
 
 ### Git ↔ Jira Synchronization
 
+- `work/BACKLOG.md` is archived — Jira has all 59 R6 tickets (historical snapshot in `archive/BACKLOG.md`)
 - **Jira is the source of truth** for what to work on (sprints, priorities, assignments)
-- `work/BACKLOG.md` is kept in sync as a local mirror (updated in Phase 6)
 - Every Jira ticket gets a **git branch** (naming: `feat/BC-123-short-name`)
 - Every commit references the **Jira key** in the message (`fix(pos): BC-123 ...`)
 - Every MR title includes the **Jira key** (`BC-123: Fix POS inventory deduction`)
@@ -121,5 +120,5 @@ For future releases:
 - **All tests must pass** before merge (backend + E2E)
 - **One Jira ticket per branch** (exception: trivial batch of related fixes)
 - **Jira state must match reality** — if you're working on it, ticket is In Progress; if it's merged, ticket is Done
-- **Update BACKLOG.md and NEXT_STEPS.md** on the merge commit to `main`, not on the feature branch
+- **Update NEXT_STEPS.md** on the merge commit to `main`, not on the feature branch
 - **No orphan work** — every code change traces to a Jira ticket
