@@ -7,10 +7,11 @@
 
 ## Phase 0 — Pick Work
 
-1. Open `work/BACKLOG.md`, pick the highest-priority unstarted item (P0 first)
-2. If the item is vague, check `requirements/` and `architecture/` docs to understand the spec
-3. Create a todo list for the item
-4. **Jira**: Move ticket to **In Progress** (or create ticket if missing). Assign yourself.
+1. Open the **active Jira sprint** on board BC. Pick the highest-priority To Do ticket.
+2. If no sprint is active, create one first (see Release Workflow below).
+3. If the ticket is vague, check `requirements/` and `architecture/` docs to understand the spec.
+4. Create a todo list for the item.
+5. **Jira**: Move ticket **To Do → In Progress**. Assign yourself.
 
 ## Phase 1 — Branch
 
@@ -60,7 +61,7 @@
 
 ## Phase 6 — Update Docs
 
-27. Mark the item completed in `work/BACKLOG.md` (prefix with ✅, add date)
+27. Mark the item completed in `work/BACKLOG.md` (prefix with ✅, add date) — keeps local file in sync with Jira
 28. If the fix changes behavior documented in `requirements/` or `architecture/`, update those docs
 29. Update `work/NEXT_STEPS.md` if release scope changed (new test count, new endpoint count, etc.)
 30. Commit doc updates on `main`: `docs: update BACKLOG + NEXT_STEPS after BC-124`
@@ -79,7 +80,7 @@ Jira is not a phase — it runs **parallel to all phases**. State transitions mu
 
 | Git/Dev Event | Jira Transition | When |
 |---------------|-----------------|------|
-| Item picked from BACKLOG | **Open → In Progress** | Phase 0, step 4 |
+| Item picked from sprint | **To Do → In Progress** | Phase 0, step 5 |
 | Branch created | Add branch link to ticket | Phase 1, step 7 |
 | Blocker found during dev | Create blocker ticket, link it | Phase 3, step 14 |
 | Bug found in testing | Create bug ticket immediately | Phase 4, step 19 |
@@ -88,23 +89,29 @@ Jira is not a phase — it runs **parallel to all phases**. State transitions mu
 
 ### Release Workflow
 
-When starting a new release (e.g., R6):
+**Current release**: R6 — Arc Validation Fixes (59 tickets, all To Do)
 
-1. **Create Release** in Jira (version = `R6`)
-2. **Create Backlog**: Convert `work/BACKLOG.md` items for this release into Jira tickets, assign to release
-3. **Create Sprints**: Group tickets into sprints (2-week cadence), set sprint goals
-4. **Sprint Start**: Move sprint tickets to **To Do**, start sprint in Jira
-5. **During Sprint**: Tickets move Open → In Progress → Done as work happens (see table above)
-6. **Sprint End**: Close sprint, move incomplete tickets to next sprint, update velocity
-7. **Release Close**: Mark release as shipped in Jira, tag in git: `git tag R6`
+To start working on R6 (or any future release):
+
+1. **Create Sprint** in Jira: group tickets by priority (P0 first, then P1, etc.), set sprint goal
+2. **Start Sprint**: all sprint tickets are To Do
+3. **During Sprint**: Tickets move To Do → In Progress → Done per the workflow phases above
+4. **Sprint End**: Close sprint, move incomplete tickets to next sprint, update velocity
+5. **Release Close**: When all tickets Done — mark release as shipped in Jira, tag in git: `git tag R6`
+
+For future releases:
+1. **Create Release** in Jira (version = `R7`, etc.)
+2. **Create tickets** in Jira (Jira is source of truth — sync to BACKLOG.md, not the other way)
+3. Follow steps 1–5 above
 
 ### Git ↔ Jira Synchronization
 
+- **Jira is the source of truth** for what to work on (sprints, priorities, assignments)
+- `work/BACKLOG.md` is kept in sync as a local mirror (updated in Phase 6)
 - Every Jira ticket gets a **git branch** (naming: `feat/BC-123-short-name`)
 - Every commit references the **Jira key** in the message (`fix(pos): BC-123 ...`)
 - Every MR title includes the **Jira key** (`BC-123: Fix POS inventory deduction`)
 - GitHub Issues mirror Jira tickets for code-level tracking (use GitHub issue number in commits if needed: `Fixes #45`)
-- When Jira is revived: bulk-create tickets from `work/BACKLOG.md` to establish the initial backlog
 
 ---
 
@@ -112,7 +119,7 @@ When starting a new release (e.g., R6):
 
 - **Never commit directly to `main`** for feature/fix work
 - **All tests must pass** before merge (backend + E2E)
-- **One BACKLOG item per branch** (exception: trivial batch of related fixes)
+- **One Jira ticket per branch** (exception: trivial batch of related fixes)
 - **Jira state must match reality** — if you're working on it, ticket is In Progress; if it's merged, ticket is Done
 - **Update BACKLOG.md and NEXT_STEPS.md** on the merge commit to `main`, not on the feature branch
-- **No orphan work** — every code change traces to a BACKLOG item and (when active) a Jira ticket
+- **No orphan work** — every code change traces to a Jira ticket
