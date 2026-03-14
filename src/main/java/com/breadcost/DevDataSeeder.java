@@ -56,7 +56,7 @@ public class DevDataSeeder implements CommandLineRunner {
                 .displayName("BreadCost Demo Bakery")
                 .orderCutoffTime("22:00")
                 .rushOrderPremiumPct(15.0)
-                .mainCurrency("UZS")
+                .mainCurrency("AMD")
                 .build());
 
         // ── Users (7 roles) ──────────────────────────────────────────

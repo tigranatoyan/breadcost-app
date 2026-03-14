@@ -723,7 +723,7 @@ export default function InventoryPage() {
                   onChange={(e) => setReceiveForm((f) => ({ ...f, currencyCode: e.target.value.toUpperCase() }))}
                 />
               </Field>
-              {receiveForm.currencyCode && receiveForm.currencyCode !== 'UZS' && (
+              {receiveForm.currencyCode && receiveForm.currencyCode !== 'AMD' && (
                 <Field label={t('inventory.exchangeRate')}>
                   <input
                     className="input"
@@ -741,7 +741,7 @@ export default function InventoryPage() {
 
             <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-2 text-xs text-blue-700">
               {t('inventory.newLotNote', { site: SITE_ID })}
-              {receiveForm.currencyCode && receiveForm.currencyCode !== 'UZS' && (
+              {receiveForm.currencyCode && receiveForm.currencyCode !== 'AMD' && (
                 <span className="block mt-1">{t('inventory.fxNote', { rate: receiveForm.exchangeRate, currency: receiveForm.currencyCode })}</span>
               )}
             </div>

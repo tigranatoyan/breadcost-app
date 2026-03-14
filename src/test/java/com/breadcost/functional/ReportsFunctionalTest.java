@@ -60,7 +60,7 @@ class ReportsFunctionalTest extends FunctionalTestBase {
                 .andExpect(jsonPath("$.week").exists())
                 .andExpect(jsonPath("$.month").exists())
                 .andExpect(jsonPath("$.allTime").exists())
-                .andExpect(jsonPath("$.currency").value("UZS"));
+                .andExpect(jsonPath("$.currency").value("AMD"));
     }
 
     @Test
@@ -78,7 +78,7 @@ class ReportsFunctionalTest extends FunctionalTestBase {
     void revenueSummary_periodParam_accepted() throws Exception {
         GET("/v1/reports/revenue-summary?tenantId=" + TENANT + "&period=week", bearer("admin1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.currency").value("UZS"));
+                .andExpect(jsonPath("$.currency").value("AMD"));
     }
 
     // ── FE-RPT-2: top products shape ──────────────────────────────────────────
