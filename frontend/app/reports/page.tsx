@@ -603,21 +603,21 @@ export default function ReportsPage() {
       setLoading(true);
       setError('');
       const [o, pos, itms, p, rev, top, dp] = await Promise.all([
-        apiFetch<Order[]>(`/v1/orders?tenantId=${TENANT_ID}`),
+        apiFetch<Order[]>(`/v1/orders?tenantId=${TENANT_ID}`).catch(() => [] as Order[]),
         apiFetch<StockPosition[]>(`/v1/inventory/positions?tenantId=${TENANT_ID}`).catch(() => [] as StockPosition[]),
         apiFetch<StockItem[]>(`/v1/items?tenantId=${TENANT_ID}`).catch(() => [] as StockItem[]),
-        apiFetch<Plan[]>(`/v1/production-plans?tenantId=${TENANT_ID}`),
+        apiFetch<Plan[]>(`/v1/production-plans?tenantId=${TENANT_ID}`).catch(() => [] as Plan[]),
         apiFetch<RevenueSummary>(`/v1/reports/revenue-summary?tenantId=${TENANT_ID}`).catch(() => null),
         apiFetch<TopProduct[]>(`/v1/reports/top-products?tenantId=${TENANT_ID}&limit=8`).catch(() => [] as TopProduct[]),
         apiFetch<Dept[]>(`/v1/departments?tenantId=${TENANT_ID}`).catch(() => [] as Dept[]),
       ]);
-      setOrders(o);
-      setPositions(pos);
-      setStockItems(itms);
-      setPlans(p);
+      setOrders(Array.isArray(o) ? o : []);
+      setPositions(Array.isArray(pos) ? pos : []);
+      setStockItems(Array.isArray(itms) ? itms : []);
+      setPlans(Array.isArray(p) ? p : []);
       setRevenue(rev);
-      setTopProducts(top);
-      setDepts(dp);
+      setTopProducts(Array.isArray(top) ? top : []);
+      setDepts(Array.isArray(dp) ? dp : []);
       setLastRefresh(new Date());
     } catch (e) {
       setError(String(e));

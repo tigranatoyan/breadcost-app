@@ -41,13 +41,11 @@ def api_get(path):
 def api_post(path, body):
     data = json.dumps(body).encode()
     req = urllib.request.Request(JIRA_BASE_URL + path, data=data, headers=headers_post, method="POST")
-    try:
-        return json.loads(urllib.request.urlopen(req, timeout=15).read())
-    except urllib.error.HTTPError as e:
-        # transition POST returns 204 with no body
-        if e.code == 204:
-            return {}
-        raise
+    resp = urllib.request.urlopen(req, timeout=15)
+    raw = resp.read()
+    if not raw:
+        return {}
+    return json.loads(raw)
 
 
 def log_transition(ticket_key, from_state, to_state):
