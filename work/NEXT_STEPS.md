@@ -1,8 +1,8 @@
 # BreadCost — Comprehensive Roadmap & Next Steps
 
-**Last Updated**: March 13, 2026  
-**Status**: R1–R5 complete (all 10 ARCMAP gaps closed), 469 tests, 36 controllers, ~223 endpoints, 35 FE pages  
-**Git HEAD**: `468b062` on `main`
+**Last Updated**: March 14, 2026  
+**Status**: R1–R5 complete (all 10 ARCMAP gaps closed), 469 backend tests, 95 E2E tests, 36 controllers, ~223 endpoints, 35 FE pages  
+**Git HEAD**: `5c9e1c0` on `main`
 
 ---
 
@@ -345,79 +345,36 @@ testImplementation("org.wiremock:wiremock-standalone:3.5.4")
 
 ---
 
-## 8. Track G — Frontend Automation Tests
+## 8. Track G — Frontend E2E Tests (Playwright)
 
-### G1. Testing Framework Selection
+### G1. Current State ✅
 
-| Framework | Pros | Cons | Recommendation |
-|-----------|------|------|----------------|
-| **Playwright** | Fast, reliable, multi-browser, built-in auto-wait, TypeScript native, trace viewer | Newer ecosystem | ✅ **RECOMMENDED** |
-| **Cypress** | Large community, good DX, time-travel debugging | Single-tab only, slower, no multi-browser parallel | Good alternative |
-| **Selenium** | Industry standard, widest browser support | Verbose, flaky, slow setup | Not recommended for new projects |
+Playwright v1.58.2 is fully set up with **95 passing tests** across all 35 pages.
 
-**Recommendation**: **Playwright** — best fit for Next.js + TypeScript stack, fastest execution, excellent debugging tools.
+| Detail | Value |
+|--------|-------|
+| Framework | Playwright 1.58.2 |
+| Tests | 95 / 95 passing |
+| Location | `frontend/e2e/` |
+| Run command | `cd frontend && npx playwright test` |
+| Env vars | `$env:SKIP_WEB_SERVER = "1"` (if backend + frontend already running) |
 
-### G2. Test Architecture
+### G2. Coverage Gaps (Remaining Work)
 
-```
-frontend/
-├── e2e/                          ← NEW: Playwright test directory
-│   ├── playwright.config.ts      ← Browser configs, base URL, timeouts
-│   ├── fixtures/                 ← Custom fixtures (auth state, test data)
-│   │   ├── auth.fixture.ts       ← Pre-authenticated browser contexts
-│   │   └── data.fixture.ts       ← Test data setup/teardown
-│   ├── pages/                    ← Page Object Models
-│   │   ├── login.page.ts
-│   │   ├── dashboard.page.ts
-│   │   ├── orders.page.ts
-│   │   ├── inventory.page.ts
-│   │   └── ...
-│   └── tests/                    ← Test files
-│       ├── auth.spec.ts          ← Login, logout, role switching
-│       ├── orders.spec.ts        ← Order CRUD, status transitions
-│       ├── inventory.spec.ts     ← Stock management, alerts
-│       ├── pos.spec.ts           ← POS sale flow
-│       ├── production.spec.ts    ← Plan creation, WO completion
-│       ├── invoices.spec.ts      ← Invoice lifecycle
-│       ├── customer-portal.spec.ts ← Customer catalog, cart, checkout
-│       └── admin.spec.ts         ← Config, users, departments
-```
+The 95 existing tests cover basic navigation and CRUD for all pages. Gaps:
 
-### G3. Recommended Test Scenarios (Priority Order)
+| Priority | Area | Gap Description | Est. New Tests |
+|----------|------|----------------|---------------|
+| P1 | Error paths | Most tests only verify happy paths — missing 4xx/5xx error handling validation | ~20 |
+| P1 | Role-based access | Tests run as admin only — no coverage of cashier, manager, technologist, customer roles | ~15 |
+| P1 | Yield / WO completion | R5 yield-tracking flow not covered (actualYield, wasteQty, qualityScore) | ~5 |
+| P2 | Invoice dispute flow | Dispute → resolve lifecycle not covered | ~4 |
+| P2 | Subscription expiry | Expiry warnings banner, deactivate action untested | ~3 |
+| P2 | Mobile responsive | No mobile viewport tests | ~10 |
+| P3 | Accessibility | No axe-core accessibility checks | ~10 |
+| P3 | Customer portal flows | Cart → checkout → order tracking end-to-end (partial coverage) | ~8 |
 
-| Priority | Suite | Scenarios | Est. Tests |
-|----------|-------|-----------|-----------|
-| P0 | Auth | Login (admin, cashier, customer), logout, token expiry redirect, role-based nav | 8 |
-| P0 | POS | Create sale, stock check, reconciliation | 6 |
-| P0 | Orders | Create order, confirm, cancel, status timeline | 8 |
-| P1 | Inventory | View positions, create receipt, adjust stock, view alerts | 8 |
-| P1 | Production | Create plan, generate WOs, start/complete WO with yield | 10 |
-| P1 | Customer Portal | Register, login, browse catalog, add to cart, checkout, view orders | 12 |
-| P2 | Invoices | Generate, issue, pay, dispute, resolve | 8 |
-| P2 | Deliveries | Create run, assign orders, driver manifest, complete delivery | 8 |
-| P2 | Reports | View revenue summary, create custom report, export | 6 |
-| P3 | Admin | Create user, manage departments, config changes | 6 |
-| P3 | Suppliers | Manage suppliers, create PO, PO from plan | 6 |
-| P3 | AI Features | Generate pricing suggestions, view anomalies | 4 |
-
-**Total estimated**: ~90 E2E tests
-
-### G4. Setup
-
-```json
-// Add to frontend/package.json devDependencies
-{
-  "@playwright/test": "^1.42.0",
-  "@axe-core/playwright": "^4.8.0"  // accessibility testing
-}
-```
-
-```bash
-# Install
-cd frontend
-npm install -D @playwright/test @axe-core/playwright
-npx playwright install chromium
-```
+**Total estimated**: ~75 new tests to reach comprehensive coverage
 
 ---
 
