@@ -18,6 +18,7 @@ interface WorkOrder {
   completedAt: string | null;
   startOffsetHours: number;
   durationHours: number | null;
+  actualYield: number | null;
 }
 interface Plan {
   planId: string;
@@ -422,9 +423,9 @@ export default function ProductionPlansPage() {
                                     onChange={(e) => setYieldInputs((prev) => ({ ...prev, [wo.workOrderId]: e.target.value }))}
                                   />
                                 )}
-                                {wo.completedAt && wo.startedAt && (
-                                  <span className="text-xs text-gray-400">
-                                    {((new Date(wo.completedAt).getTime() - new Date(wo.startedAt).getTime()) / 3_600_000).toFixed(1)}h
+                                {wo.completedAt && wo.actualYield != null && (
+                                  <span className="text-xs text-gray-600">
+                                    {wo.actualYield} {wo.uom}
                                   </span>
                                 )}
                               </td>
