@@ -44,4 +44,9 @@ public class OrderLineEntity {
 
     @Column(columnDefinition = "TEXT")
     private String notes;
+
+    public BigDecimal getLineTotal() {
+        if (unitPrice == null) return BigDecimal.ZERO;
+        return unitPrice.multiply(BigDecimal.valueOf(qty));
+    }
 }
