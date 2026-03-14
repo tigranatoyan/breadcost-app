@@ -9,6 +9,10 @@ import com.breadcost.domain.LedgerEntry;
 import com.breadcost.eventstore.EventStore;
 import com.breadcost.mobile.MobileAppService;
 import com.breadcost.notifications.EmailNotificationService;
+import com.breadcost.delivery.DeliveryRunEntity;
+import com.breadcost.delivery.DeliveryRunOrderRepository;
+import com.breadcost.delivery.DeliveryRunRepository;
+import com.breadcost.driver.DriverService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,6 +40,9 @@ public class OrderService {
     private final OrderStatusHistoryRepository orderStatusHistoryRepository;
     private final MobileAppService mobileAppService;
     private final EmailNotificationService emailNotificationService;
+    private final DeliveryRunOrderRepository deliveryRunOrderRepository;
+    private final DeliveryRunRepository deliveryRunRepository;
+    private final DriverService driverService;
 
     /** Hour of day (0-23) after which new standard orders are blocked (default 22 = 10 PM) */
     @Value("${breadcost.order.cutoff-hour:22}")
@@ -258,6 +265,24 @@ public class OrderService {
         OrderEntity saved = orderRepository.save(entity);
 
         recordHistory(tenantId, orderId, targetStatus.name(), "Status changed to " + targetStatus.name());
+
+        // BC-260: Auto-start driver session when order goes OUT_FOR_DELIVERY
+        if (targetStatus == Order.Status.OUT_FOR_DELIVERY) {
+            try {
+                deliveryRunOrderRepository.findByTenantIdAndOrderId(tenantId, orderId).stream().findFirst()
+                        .ifPresent(dro -> {
+                            String runId = dro.getRunId();
+                            deliveryRunRepository.findByTenantIdAndRunId(tenantId, runId).ifPresent(run -> {
+                                if (run.getDriverId() != null && !run.getDriverId().isBlank()) {
+                                    driverService.startSession(tenantId, run.getDriverId(), run.getDriverName(), runId);
+                                    log.info("Auto-started driver session for run {} on order {}", runId, orderId);
+                                }
+                            });
+                        });
+            } catch (Exception e) {
+                log.warn("Failed to auto-start driver session for order {}: {}", orderId, e.getMessage());
+            }
+        }
 
         // G-3: Auto-notify customer on status change (push + email)
         try {
