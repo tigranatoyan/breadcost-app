@@ -11,7 +11,7 @@
 2. If no sprint is active, create one first (see Release Workflow below).
 3. If the ticket is vague, check `requirements/` and `architecture/` docs to understand the spec.
 4. Create a todo list for the item.
-5. **Jira**: Move ticket **To Do → In Progress**. Assign yourself.
+5. **Jira**: Move ticket **To Do → In Progress**: `python scripts/jira_tracker.py transition BC-XXX in_progress`
 
 ## Phase 1 — Branch
 
@@ -57,7 +57,7 @@
 23. Merge (squash or regular merge depending on commit count)
 24. Delete the feature branch after merge
 25. Pull latest main: `git checkout main && git pull`
-26. **Jira**: Move ticket to **Done**. Add merge commit hash as comment.
+26. **Jira**: Move ticket to **Done**: `python scripts/jira_tracker.py transition BC-XXX done`
 
 ## Phase 6 — Update Docs
 
@@ -120,5 +120,13 @@ For future releases:
 - **All tests must pass** before merge (backend + E2E)
 - **One Jira ticket per branch** (exception: trivial batch of related fixes)
 - **Jira state must match reality** — if you're working on it, ticket is In Progress; if it's merged, ticket is Done
+- **Always use `jira_tracker.py`** for transitions — it logs timestamps locally for sprint reports
 - **Update NEXT_STEPS.md** on the merge commit to `main`, not on the feature branch
 - **No orphan work** — every code change traces to a Jira ticket
+
+## Sprint Dashboard
+
+```bash
+python scripts/jira_tracker.py status     # Current sprint board
+python scripts/jira_tracker.py report     # Generate XLSX time report → data/sprint_report.xlsx
+```
