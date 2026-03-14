@@ -35,6 +35,7 @@ export function getUserInfo(): UserInfo | null {
 export function setSession(token: string, user: UserInfo) {
   localStorage.setItem(TOKEN_KEY, token);
   localStorage.setItem(USER_KEY, JSON.stringify(user));
+  document.cookie = `bc_token=${encodeURIComponent(token)}; path=/; max-age=86400; SameSite=Lax`;
 }
 
 // Keep legacy name so existing callers that pass (username, password) still compile.
@@ -46,6 +47,7 @@ export function setCredentials(_username: string, _password: string) {
 export function clearCredentials() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
+  document.cookie = 'bc_token=; path=/; max-age=0';
 }
 
 export function getUsername(): string {
