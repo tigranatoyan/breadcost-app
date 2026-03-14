@@ -79,6 +79,7 @@ public class PurchaseOrderService {
             poRepository.save(po);
 
             for (SupplierCatalogItemEntity item : items) {
+                BigDecimal price = item.getUnitPrice() != null ? item.getUnitPrice() : BigDecimal.ZERO;
                 PurchaseOrderLineEntity line = PurchaseOrderLineEntity.builder()
                         .lineId(UUID.randomUUID().toString())
                         .poId(po.getPoId())
@@ -87,9 +88,9 @@ public class PurchaseOrderService {
                         .ingredientName(item.getIngredientName())
                         .qty(item.getMoq())
                         .unit(item.getUnit())
-                        .unitPrice(item.getUnitPrice())
+                        .unitPrice(price)
                         .currency(item.getCurrency())
-                        .lineTotal(item.getUnitPrice().multiply(BigDecimal.valueOf(item.getMoq())))
+                        .lineTotal(price.multiply(BigDecimal.valueOf(item.getMoq())))
                         .build();
                 lineRepository.save(line);
             }
