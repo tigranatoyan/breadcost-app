@@ -246,14 +246,14 @@ export default function ProductionPlansPage() {
         cls: 'bg-indigo-600 text-white hover:bg-indigo-700',
       });
     }
-    if (p.status === 'DRAFT' || p.status === 'GENERATED') {
+    if (p.status === 'GENERATED') {
       btns.push({
         label: t('productionPlans.approve'),
         action: 'approve',
         cls: 'bg-purple-600 text-white hover:bg-purple-700',
       });
     }
-    if (p.status === 'GENERATED' || p.status === 'APPROVED' || p.status === 'PUBLISHED') {
+    if (p.status === 'APPROVED' || p.status === 'PUBLISHED') {
       btns.push({
         label: t('productionPlans.start'),
         action: 'start',
