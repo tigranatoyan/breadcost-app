@@ -1,5 +1,8 @@
 # Arc-by-Arc Page Observations
 
+> **NOTE:** These raw notes have been consolidated into [work/BACKLOG.md](BACKLOG.md) as a structured, prioritized issue list (57 items, P0–P4). Use BACKLOG.md for tracking — this file is kept as reference only.
+
+
 ## Arc 1: Order Lifecycle
 
 ### /orders

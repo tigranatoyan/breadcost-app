@@ -1,4 +1,7 @@
 # ArcMap Framework
+
+> **NOTE:** This is a methodology reference, not project-specific. It has already been applied to produce [ARCMAP.md](ARCMAP.md). No further analysis needed from this file.
+
 **Version:** 1.0 | **Paradigm:** Structured Analysis → Agile Implementation
 
 > *ArcMap* is a software design methodology that decomposes a system into end-to-end
