@@ -21,7 +21,7 @@
 
 ### Prompt to Agent
 
-> Read `architecture/ARCMAP.md`. Each arc has a happy path with steps (Actor → Action → System Response → Next). For each arc, generate a Playwright E2E test file (`tests/arc-{N}-{name}.spec.ts`) that walks the full happy path end-to-end. Each step in the arc becomes a test assertion. If a step says "System creates delivery run," the test asserts a delivery run exists. If a step says "Status changes to READY," the test asserts the badge shows READY. Group assertions by page. Use the seed data already in the database.
+> Read `architecture/ARCMAP.md`. Each arc has a happy path with steps (Actor → Action → System Response → Next). For each arc, populate the Playwright E2E test skeleton in `frontend/e2e/tests/arc-{N}-{name}.spec.ts` — replace `test.skip` with real assertions that walk the full happy path end-to-end. Each step in the arc becomes a test assertion. If a step says "System creates delivery run," the test asserts a delivery run exists. If a step says "Status changes to READY," the test asserts the badge shows READY. Group assertions by page. Use the seed data already in the database.
 
 ### What It Catches
 
@@ -33,15 +33,15 @@
 
 ### Expected Output
 
-8 test files:
-- `tests/arc-1-order-lifecycle.spec.ts`
-- `tests/arc-2-production-planning.spec.ts`
-- `tests/arc-3-inventory-supply-chain.spec.ts`
-- `tests/arc-4-customer-portal.spec.ts`
-- `tests/arc-5-pos.spec.ts`
-- `tests/arc-6-financial-operations.spec.ts`
-- `tests/arc-7-ai-assistance.spec.ts`
-- `tests/arc-8-platform-admin.spec.ts`
+8 test files (skeletons already exist — fill in assertions):
+- `frontend/e2e/tests/arc-1-order-lifecycle.spec.ts`
+- `frontend/e2e/tests/arc-2-production-planning.spec.ts`
+- `frontend/e2e/tests/arc-3-inventory-supply-chain.spec.ts`
+- `frontend/e2e/tests/arc-4-customer-portal.spec.ts`
+- `frontend/e2e/tests/arc-5-pos.spec.ts`
+- `frontend/e2e/tests/arc-6-financial-operations.spec.ts`
+- `frontend/e2e/tests/arc-7-ai-assistance.spec.ts`
+- `frontend/e2e/tests/arc-8-platform-admin.spec.ts`
 
 ---
 
@@ -51,7 +51,7 @@
 
 ### Prompt to Agent
 
-> Write a Playwright test that visits every route in the app (`/orders`, `/deliveries`, `/driver`, `/production-plans`, `/floor`, `/inventory`, `/pos`, `/reports`, `/dashboard`, etc.). On each page, capture all visible `textContent` from the DOM. Compare every string against `locales/hy.ts`. Flag any string that: (a) appears in English but has no Armenian translation, (b) shows a raw i18n key like `driver.refresh`, or (c) shows a technical value like a raw enum (`DRAFT`, `CONFIRMED`, `IN_PRODUCTION`). Output a structured report: `{page, element, rawText, issue}`.
+> The i18n sweep test skeleton is at `frontend/e2e/tests/i18n-sweep.spec.ts`. It already visits every route and checks for raw i18n keys and raw enum values. Enhance it to also compare all visible `textContent` against `frontend/locales/hy.ts` and flag any English string missing an Armenian translation. Output a structured report: `{page, element, rawText, issue}`.
 
 ### What It Catches
 
@@ -62,7 +62,7 @@
 
 ### Expected Output
 
-- `tests/i18n-sweep.spec.ts`
+- `frontend/e2e/tests/i18n-sweep.spec.ts` (skeleton exists)
 - On failure: structured JSON report with page, element selector, raw text, and issue type
 
 ---
@@ -90,7 +90,7 @@
 
 ### Expected Output
 
-- `tests/cross-arc-chains.spec.ts` (E2E) and/or `src/test/java/.../CrossArcIntegrationTest.java` (backend)
+- `frontend/e2e/tests/cross-arc-chains.spec.ts` (skeleton exists) and/or `src/test/java/.../CrossArcIntegrationTest.java` (backend)
 
 ---
 
@@ -100,7 +100,7 @@
 
 ### Prompt to Agent
 
-> Run all arc tests (`npx playwright test tests/arc-*.spec.ts tests/i18n-sweep.spec.ts tests/cross-arc-chains.spec.ts`). For each failed assertion, generate a structured observation with:
+> Run all arc tests (`cd frontend/e2e && npx playwright test tests/arc-*.spec.ts tests/i18n-sweep.spec.ts tests/cross-arc-chains.spec.ts`). For each failed assertion, generate a structured observation with:
 > - **Arc:** which arc number
 > - **Page:** which URL
 > - **Expected:** what ARCMAP says should happen
@@ -125,9 +125,9 @@
 | 1 | Start backend: `./gradlew bootRun` | Port 8080 responding |
 | 2 | Start frontend: `cd frontend && npm run dev` | Port 3000 responding |
 | 3 | Load seed data (if needed) | Known test users, products, orders exist |
-| 4 | Run Phase 1: `npx playwright test tests/arc-*.spec.ts` | All arc happy paths pass |
-| 5 | Run Phase 2: `npx playwright test tests/i18n-sweep.spec.ts` | Zero untranslated strings |
-| 6 | Run Phase 3: `npx playwright test tests/cross-arc-chains.spec.ts` | All cross-arc handoffs work |
+| 4 | Run Phase 1: `cd frontend/e2e && npx playwright test tests/arc-*.spec.ts` | All arc happy paths pass |
+| 5 | Run Phase 2: `cd frontend/e2e && npx playwright test tests/i18n-sweep.spec.ts` | Zero untranslated strings |
+| 6 | Run Phase 3: `cd frontend/e2e && npx playwright test tests/cross-arc-chains.spec.ts` | All cross-arc handoffs work |
 | 7 | Run Phase 4: Generate report from failures | All P0 issues have Jira tickets |
 
 ---
