@@ -214,6 +214,7 @@ export default function ProductionPlansPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (saving) return;
     try {
       setSaving(true);
       await apiFetch('/v1/production-plans', {
