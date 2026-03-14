@@ -1,11 +1,10 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { User, LogOut, ChefHat, Search, Package, Star } from 'lucide-react';
 import {
   isCustomerLoggedIn, getCustomerInfo, clearCustomerSession,
-  type CustomerInfo,
 } from '@/lib/customer-auth';
 
 const NAV = [
@@ -18,20 +17,19 @@ const NAV = [
 export default function CustomerLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [customer, setCustomer] = useState<CustomerInfo | null>(null);
+  const isLoginPage = pathname === '/customer/login';
+  const customer = !isLoginPage && isCustomerLoggedIn() ? getCustomerInfo() : null;
 
   useEffect(() => {
     // login page is always accessible
-    if (pathname === '/customer/login') return;
+    if (isLoginPage) return;
     if (!isCustomerLoggedIn()) {
       router.replace('/customer/login');
-    } else {
-      setCustomer(getCustomerInfo());
     }
-  }, [pathname, router]);
+  }, [isLoginPage, router]);
 
   // Login page renders without shell
-  if (pathname === '/customer/login') return <>{children}</>;
+  if (isLoginPage) return <>{children}</>;
 
   const logout = () => {
     clearCustomerSession();

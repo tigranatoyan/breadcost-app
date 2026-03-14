@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Alert } from '@/components/ui';
-import { SectionTitle, Button, InputField, SelectField, Card } from '@/components/design-system';
+import { SectionTitle, Button, InputField, SelectField } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
 import { getUsername } from '@/lib/auth';
 import { Package } from 'lucide-react';
@@ -79,7 +79,7 @@ function lineTotal(line: CartLine) {
 interface QuickAddProps {
   product: Product;
   deptName: string;
-  onAdd: (line: Omit<CartLine, 'productName' | 'departmentName'> & { productName: string; departmentName: string }) => void;
+  onAdd: (_line: Omit<CartLine, 'productName' | 'departmentName'> & { productName: string; departmentName: string }) => void;
   onCancel: () => void;
 }
 
@@ -631,7 +631,7 @@ export default function POSPage() {
               </div>
               <div style={{ marginTop: 8, fontSize: 12 }}>
                 <div>{t('pos.paymentMethod')}: {receiptData.paymentMethod === 'CASH' ? t('pos.cash') : t('pos.card')}</div>
-                {receiptData.paymentMethod === 'CASH' && receiptData.cashReceived != null && (
+                {receiptData.paymentMethod === 'CASH' && receiptData.cashReceived !== null && receiptData.cashReceived !== undefined && (
                   <>
                     <div>{t('pos.cashReceived')}: {fmt(receiptData.cashReceived)}</div>
                     <div>{t('pos.change')}: {fmt(receiptData.changeGiven ?? 0)}</div>

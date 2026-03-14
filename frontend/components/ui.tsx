@@ -1,5 +1,5 @@
 'use client';
-import { ReactNode, createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import { ReactNode, createContext, useContext, useState, useCallback, useRef } from 'react';
 
 /* ── Skeleton ──────────────────────────────────────────────────────── */
 export function Skeleton({ className = '' }: { className?: string }) {
@@ -40,9 +40,9 @@ type ToastType = 'success' | 'error' | 'info';
 interface Toast { id: number; message: string; type: ToastType }
 
 interface ToastCtx {
-  toast: (message: string, type?: ToastType) => void;
-  toastSuccess: (message: string) => void;
-  toastError: (message: string) => void;
+  toast: (_message: string, _type?: ToastType) => void;
+  toastSuccess: (_message: string) => void;
+  toastError: (_message: string) => void;
 }
 
 const ToastContext = createContext<ToastCtx>({
@@ -106,7 +106,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 interface PaginationProps {
   page: number;
   totalPages: number;
-  onPageChange: (page: number) => void;
+  onPageChange: (_page: number) => void;
 }
 
 export function Pagination({ page, totalPages, onPageChange }: PaginationProps) {

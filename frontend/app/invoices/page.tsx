@@ -252,7 +252,7 @@ export default function InvoicesPage() {
                 inv.customerName || inv.customerId.slice(0, 8),
                 <Badge key={`s-${inv.invoiceId}`} status={inv.status} />,
                 `${inv.totalAmount.toFixed(2)} ${inv.currency || ''}`,
-                inv.paidAmount != null ? inv.paidAmount.toFixed(2) : '0.00',
+                inv.paidAmount !== null && inv.paidAmount !== undefined ? inv.paidAmount.toFixed(2) : '0.00',
                 inv.dueDate || '—',
                 <div key={`a-${inv.invoiceId}`} className="flex gap-1 flex-wrap">
                   {inv.status !== 'PAID' && inv.status !== 'VOIDED' && (

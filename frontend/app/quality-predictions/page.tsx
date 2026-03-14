@@ -1,9 +1,8 @@
 'use client';
 import { useState, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
-import { useT } from '@/lib/i18n';
 import { Spinner, Alert, Success } from '@/components/ui';
-import { SectionTitle, Button, Card, StatCard, Badge, Table } from '@/components/design-system';
+import { SectionTitle, Button, Card, StatCard, Table } from '@/components/design-system';
 import { ShieldAlert, TrendingDown, CheckCircle, RefreshCw } from 'lucide-react';
 
 interface QualityPrediction {
@@ -19,14 +18,7 @@ interface QualityPrediction {
   status: string;
 }
 
-const RISK_COLORS: Record<string, 'danger' | 'warning' | 'success'> = {
-  HIGH: 'danger',
-  MEDIUM: 'warning',
-  LOW: 'success',
-};
-
 export default function QualityPredictionsPage() {
-  const t = useT();
   const [predictions, setPredictions] = useState<QualityPrediction[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

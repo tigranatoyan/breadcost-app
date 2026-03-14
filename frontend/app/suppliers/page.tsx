@@ -368,7 +368,7 @@ export default function SuppliersPage() {
               {lookupResults.length > 0 ? (
                 <Table
                   cols={[t('suppliers.supplier'), t('suppliers.unitPrice'), t('suppliers.currency'), t('suppliers.leadTime')]}
-                  rows={lookupResults.map((r, i) => [r.supplierName || r.supplierId, r.unitPrice.toFixed(2), r.currency, r.leadTimeDays != null ? `${r.leadTimeDays}d` : '—'])}
+                  rows={lookupResults.map((r) => [r.supplierName || r.supplierId, r.unitPrice.toFixed(2), r.currency, r.leadTimeDays !== null && r.leadTimeDays !== undefined ? `${r.leadTimeDays}d` : '—'])}
                   empty=""
                 />
               ) : <p className="text-sm text-gray-500">{t('suppliers.noSuppliersForIngredient')}</p>}
@@ -381,7 +381,7 @@ export default function SuppliersPage() {
                 <button key={po.poId} className="text-blue-600 underline text-sm" onClick={() => openPODetail(po.poId)}>{po.poId.slice(0, 8)}</button>,
                 po.supplierName || po.supplierId.slice(0, 8),
                 <Badge key={`s-${po.poId}`} status={po.status} />,
-                po.totalAmount != null ? `${po.totalAmount.toFixed(2)} ${po.currency || ''}` : '—',
+                po.totalAmount !== null && po.totalAmount !== undefined ? `${po.totalAmount.toFixed(2)} ${po.currency || ''}` : '—',
                 po.createdAt ? new Date(po.createdAt).toLocaleDateString() : '—',
                 <div key={`a-${po.poId}`} className="flex gap-1 flex-wrap">
                   {po.status === 'DRAFT' && <Button variant="primary" size="xs" className="bg-green-600 hover:bg-green-700" onClick={() => approvePO(po.poId)}>{t('suppliers.approve')}</Button>}
@@ -459,7 +459,7 @@ export default function SuppliersPage() {
             <>
               <Table
                 cols={[t('suppliers.ingredient'), t('suppliers.unitPrice'), t('suppliers.currency'), t('suppliers.leadTime'), t('suppliers.moq'), t('suppliers.unit')]}
-                rows={catalog.map(c => [c.ingredientName || c.ingredientId, c.unitPrice?.toFixed(2) ?? '—', c.currency || '—', c.leadTimeDays != null ? `${c.leadTimeDays}d` : '—', c.moq ?? '—', c.unit || '—'])}
+                rows={catalog.map(c => [c.ingredientName || c.ingredientId, c.unitPrice?.toFixed(2) ?? '—', c.currency || '—', c.leadTimeDays !== null && c.leadTimeDays !== undefined ? `${c.leadTimeDays}d` : '—', c.moq ?? '—', c.unit || '—'])}
                 empty={t('suppliers.catalogEmpty')}
               />
               <form onSubmit={addCatalogItem} className="mt-4 grid grid-cols-3 gap-3 items-end">

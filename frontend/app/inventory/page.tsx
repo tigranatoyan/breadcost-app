@@ -5,7 +5,6 @@ import { Modal, Spinner, Alert, Badge, Field } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
 import { getRole } from '@/lib/auth';
-import { Plus, ArrowLeftRight, SlidersHorizontal } from 'lucide-react';
 
 const SITE_ID = 'MAIN';
 const REASON_CODES = ['WASTE', 'SPOILAGE', 'COUNT_CORRECTION', 'OTHER'] as const;
@@ -38,15 +37,6 @@ interface StockPosition {
 interface Department {
   departmentId: string;
   name: string;
-}
-
-interface StockAlert {
-  itemId: string;
-  itemName: string;
-  onHandQty: number;
-  minThreshold: number;
-  severity: 'LOW' | 'CRITICAL';
-  uom: string;
 }
 
 const ITEM_TYPES = ['INGREDIENT', 'PACKAGING', 'FG', 'BYPRODUCT', 'WIP'];
@@ -406,7 +396,7 @@ export default function InventoryPage() {
       <SectionTitle
         eyebrow="Inventory"
         title={t('inventory.title')}
-        subtitle="FIFO lots, stock alerts, receiving, transfers, and adjustments."
+        subtitle={t('inventory.subtitle')}
         action={
           <div className="flex items-center gap-2">
             {alertCount > 0 && (
@@ -695,7 +685,7 @@ export default function InventoryPage() {
                   min={0.001}
                   step="0.001"
                   required
-                  placeholder="e.g. 100"
+                  placeholder={t('inventory.qtyPlaceholder')}
                   value={receiveForm.qty}
                   onChange={(e) => setReceiveForm((f) => ({ ...f, qty: e.target.value }))}
                 />
@@ -707,7 +697,7 @@ export default function InventoryPage() {
                   min={0}
                   step="0.0001"
                   required
-                  placeholder="e.g. 5.50"
+                  placeholder={t('inventory.costPlaceholder')}
                   value={receiveForm.unitCostBase}
                   onChange={(e) => setReceiveForm((f) => ({ ...f, unitCostBase: e.target.value }))}
                 />
@@ -728,7 +718,7 @@ export default function InventoryPage() {
               <Field label={t('inventory.currency')}>
                 <input
                   className="input"
-                  placeholder="e.g. USD, EUR"
+                  placeholder={t('inventory.currencyPlaceholder')}
                   value={receiveForm.currencyCode}
                   onChange={(e) => setReceiveForm((f) => ({ ...f, currencyCode: e.target.value.toUpperCase() }))}
                 />
@@ -741,7 +731,7 @@ export default function InventoryPage() {
                     min={0.0001}
                     step="0.0001"
                     required
-                    placeholder="e.g. 12650"
+                    placeholder={t('inventory.exchangeRatePlaceholder')}
                     value={receiveForm.exchangeRate}
                     onChange={(e) => setReceiveForm((f) => ({ ...f, exchangeRate: e.target.value }))}
                   />
@@ -799,7 +789,7 @@ export default function InventoryPage() {
                 <input
                   className="input"
                   required
-                  placeholder="e.g. RECEIVING"
+                  placeholder={t('inventory.fromLocationPlaceholder')}
                   value={transferForm.fromLocationId}
                   onChange={(e) => setTransferForm((f) => ({ ...f, fromLocationId: e.target.value }))}
                 />
@@ -808,7 +798,7 @@ export default function InventoryPage() {
                 <input
                   className="input"
                   required
-                  placeholder="e.g. PRODUCTION"
+                  placeholder={t('inventory.toLocationPlaceholder')}
                   value={transferForm.toLocationId}
                   onChange={(e) => setTransferForm((f) => ({ ...f, toLocationId: e.target.value }))}
                 />
@@ -850,7 +840,7 @@ export default function InventoryPage() {
               <input
                 className="input"
                 required
-                placeholder="e.g. Wheat Flour"
+                placeholder={t('inventory.itemNamePlaceholder')}
                 value={itemForm.name}
                 onChange={(e) => setItemForm((f) => ({ ...f, name: e.target.value }))}
               />
@@ -870,7 +860,7 @@ export default function InventoryPage() {
                 <input
                   className="input"
                   required
-                  placeholder="KG / PCS / L"
+                  placeholder={t('inventory.uomPlaceholder')}
                   value={itemForm.baseUom}
                   onChange={(e) => setItemForm((f) => ({ ...f, baseUom: e.target.value.toUpperCase() }))}
                 />
@@ -935,7 +925,7 @@ export default function InventoryPage() {
                   type="number"
                   step="0.001"
                   required
-                  placeholder="e.g. -5 or +10"
+                  placeholder={t('inventory.adjustQtyPlaceholder')}
                   value={adjustForm.adjustmentQty}
                   onChange={(e) => setAdjustForm((f) => ({ ...f, adjustmentQty: e.target.value }))}
                 />

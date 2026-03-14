@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Spinner, Alert, Success, Field } from '@/components/ui';
-import { SectionTitle, Button, Card } from '@/components/design-system';
+import { SectionTitle, Button } from '@/components/design-system';
 import { Package, BarChart3, Factory, X, ShoppingCart } from 'lucide-react';
 
 /* ── types ─────────────────────────────────────────────── */

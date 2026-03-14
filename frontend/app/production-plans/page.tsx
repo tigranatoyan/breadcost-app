@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Modal, Spinner, Alert, Badge, Field } from '@/components/ui';
-import { SectionTitle, Button, SelectField, InputField, Card } from '@/components/design-system';
+import { SectionTitle, Button, SelectField, InputField } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
 import { Plus } from 'lucide-react';
 
@@ -347,11 +347,11 @@ export default function ProductionPlansPage() {
               >
                 <span className="font-medium text-sm">{p.planDate}</span>
                 <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                  {p.shift}
+                  {t(`productionPlans.shifts.${p.shift}` as any) || p.shift}
                 </span>
                 <Badge status={p.status} />
                 <span className="text-xs text-gray-400">
-                  {p.workOrders?.length ?? 0} work order(s)
+                  {t('productionPlans.workOrderCount', { count: p.workOrders?.length ?? 0 })}
                 </span>
                 {p.notes && (
                   <span className="text-xs text-gray-400 italic truncate max-w-xs">
@@ -481,7 +481,7 @@ export default function ProductionPlansPage() {
                     const total = sched?.totalLeadTimeHours ?? 0;
                     const entries = sched?.workOrders ?? [];
                     const activEntries = entries.filter(
-                      (e) => e.status !== 'CANCELLED' && e.durationHours != null
+                      (e) => e.status !== 'CANCELLED' && e.durationHours !== null && e.durationHours !== undefined
                     );
                     return (
                       <div className="border-t px-4 py-3">
@@ -647,15 +647,15 @@ export default function ProductionPlansPage() {
                   setForm((f) => ({ ...f, shift: e.target.value }))
                 }
               >
-                <option value="MORNING">MORNING</option>
-                <option value="AFTERNOON">AFTERNOON</option>
-                <option value="NIGHT">NIGHT</option>
+                <option value="MORNING">{t('productionPlans.shifts.MORNING')}</option>
+                <option value="AFTERNOON">{t('productionPlans.shifts.AFTERNOON')}</option>
+                <option value="NIGHT">{t('productionPlans.shifts.NIGHT')}</option>
               </select>
             </Field>
             <Field label={t('common.notes')}>
               <input
                 className="input"
-                placeholder="Optional instructions for the production team"
+                placeholder={t('productionPlans.notesPlaceholder')}
                 value={form.notes}
                 onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               />

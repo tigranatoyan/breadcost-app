@@ -2,7 +2,7 @@ import { test, expect } from '../fixtures/auth.fixture';
 import { InvoicesPage } from '../pages/invoices.page';
 
 test.describe('Invoices', () => {
-  test.beforeEach(async ({ page, loginAs }) => {
+  test.beforeEach(async ({ loginAs }) => {
     await loginAs('admin');
   });
 

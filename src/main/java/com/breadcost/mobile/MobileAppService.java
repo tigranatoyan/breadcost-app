@@ -64,6 +64,9 @@ public class MobileAppService {
     }
 
     public List<MobileDeviceRegistrationEntity> getDevices(String tenantId, String customerId) {
+        if (customerId == null || customerId.isBlank()) {
+            return deviceRepo.findByTenantId(tenantId);
+        }
         return deviceRepo.findByTenantIdAndCustomerId(tenantId, customerId);
     }
 

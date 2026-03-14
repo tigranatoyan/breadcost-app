@@ -71,7 +71,7 @@ export default function ReportBuilderPage() {
   const loadReports = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await apiFetch<CustomReport[]>(`/v2/reports/custom?tenantId=${TENANT_ID}`);
+      const data = await apiFetch<CustomReport[]>(`/v2/reports?tenantId=${TENANT_ID}`);
       setReports(data);
     } catch (e) { setError(String(e)); } finally { setLoading(false); }
   }, []);
@@ -79,7 +79,7 @@ export default function ReportBuilderPage() {
   useEffect(() => { loadReports(); loadBlocks(); }, [loadReports, loadBlocks]);
 
   /* toggle block selection */
-  const toggleBlock = (id: string, list: string[], setList: (v: string[]) => void) => {
+  const toggleBlock = (id: string, list: string[], setList: (_v: string[]) => void) => {
     setList(list.includes(id) ? list.filter(b => b !== id) : [...list, id]);
   };
 
@@ -88,7 +88,7 @@ export default function ReportBuilderPage() {
     e.preventDefault();
     try {
       setSaving(true);
-      await apiFetch('/v2/reports/custom', {
+      await apiFetch('/v2/reports', {
         method: 'POST',
         body: JSON.stringify({ tenantId: TENANT_ID, name: form.name, description: form.description || undefined, blocks: selectedBlocks }),
       });
@@ -106,7 +106,7 @@ export default function ReportBuilderPage() {
     if (!editReport) return;
     try {
       setSaving(true);
-      await apiFetch(`/v2/reports/custom/${editReport.reportId}?tenantId=${TENANT_ID}`, {
+      await apiFetch(`/v2/reports/${editReport.reportId}?tenantId=${TENANT_ID}`, {
         method: 'PUT',
         body: JSON.stringify({ name: editForm.name, description: editForm.description || undefined, blocks: editBlocks }),
       });
@@ -120,7 +120,7 @@ export default function ReportBuilderPage() {
   const deleteReport = async (id: string) => {
     if (!confirm(t('reportBuilder.confirmDelete'))) return;
     try {
-      await apiFetch(`/v2/reports/custom/${id}?tenantId=${TENANT_ID}`, { method: 'DELETE' });
+      await apiFetch(`/v2/reports/${id}?tenantId=${TENANT_ID}`, { method: 'DELETE' });
       setSuccess(t('reportBuilder.deleted'));
       loadReports();
     } catch (e) { setError(String(e)); }
@@ -130,7 +130,7 @@ export default function ReportBuilderPage() {
   const runReport = async (id: string) => {
     try {
       setRunning(true);
-      const data = await apiFetch<ReportResult>(`/v2/reports/custom/${id}/run?tenantId=${TENANT_ID}`, { method: 'POST' });
+      const data = await apiFetch<ReportResult>(`/v2/reports/${id}/run?tenantId=${TENANT_ID}`);
       setResult(data);
     } catch (e) { setError(String(e)); } finally { setRunning(false); }
   };
@@ -138,7 +138,7 @@ export default function ReportBuilderPage() {
   /* export */
   const exportReport = async (id: string) => {
     try {
-      const res = await fetch(`${API_BASE}/v2/reports/custom/${id}/export?tenantId=${TENANT_ID}`, {
+      const res = await fetch(`${API_BASE}/v2/reports/${id}/export?tenantId=${TENANT_ID}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('bc_token')}` },
       });
       if (!res.ok) throw new Error('Export failed');
@@ -153,7 +153,7 @@ export default function ReportBuilderPage() {
   };
 
   /* block picker */
-  const BlockPicker = ({ selected, setSelected }: { selected: string[]; setSelected: (v: string[]) => void }) => (
+  const BlockPicker = ({ selected, setSelected }: { selected: string[]; setSelected: (_v: string[]) => void }) => (
     <div className="max-h-60 overflow-y-auto border rounded p-2 space-y-1">
       {blocks.map(b => (
         <label key={b.blockId} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 p-1 rounded">

@@ -436,7 +436,17 @@
       descriptionCol: '\u0546\u056f\u0561\u0580\u0561\u0563\u0580\u0578\u0582\u0569\u0575\u0578\u0582\u0576',
     },
     // A1.6
-    autoPlan: '🔄 Ջնապլան',
+    subtitle: 'FIFO լոտեր, պահեստի ահազանգներ, ընդունելություն, տեղափոխման և ճառիցում',
+    qtyPlaceholder: 'օր. 100',
+    costPlaceholder: 'օր. 5.50',
+    currencyPlaceholder: 'օր. USD, EUR',
+    exchangeRatePlaceholder: 'օր. 12650',
+    fromLocationPlaceholder: 'օր. RECEIVING',
+    toLocationPlaceholder: 'օր. PRODUCTION',
+    itemNamePlaceholder: 'օր. Ցտավարի ալյուր',
+    uomPlaceholder: 'ԿԳ / Հատ / Լ',
+    adjustQtyPlaceholder: 'օր. -5 կամ +10',
+        autoPlan: '🔄 Ջնապլան',
     autoPlanCreated: 'Արտադրական պլանը ստեղծվեց։',
   },
 
@@ -519,6 +529,13 @@
     },
     confirmApprove: '\u054e\u0561\u057e\u0565\u0580\u0561\u0581\u0576\u0565\u055e\u056c \u0561\u0575\u057d \u057a\u056c\u0561\u0576\u0568\u055e',
     yieldPlaceholder: '\u053c\u0580\u0561\u0581\u0576\u0565\u056c \u0562\u0565\u0580\u0584\u0568',
+    notesPlaceholder: '\u0531\u0580\u057f\u0561\u0564\u0580\u0561\u056f\u0561\u0576 \u0569\u056b\u0574\u056b \u0570\u0561\u0574\u0561\u0580 \u0581\u0578\u0582\u0581\u0578\u0582\u0574\u0576\u0565\u0580 (\u0578\u0579 \u057a\u0561\u0580\u057f\u0561\u0564\u056b\u0580)',
+    workOrderCount: '{count} \u0561\u0577\u056d\u0561\u057f\u0561\u0576\u0584\u0561\u0575\u056b\u0576 \u057a\u0561\u057f\u057e\u0565\u0580',
+    shifts: {
+      MORNING: '\u0531\u057c\u0561\u057e\u0578\u057f',
+      AFTERNOON: '\u0551\u0565\u0580\u0565\u056f\u0578\u0575\u0561\u0576',
+      NIGHT: '\u0533\u056b\u0577\u0565\u0580\u0561\u0575\u056b\u0576',
+    },
   },
 
   reports: {
@@ -1157,6 +1174,34 @@
     description: '\u0537\u057b\u0568, \u0578\u0580 \u0564\u0578\u0582\u0584 \u0583\u0576\u057f\u0580\u0578\u0582\u0574 \u0565\u0584, \u0563\u0578\u0575\u0578\u0582\u0569\u0575\u0578\u0582\u0576 \u0579\u0578\u0582\u0576\u056b \u056f\u0561\u0574 \u057f\u0565\u0572\u0561\u0583\u0578\u056d\u057e\u0565\u056c \u0567\u0589',
     backToDashboard: '\u054e\u0565\u0580\u0561\u0564\u0561\u057c\u0576\u0561\u056c \u057e\u0561\u0570\u0561\u0576\u0561\u056f',
     openCatalog: '\u0532\u0561\u0581\u0565\u056c \u056f\u0561\u057f\u0561\u056c\u0578\u0563\u0568',
+  },
+
+  // ── Analytics ──────────────────────────────────────────────────────────────────────────
+  analytics: {
+    subtitle: 'Հիմնական կատարողական ցուցանիշներ և բիզնես վերլուծություն',
+    financialOverview: 'Ֆինանսական ակնարկ',
+    revenueMonth: 'Եկամուտ (ամիս)',
+    grossMargin: 'Համախառն մարժա',
+    avgOrderValue: 'Միջին պատվերի արժեք',
+    overdueInvoices: 'Ժամկետանց հաշիվներ',
+    customerInsights: 'Հաճախորդի վերլուծություն',
+    activeCustomers: 'Ակտիվ հաճախորդներ',
+    orderFrequency: 'Պատվերի հաճախականություն',
+    customerLtv: 'Հաճախորդի LTV',
+    disputeRate: 'Վիճարկների տոկոս',
+    operations: 'Գործարկություն',
+    productionEfficiency: 'Արտադրական արդյունավետություն',
+    stockTurnover: 'Պահեստի շրջանառություն',
+    deliveryRate: 'Առաքման տոկոս',
+    todayOrders: 'Այսօրվա պատվերներ',
+    topProductsRevenue: 'Լավագույն արտադրանքներ — Եկամուտ',
+    topProductsDistribution: 'Լավագույն արտադրանքներ — Բաշխում',
+    topProducts: 'Լավագույն արտադրանքներ',
+    productCol: 'Արտադրանք',
+    qtySold: 'Վաճառված քանակ',
+    revenueCol: 'Եկամուտ',
+    ordersCol: 'Պատվերներ',
+    noProductData: 'Արտադրանքի տվյալներ չկան',
   },
 
   language: {

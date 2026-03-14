@@ -77,7 +77,7 @@ export default function MyOrdersPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [timeline, setTimeline] = useState<TimelineEntry[]>([]);
   const [timelineLoading, setTimelineLoading] = useState(false);
-  const [customer, setCustomer] = useState<CustomerInfo | null>(null);
+  const [, setCustomer] = useState<CustomerInfo | null>(null);
 
   const fetchOrders = useCallback(async () => {
     const c = getCustomerInfo();
@@ -118,18 +118,6 @@ export default function MyOrdersPage() {
       if (res.ok) setTimeline(await res.json());
     } catch { /* ignore */ }
     finally { setTimelineLoading(false); }
-  };
-
-  const handleReorder = (order: Order) => {
-    const items = order.lines.map(l => ({
-      productId: '', // won't have productId from order lines — user can adjust in checkout
-      name: l.productName,
-      saleUnit: 'PC',
-      price: l.unitPrice,
-      qty: l.qty,
-    }));
-    sessionStorage.setItem('bc_cart', JSON.stringify(items));
-    router.push('/customer/checkout');
   };
 
   const completedStatuses = new Set(timeline.map(t => t.status));

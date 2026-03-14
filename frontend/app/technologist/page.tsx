@@ -1,8 +1,8 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
-import { Spinner, Badge, Alert, PageSkeleton } from '@/components/ui';
-import { SectionTitle, SelectField } from '@/components/design-system';
+import { Badge, Alert, PageSkeleton } from '@/components/ui';
+import { SectionTitle } from '@/components/design-system';
 import Link from 'next/link';
 import { useT } from '@/lib/i18n';
 

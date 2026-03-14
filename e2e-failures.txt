@@ -1,0 +1,6 @@
+26) [chromium] e2e\tests\suppliers.spec.ts:17:7 Suppliers a
+27) [chromium] e2e\tests\suppliers.spec.ts:25:7 Suppliers s
+28) [chromium] e2e\tests\suppliers.spec.ts:36:7 Suppliers g
+29) [chromium] e2e\tests\suppliers.spec.ts:47:7 Suppliers i
+30) [chromium] e2e\tests\suppliers.spec.ts:59:7 Suppliers s
+31) [chromium] e2e\tests\suppliers.spec.ts:70:7 Suppliers a

@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
-import { Spinner, PageSkeleton } from '@/components/ui';
+import { PageSkeleton } from '@/components/ui';
 import { SectionTitle, StatCard, Card, Table, Button } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
 import {
@@ -82,96 +82,104 @@ export default function AnalyticsPage() {
       <SectionTitle
         eyebrow="D1"
         title={t('nav.analytics')}
-        subtitle="Key performance indicators and business insights"
+        subtitle={t('analytics.subtitle')}
         action={
           <Button variant="secondary" onClick={load}>
-            <RefreshCw className="w-4 h-4 mr-1" /> Refresh
+            <RefreshCw className="w-4 h-4 mr-1" /> {t('common.refresh')}
           </Button>
         }
       />
 
       {/* ── Revenue & Financial KPIs ──────────────────────────────────────── */}
-      <Card title="Financial Overview">
+      <Card title={t('analytics.financialOverview')}>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard
             icon={DollarSign}
-            label="Revenue (Month)"
-            value={revenue.month != null ? `${Number(revenue.month).toLocaleString()} ${revenue.currency || ''}` : '—'}
+            label={t('analytics.revenueMonth')}
+            value={
+              revenue.month !== null && revenue.month !== undefined
+                ? `${Number(revenue.month).toLocaleString()} ${revenue.currency || ''}`
+                : '—'
+            }
           />
           <StatCard
             icon={TrendingUp}
-            label="Gross Margin"
+            label={t('analytics.grossMargin')}
             value={`${kpiValue('gross_margin_pct')}%`}
           />
           <StatCard
             icon={ShoppingCart}
-            label="Avg Order Value"
+            label={t('analytics.avgOrderValue')}
             value={kpiValue('avg_order_value')}
           />
           <StatCard
             icon={AlertTriangle}
-            label="Overdue Invoices"
+            label={t('analytics.overdueInvoices')}
             value={kpiValue('overdue_invoices')}
           />
         </div>
       </Card>
 
       {/* ── Customer Insights ─────────────────────────────────────────────── */}
-      <Card title="Customer Insights">
+      <Card title={t('analytics.customerInsights')}>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard
             icon={Users}
-            label="Active Customers"
+            label={t('analytics.activeCustomers')}
             value={kpiValue('active_customers')}
           />
           <StatCard
             icon={ShoppingCart}
-            label="Order Frequency"
+            label={t('analytics.orderFrequency')}
             value={`${kpiValue('order_frequency')}x`}
           />
           <StatCard
             icon={DollarSign}
-            label="Customer LTV"
+            label={t('analytics.customerLtv')}
             value={kpiValue('customer_lifetime_value')}
           />
           <StatCard
             icon={AlertTriangle}
-            label="Dispute Rate"
+            label={t('analytics.disputeRate')}
             value={`${kpiValue('disputed_invoice_rate')}%`}
           />
         </div>
       </Card>
 
       {/* ── Operations ────────────────────────────────────────────────────── */}
-      <Card title="Operations">
+      <Card title={t('analytics.operations')}>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard
             icon={BarChart3}
-            label="Production Efficiency"
+            label={t('analytics.productionEfficiency')}
             value={`${kpiValue('production_efficiency')}%`}
           />
           <StatCard
             icon={Package}
-            label="Stock Turnover"
+            label={t('analytics.stockTurnover')}
             value={`${kpiValue('stock_turnover')}x`}
           />
           <StatCard
             icon={TrendingUp}
-            label="Delivery Rate"
+            label={t('analytics.deliveryRate')}
             value={`${kpiValue('delivery_completion_rate')}%`}
           />
           <StatCard
             icon={ShoppingCart}
-            label="Today Orders"
+            label={t('analytics.todayOrders')}
             value={String(ordersSummary.todayCount ?? '—')}
-            hint={ordersSummary.todayValue != null ? `Value: ${Number(ordersSummary.todayValue).toLocaleString()}` : undefined}
+            hint={
+              ordersSummary.todayValue !== null && ordersSummary.todayValue !== undefined
+                ? `Value: ${Number(ordersSummary.todayValue).toLocaleString()}`
+                : undefined
+            }
           />
         </div>
       </Card>
 
       {/* ── Top Products Chart ─────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card title="Top Products — Revenue">
+        <Card title={t('analytics.topProductsRevenue')}>
           {topProducts.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={topProducts.slice(0, 8).map((p) => ({
@@ -186,10 +194,10 @@ export default function AnalyticsPage() {
                 <Bar dataKey="revenue" fill="#3b82f6" name="Revenue" radius={[4,4,0,0]} />
               </BarChart>
             </ResponsiveContainer>
-          ) : <p className="text-gray-400 text-sm py-8 text-center">No data</p>}
+          ) : <p className="text-gray-400 text-sm py-8 text-center">{t('common.noData')}</p>}
         </Card>
 
-        <Card title="Top Products — Distribution">
+        <Card title={t('analytics.topProductsDistribution')}>
           {topProducts.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -209,21 +217,21 @@ export default function AnalyticsPage() {
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
-          ) : <p className="text-gray-400 text-sm py-8 text-center">No data</p>}
+          ) : <p className="text-gray-400 text-sm py-8 text-center">{t('common.noData')}</p>}
         </Card>
       </div>
 
       {/* ── Top Products Table ────────────────────────────────────────────── */}
-      <Card title="Top Products">
+      <Card title={t('analytics.topProducts')}>
         <Table
-          cols={['Product', 'Qty Sold', 'Revenue', 'Orders']}
+          cols={[t('analytics.productCol'), t('analytics.qtySold'), t('analytics.revenueCol'), t('analytics.ordersCol')]}
           rows={topProducts.map((p) => [
             String(p.name || p.productName || ''),
             String(p.totalQty ?? 0),
             Number(p.totalRevenue ?? 0).toLocaleString(),
             String(p.orderCount ?? 0),
           ])}
-          empty="No product data"
+          empty={t('analytics.noProductData')}
         />
       </Card>
     </div>

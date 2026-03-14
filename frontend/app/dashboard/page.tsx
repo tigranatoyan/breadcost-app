@@ -1,11 +1,11 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
-import { Spinner, PageSkeleton } from '@/components/ui';
+import { PageSkeleton } from '@/components/ui';
 import { Badge, Card, StatCard, Progress, Button, SectionTitle } from '@/components/design-system';
 import { CircleDollarSign, ShoppingCart, Factory, Warehouse, AlertTriangle, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
-import { useT } from '@/lib/i18n';
+import { useI18n } from '@/lib/i18n';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 function msUntil(iso: string): number {
@@ -26,9 +26,9 @@ function fmtDuration(ms: number): { label: string; urgent: boolean; overdue: boo
 }
 
 function fmtMoney(n: number): string {
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `$${(n / 1_000).toFixed(1)}K`;
-  return `$${n.toFixed(0)}`;
+  if (n >= 1_000_000) return `֏${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `֏${(n / 1_000).toFixed(1)}K`;
+  return `֏${n.toFixed(0)}`;
 }
 
 // ─── interfaces ───────────────────────────────────────────────────────────────
@@ -105,7 +105,7 @@ interface StatCardData {
 }
 
 // ─── sub-components ───────────────────────────────────────────────────────────
-function KpiCard({ label, value, sub, href, icon: Icon, accent }: StatCardData) {
+function KpiCard({ label, value, sub, href, icon: Icon }: StatCardData) {
   return (
     <Link href={href} className="block hover:shadow-md transition-shadow rounded-2xl">
       <StatCard icon={Icon} label={label} value={value} hint={sub} />
@@ -119,10 +119,10 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 // ─── main component ───────────────────────────────────────────────────────────
 export default function DashboardPage() {
-  const t = useT();
+  const { t, locale } = useI18n();
   const [loading, setLoading] = useState(true);
   const [deptCount, setDeptCount] = useState(0);
-  const [productCount, setProductCount] = useState(0);
+  const [, setProductCount] = useState(0);
   const [orders, setOrders] = useState<Order[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [positions, setPositions] = useState<StockPosition[]>([]);
@@ -273,7 +273,7 @@ export default function DashboardPage() {
       <SectionTitle
         eyebrow={t('dashboard.overview') ?? 'Overview'}
         title={t('dashboard.title')}
-        subtitle={new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+        subtitle={new Date().toLocaleDateString(locale === 'hy' ? 'hy-AM' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
         action={<Button variant="secondary" size="sm" onClick={load}><RefreshCw className="h-4 w-4" /> {t('dashboard.refresh')}</Button>}
       />
 
@@ -337,7 +337,7 @@ export default function DashboardPage() {
                 const done = p.workOrders?.filter((w) => w.status === 'COMPLETED').length ?? 0;
                 return (
                   <div key={p.planId} className="flex items-center justify-between py-1.5 text-xs">
-                    <span className="font-medium">{p.planDate} · {p.shift}</span>
+                    <span className="font-medium">{p.planDate} · {t(`productionPlans.shifts.${p.shift}` as any) || p.shift}</span>
                     <div className="flex items-center gap-2">
                       <span className="text-gray-500">{done}/{wos} WOs</span>
                       <Badge status={p.status} />
@@ -482,7 +482,7 @@ export default function DashboardPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <SectionLabel>{t('dashboard.productionFloor')}</SectionLabel>
-          <Link href="/production-plans" className="text-xs text-blue-600 hover:underline">{t('common.viewAll')}</Link>
+          <Link href="/floor" className="text-xs text-blue-600 hover:underline">{t('common.viewAll')}</Link>
         </div>
         {floorPlans.length === 0 ? (
           <Card>
@@ -499,7 +499,7 @@ export default function DashboardPage() {
                 <Card key={p.planId} className="p-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-semibold">{p.planDate}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${shiftColor[p.shift] ?? 'bg-gray-100 text-gray-700'}`}>{p.shift}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${shiftColor[p.shift] ?? 'bg-gray-100 text-gray-700'}`}>{t(`productionPlans.shifts.${p.shift}` as any) || p.shift}</span>
                   </div>
                   <div className="text-xs text-gray-500 mb-3">{t('dashboard.workOrdersComplete', { done: String(done), total: String(total), inProgress: String(inProg) })}</div>
                   <Progress value={pct} />

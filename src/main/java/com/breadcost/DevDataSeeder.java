@@ -41,6 +41,9 @@ public class DevDataSeeder implements CommandLineRunner {
         reportService.seedKpiBlocks();
         subscriptionService.seedTiers();
 
+        // Ensure demo tenant has ENTERPRISE tier for all features (idempotent)
+        subscriptionService.assignTier(TENANT, "ENTERPRISE", "system", java.time.LocalDate.now(), null);
+
         if (userRepository.findByUsername("admin").isPresent()) {
             log.info("Seed data already exists — skipping");
             return;

@@ -162,7 +162,10 @@ export default function AdminPage() {
     if (!config) return;
     setCfgForm({
       orderCutoffTime: config.orderCutoffTime ?? '',
-      rushOrderPremiumPct: config.rushOrderPremiumPct != null ? String(config.rushOrderPremiumPct) : '',
+      rushOrderPremiumPct:
+        config.rushOrderPremiumPct !== null && config.rushOrderPremiumPct !== undefined
+          ? String(config.rushOrderPremiumPct)
+          : '',
       mainCurrency: config.mainCurrency ?? '',
     });
     setEditingConfig(true);
@@ -387,7 +390,13 @@ export default function AdminPage() {
                 <div className="bg-white border rounded-xl shadow-sm divide-y text-sm">
                   {[
                     { label: t('admin.orderCutoffTime'), value: config.orderCutoffTime ?? '—' },
-                    { label: t('admin.rushOrderPremium'), value: config.rushOrderPremiumPct != null ? `${config.rushOrderPremiumPct}%` : '—' },
+                    {
+                      label: t('admin.rushOrderPremium'),
+                      value:
+                        config.rushOrderPremiumPct !== null && config.rushOrderPremiumPct !== undefined
+                          ? `${config.rushOrderPremiumPct}%`
+                          : '—',
+                    },
                     { label: t('admin.mainCurrency'), value: config.mainCurrency ?? '—' },
                   ].map(({ label, value }) => (
                     <div key={label} className="flex items-center px-4 py-2.5">

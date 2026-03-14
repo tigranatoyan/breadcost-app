@@ -2,8 +2,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
-import { Table, Spinner, Alert, Badge, Success } from '@/components/ui';
-import { SectionTitle, Button, Card } from '@/components/design-system';
+import { Spinner, Alert, Badge, Success } from '@/components/ui';
+import { SectionTitle, Button } from '@/components/design-system';
 import { DollarSign, AlertTriangle, Check, X, ArrowUp, ArrowDown } from 'lucide-react';
 
 /* ── types ─────────────────────────────────────────────── */

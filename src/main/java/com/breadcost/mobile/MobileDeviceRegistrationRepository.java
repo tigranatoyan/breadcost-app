@@ -8,4 +8,5 @@ public interface MobileDeviceRegistrationRepository extends JpaRepository<Mobile
     List<MobileDeviceRegistrationEntity> findByTenantIdAndCustomerIdAndActiveTrue(String tenantId, String customerId);
     Optional<MobileDeviceRegistrationEntity> findByTenantIdAndDeviceToken(String tenantId, String deviceToken);
     List<MobileDeviceRegistrationEntity> findByTenantIdAndCustomerId(String tenantId, String customerId);
+    List<MobileDeviceRegistrationEntity> findByTenantId(String tenantId);
 }

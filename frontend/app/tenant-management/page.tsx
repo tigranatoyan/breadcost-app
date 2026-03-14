@@ -1,10 +1,9 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
-import { useT } from '@/lib/i18n';
-import { Spinner, Alert, Success, Modal } from '@/components/ui';
+import { Spinner, Alert, Success } from '@/components/ui';
 import { SectionTitle, Button, Card, StatCard, Table } from '@/components/design-system';
-import { Building2, Users, ShoppingCart, Download, Palette, Globe } from 'lucide-react';
+import { Building2, Users, ShoppingCart, Download, Globe } from 'lucide-react';
 
 /* ── Types ─────────────────────────────────────────────── */
 interface OnboardingRequest {
@@ -46,7 +45,6 @@ interface Branding {
 }
 
 export default function TenantManagementPage() {
-  const t = useT();
   const [tab, setTab] = useState<'overview' | 'onboarding' | 'branding' | 'export'>('overview');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');

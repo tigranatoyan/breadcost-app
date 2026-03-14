@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
-import { Modal, Table, Spinner, Alert, Badge, Field, Success, PageSkeleton } from '@/components/ui';
+import { Modal, Table, Alert, Badge, Field, Success, PageSkeleton } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
 import { Plus } from 'lucide-react';
@@ -90,8 +90,8 @@ export default function ProductsPage() {
       departmentId: p.departmentId,
       saleUnit: p.saleUnit,
       baseUom: p.baseUom,
-      price: p.price != null ? String(p.price) : '',
-      vatRatePct: p.vatRatePct != null ? String(p.vatRatePct) : '0',
+      price: p.price !== null && p.price !== undefined ? String(p.price) : '',
+      vatRatePct: p.vatRatePct !== null && p.vatRatePct !== undefined ? String(p.vatRatePct) : '0',
       status: p.status ?? 'ACTIVE',
     });
   };
@@ -173,14 +173,14 @@ export default function ProductsPage() {
         <Table
           cols={[t('products.cols.name'), t('products.cols.department'), t('products.cols.saleUnit'), t('products.cols.baseUom'), t('products.cols.price'), t('products.cols.vat'), t('products.cols.status'), t('common.actions')]}
           rows={filtered.map((p) => [
-            <span className="font-medium">{p.name}</span>,
+            <span key={`name-${p.productId}`} className="font-medium">{p.name}</span>,
             p.departmentName ?? depts.find((d) => d.departmentId === p.departmentId)?.name ?? p.departmentId,
             p.saleUnit,
             p.baseUom,
-            p.price != null ? p.price.toLocaleString() : '—',
-            p.vatRatePct != null ? `${p.vatRatePct}%` : '—',
-            <Badge status={p.status ?? 'ACTIVE'} />,
-            <button className="text-xs text-blue-600 hover:underline" onClick={() => openEditProduct(p)}>{t('common.edit')}</button>,
+            p.price !== null && p.price !== undefined ? p.price.toLocaleString() : '—',
+            p.vatRatePct !== null && p.vatRatePct !== undefined ? `${p.vatRatePct}%` : '—',
+            <Badge key={`status-${p.productId}`} status={p.status ?? 'ACTIVE'} />,
+            <button key={`edit-${p.productId}`} className="text-xs text-blue-600 hover:underline" onClick={() => openEditProduct(p)}>{t('common.edit')}</button>,
           ])}
           empty={t('products.noProducts')}
         />

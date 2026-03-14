@@ -185,10 +185,10 @@ export default function LoyaltyPage() {
               rows={tiers.map(ti => [
                 ti.name,
                 ti.minPoints.toString(),
-                ti.discountPercent != null ? `${ti.discountPercent}%` : '—',
+                ti.discountPercent !== null && ti.discountPercent !== undefined ? `${ti.discountPercent}%` : '—',
                 ti.perks || '—',
                 <div key={ti.tierId} className="flex gap-1">
-                  <Button variant="secondary" size="xs" onClick={() => { setEditTier(ti); setEditTierForm({ name: ti.name, minPoints: String(ti.minPoints), discountPercent: ti.discountPercent != null ? String(ti.discountPercent) : '', perks: ti.perks || '' }); }}>{t('common.edit')}</Button>
+                  <Button variant="secondary" size="xs" onClick={() => { setEditTier(ti); setEditTierForm({ name: ti.name, minPoints: String(ti.minPoints), discountPercent: ti.discountPercent !== null && ti.discountPercent !== undefined ? String(ti.discountPercent) : '', perks: ti.perks || '' }); }}>{t('common.edit')}</Button>
                   <Button variant="danger" size="xs" onClick={() => deleteTier(ti.tierId)}>{t('common.delete')}</Button>
                 </div>,
               ])}

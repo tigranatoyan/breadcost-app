@@ -1,8 +1,8 @@
 'use client';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
-import { Modal, Spinner, Alert, Badge, Field, PageSkeleton, Pagination, useToast } from '@/components/ui';
-import { SectionTitle, Button, InputField, SelectField, Table } from '@/components/design-system';
+import { Modal, Alert, Badge, Field, PageSkeleton, Pagination, useToast } from '@/components/ui';
+import { SectionTitle, Button, InputField, SelectField } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
 import { Plus, Calendar, ChevronUp, ChevronDown } from 'lucide-react';
 

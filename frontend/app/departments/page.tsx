@@ -115,11 +115,11 @@ export default function DepartmentsPage() {
         <Table
           cols={[t('departments.cols.name'), t('departments.cols.leadTime'), t('departments.cols.warehouseMode'), t('departments.cols.status'), t('common.actions')]}
           rows={depts.map((d) => [
-            <span className="font-medium">{d.name}</span>,
+            <span key={`name-${d.departmentId}`} className="font-medium">{d.name}</span>,
             `${d.leadTimeHours} hrs`,
             d.warehouseMode,
-            <Badge status={d.status ?? 'ACTIVE'} />,
-            <button className="text-xs text-blue-600 hover:underline" onClick={() => openEdit(d)}>{t('common.edit')}</button>,
+            <Badge key={`status-${d.departmentId}`} status={d.status ?? 'ACTIVE'} />,
+            <button key={`edit-${d.departmentId}`} className="text-xs text-blue-600 hover:underline" onClick={() => openEdit(d)}>{t('common.edit')}</button>,
           ])}
           empty={t('departments.noDepartments')}
         />

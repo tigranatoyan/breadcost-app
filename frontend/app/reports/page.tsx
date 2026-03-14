@@ -82,22 +82,6 @@ interface Dept {
   name: string;
 }
 
-interface RecipeIngredient {
-  itemName: string;
-  recipeQty: number;
-  recipeUom: string;
-  wasteFactor: number;
-}
-
-interface BatchCostEntry {
-  planId: string;
-  planDate: string;
-  productName: string;
-  batchCount: number;
-  materialCost: number;
-  costPerBatch: number;
-}
-
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
 function fmt2(n: number) {

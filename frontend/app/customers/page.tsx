@@ -83,7 +83,7 @@ export default function CustomersPage() {
   const loadOrders = useCallback(async () => {
     try {
       setOrdersLoading(true);
-      const data = await apiFetch<CustomerOrder[]>(`/v2/orders?tenantId=${TENANT_ID}`);
+      const data = await apiFetch<CustomerOrder[]>(`/v1/orders?tenantId=${TENANT_ID}`);
       setOrders(data);
     } catch (e) { setError(String(e)); } finally { setOrdersLoading(false); }
   }, []);
@@ -185,7 +185,7 @@ export default function CustomersPage() {
               rows={catalog.map(p => [
                 p.name,
                 p.description || '—',
-                p.price != null ? `${p.price.toFixed(2)} ${p.currency || ''}` : '—',
+                p.price !== null && p.price !== undefined ? `${p.price.toFixed(2)} ${p.currency || ''}` : '—',
                 p.unit || '—',
                 p.category || '—',
               ])}
@@ -208,7 +208,7 @@ export default function CustomersPage() {
                 <button key={o.orderId} className="text-blue-600 underline text-sm" onClick={() => openOrderDetail(o.orderId)}>{o.orderId.slice(0, 8)}</button>,
                 o.customerId.slice(0, 8),
                 <Badge key={`s-${o.orderId}`} status={o.status} />,
-                o.totalAmount != null ? `${o.totalAmount.toFixed(2)} ${o.currency || ''}` : '—',
+                o.totalAmount !== null && o.totalAmount !== undefined ? `${o.totalAmount.toFixed(2)} ${o.currency || ''}` : '—',
                 o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '—',
               ])}
               empty={t('customers.noOrders')}

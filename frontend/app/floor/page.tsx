@@ -98,7 +98,7 @@ function WOPanel({
   techSteps: TechnologyStep[];
   stepsLoading: boolean;
   onClose: () => void;
-  onAction: (planId: string, woId: string, action: string, body?: Record<string, unknown>) => void;
+  onAction: (_planId: string, _woId: string, _action: string, _body?: Record<string, unknown>) => void;
   actionBusy: boolean;
 }) {
   const t = useT();
@@ -110,12 +110,6 @@ function WOPanel({
   const [wasteQty, setWasteQty] = useState('');
   const [qualityScore, setQualityScore] = useState('');
   const [qualityNotes, setQualityNotes] = useState('');
-
-  // Update confirmed map when steps arrive
-  useEffect(() => {
-    setConfirmed(getConfirmed(wo.workOrderId, techSteps));
-    if (techSteps.length > 0) setTab('steps');
-  }, [wo.workOrderId, techSteps]);
 
   const toggleStep = (stepNum: number) => {
     const next = !confirmed[stepNum];
@@ -230,7 +224,7 @@ function WOPanel({
                                   <Clock3 className="h-3.5 w-3.5" /> {step.durationMinutes} min
                                 </span>
                               )}
-                              {step.temperatureCelsius != null && (
+                              {step.temperatureCelsius !== null && step.temperatureCelsius !== undefined && (
                                 <span className="flex items-center gap-1">
                                   <Thermometer className="h-3.5 w-3.5" /> {step.temperatureCelsius}°C
                                 </span>
@@ -597,6 +591,7 @@ export default function FloorPage() {
       {/* Work Order Detail Panel */}
       {selectedWo && (
         <WOPanel
+          key={`${selectedWo.wo.workOrderId}:${techSteps.map((step) => step.stepId).join(',')}`}
           wo={selectedWo.wo}
           planId={selectedWo.planId}
           recipe={recipe}

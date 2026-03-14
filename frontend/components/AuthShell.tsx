@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { isLoggedIn, getUsername, getRole, getUserInfo, clearCredentials, type Role } from '@/lib/auth';
 import { useI18n, type Locale } from '@/lib/i18n';
-import { apiFetch, TENANT_ID } from '@/lib/api';
+import { apiFetch } from '@/lib/api';
 import {
   LayoutDashboard, ShoppingCart, CreditCard, Factory, HardHat, BookOpen,
   Package, Building2, Warehouse, BarChart3, Settings, MessageCircle,
@@ -127,11 +127,11 @@ const SECTIONS: NavSection[] = [
   {
     titleKey: 'nav.platform',
     items: [
-      { href: '/notification-templates', labelKey: 'nav.notificationTemplates', icon: Bell },
-      { href: '/subscriptions', labelKey: 'nav.subscriptions', icon: Crown },
-      { href: '/exchange-rates', labelKey: 'nav.exchangeRates', icon: ArrowLeftRight },
-      { href: '/mobile-admin', labelKey: 'nav.mobileAdmin', icon: Smartphone },
-      { href: '/tenant-management', labelKey: 'nav.tenantManagement', icon: Building2 },
+      { href: '/notification-templates', labelKey: 'nav.notificationTemplates', icon: Bell, featureKey: 'SUBSCRIPTIONS' },
+      { href: '/subscriptions', labelKey: 'nav.subscriptions', icon: Crown, featureKey: 'SUBSCRIPTIONS' },
+      { href: '/exchange-rates', labelKey: 'nav.exchangeRates', icon: ArrowLeftRight, featureKey: 'SUBSCRIPTIONS' },
+      { href: '/mobile-admin', labelKey: 'nav.mobileAdmin', icon: Smartphone, featureKey: 'SUBSCRIPTIONS' },
+      { href: '/tenant-management', labelKey: 'nav.tenantManagement', icon: Building2, featureKey: 'SUBSCRIPTIONS' },
     ],
     roles: ['admin'],
   },
@@ -165,49 +165,46 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { t, locale, setLocale } = useI18n();
-  const [checked, setChecked] = useState(false);
-  const [user, setUser] = useState('');
-  const [role, setRole] = useState<Role>('viewer');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [features, setFeatures] = useState<string[]>([]);
+  const isCustomerRoute = pathname.startsWith('/customer/')  || pathname === '/customer';
+  const isLoginRoute = pathname === '/login';
+  const authenticated = isLoggedIn();
+  const user = authenticated ? getUsername() : '';
+  const role: Role = authenticated ? getRole() : 'viewer';
 
   useEffect(() => {
-    if (pathname.startsWith('/customer')) return; // customer portal has its own auth
-    if (!isLoggedIn() && pathname !== '/login') {
+    if (isCustomerRoute) return; // customer portal has its own auth
+    if (!authenticated && !isLoginRoute) {
       router.replace('/login');
-    } else {
-      const u = getUsername();
-      const r = getRole();
-      setUser(u);
-      setRole(r);
-      setChecked(true);
-      // Fetch subscription features for nav gating
-      apiFetch<{ features?: string[] }>('/v2/tenant/features')
-        .then((data) => setFeatures(data.features ?? []))
-        .catch(() => setFeatures([]));
-      const defaultRoute = ROLE_DEFAULT[r];
-      if (defaultRoute && (pathname === '/' || pathname === '/dashboard')) {
-        router.replace(defaultRoute);
-      }
+      return;
     }
-  }, [pathname, router]);
+    if (!authenticated) {
+      return;
+    }
 
-  // Close sidebar on navigation (mobile)
-  useEffect(() => {
-    setSidebarOpen(false);
-  }, [pathname]);
+    apiFetch<{ features?: string[] }>('/v2/tenant/features')
+      .then((data) => setFeatures(data.features ?? []))
+      .catch(() => setFeatures([]));
 
-  if (!checked && pathname !== '/login' && !pathname.startsWith('/customer')) {
+    const defaultRoute = ROLE_DEFAULT[role];
+    if (defaultRoute && (pathname === '/' || pathname === '/dashboard')) {
+      router.replace(defaultRoute);
+    }
+  }, [authenticated, isCustomerRoute, isLoginRoute, pathname, role, router]);
+
+  if (!authenticated && !isLoginRoute && !isCustomerRoute) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
-  if (pathname === '/login' || pathname.startsWith('/customer')) return <>{children}</>;
+  if (isLoginRoute || isCustomerRoute) return <>{children}</>;
 
   const logout = () => {
     clearCredentials();
+    setFeatures([]);
     router.push('/login');
   };
 
@@ -254,7 +251,7 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
               {section.items.map((item) => {
                 const active = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'));
                 return (
-                  <Link key={item.href + si} href={item.href} className="block">
+                  <Link key={item.href + si} href={item.href} className="block" onClick={() => setSidebarOpen(false)}>
                     <SidebarItem
                       icon={item.icon}
                       label={t(item.labelKey)}

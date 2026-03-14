@@ -43,7 +43,7 @@ public class MobileAppController {
 
     @GetMapping("/devices")
     public List<MobileDeviceRegistrationEntity> getDevices(@RequestParam String tenantId,
-                                                            @RequestParam String customerId) {
+                                                            @RequestParam(required = false) String customerId) {
         return service.getDevices(tenantId, customerId);
     }
 

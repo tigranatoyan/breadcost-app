@@ -62,25 +62,25 @@ async function loginViaUI(page: Page, creds: UserCredentials): Promise<void> {
 }
 
 type AuthFixtures = {
-  loginAs: (role: keyof typeof users) => Promise<void>;
+  loginAs: (_role: keyof typeof users) => Promise<void>;
   loginAsAdmin: () => Promise<void>;
-  loginAsViaUI: (role: keyof typeof users) => Promise<void>;
+  loginAsViaUI: (_role: keyof typeof users) => Promise<void>;
 };
 
 export const test = base.extend<AuthFixtures>({
-  loginAs: async ({ page }, use) => {
-    await use(async (role: keyof typeof users) => {
+  loginAs: async ({ page }, applyFixture) => {
+    await applyFixture(async (role: keyof typeof users) => {
       await loginViaAPI(page, users[role]);
     });
   },
 
-  loginAsAdmin: async ({ page }, use) => {
+  loginAsAdmin: async ({ page }, applyFixture) => {
     await loginViaAPI(page, users.admin);
-    await use(async () => {});
+    await applyFixture(async () => {});
   },
 
-  loginAsViaUI: async ({ page }, use) => {
-    await use(async (role: keyof typeof users) => {
+  loginAsViaUI: async ({ page }, applyFixture) => {
+    await applyFixture(async (role: keyof typeof users) => {
       await loginViaUI(page, users[role]);
     });
   },

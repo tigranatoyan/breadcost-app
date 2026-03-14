@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { API_BASE, TENANT_ID } from '@/lib/api';
 import { getCustomerToken, getCustomerInfo } from '@/lib/customer-auth';

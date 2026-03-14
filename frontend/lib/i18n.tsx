@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import en from '@/locales/en';
 import hy from '@/locales/hy';
 
@@ -20,7 +20,7 @@ function getNestedValue(obj: unknown, path: string): string {
   const keys = path.split('.');
   let current: unknown = obj;
   for (const key of keys) {
-    if (current == null || typeof current !== 'object') return path;
+    if ((current === null || current === undefined) || typeof current !== 'object') return path;
     current = (current as Record<string, unknown>)[key];
   }
   return typeof current === 'string' ? current : path;
@@ -28,8 +28,8 @@ function getNestedValue(obj: unknown, path: string): string {
 
 interface I18nContextValue {
   locale: Locale;
-  setLocale: (l: Locale) => void;
-  t: (key: string, replacements?: Record<string, string | number>) => string;
+  setLocale: (_l: Locale) => void;
+  t: (_key: string, _replacements?: Record<string, string | number>) => string;
 }
 
 const I18nContext = createContext<I18nContextValue>({
@@ -41,14 +41,11 @@ const I18nContext = createContext<I18nContextValue>({
 const STORAGE_KEY = 'breadcost_locale';
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>('en');
-
-  useEffect(() => {
+  const [locale, setLocaleState] = useState<Locale>(() => {
+    if (typeof window === 'undefined') return 'en';
     const stored = localStorage.getItem(STORAGE_KEY) as Locale | null;
-    if (stored && dictionaries[stored]) {
-      setLocaleState(stored);
-    }
-  }, []);
+    return stored && dictionaries[stored] ? stored : 'en';
+  });
 
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l);

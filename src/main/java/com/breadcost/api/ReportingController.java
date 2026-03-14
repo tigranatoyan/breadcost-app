@@ -103,6 +103,17 @@ public class ReportingController {
         return ResponseEntity.noContent().build();
     }
 
+    /** PUT /v2/reports/{id}?tenantId=... — update a custom report */
+    @SuppressWarnings("unchecked")
+    @PutMapping("/{id}")
+    public CustomReportEntity updateReport(@PathVariable String id,
+                                           @RequestParam String tenantId,
+                                           @RequestBody Map<String, Object> body) {
+        List<String> blocks = (List<String>) body.getOrDefault("blocks", List.of());
+        return reportService.updateReport(tenantId, id,
+                (String) body.get("name"), blocks);
+    }
+
     // ── BC-1603: Run Report / Compute KPI ─────────────────────────────────────
 
     /** GET /v2/reports/{id}/run?tenantId=...&dateFrom=...&dateTo=... */

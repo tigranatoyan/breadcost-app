@@ -4,7 +4,7 @@ import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Modal, Spinner, Alert, Success } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
-import { Bell, Mail, MessageCircle, Smartphone, Edit, Eye, X } from 'lucide-react';
+import { Bell, Mail, MessageCircle, Smartphone, Edit, Eye } from 'lucide-react';
 
 interface Template {
   templateId: string;
@@ -144,7 +144,6 @@ export default function NotificationTemplatesPage() {
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {TYPES.map(type => {
             const tpls = typeMap.get(type) ?? [];
-            const Icon = CHANNEL_ICON[tpls[0]?.channel] ?? Bell;
             return (
               <div key={type} className="rounded-xl border bg-white p-4 shadow-sm">
                 <div className="flex items-start justify-between mb-2">

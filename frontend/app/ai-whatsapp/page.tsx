@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Spinner, Alert, Badge, Success } from '@/components/ui';
-import { SectionTitle, Button, Card, Table } from '@/components/design-system';
+import { SectionTitle, Button, Card } from '@/components/design-system';
 import { Shield, MessageCircle, Bot, User } from 'lucide-react';
 
 /* ── types ─────────────────────────────────────────────── */
@@ -105,8 +105,8 @@ export default function AiWhatsappPage() {
     try {
       setLoading(true);
       const endpoint = tab === 'escalated'
-        ? `/v3/ai/whatsapp/conversations/escalated?tenantId=${TENANT_ID}`
-        : `/v3/ai/whatsapp/conversations?tenantId=${TENANT_ID}`;
+        ? `/v3/ai/conversations/escalated?tenantId=${TENANT_ID}`
+        : `/v3/ai/conversations?tenantId=${TENANT_ID}`;
       const data = await apiFetch<Conversation[]>(endpoint);
       setConversations(data);
     } catch (e) { setError(String(e)); }
@@ -120,8 +120,8 @@ export default function AiWhatsappPage() {
     setDetailLoading(true);
     try {
       const [msgs, drs] = await Promise.all([
-        apiFetch<Message[]>(`/v3/ai/whatsapp/conversations/${conv.id}/messages?tenantId=${TENANT_ID}`),
-        apiFetch<DraftOrder[]>(`/v3/ai/whatsapp/conversations/${conv.id}/drafts?tenantId=${TENANT_ID}`),
+        apiFetch<Message[]>(`/v3/ai/conversations/${conv.id}/messages?tenantId=${TENANT_ID}`),
+        apiFetch<DraftOrder[]>(`/v3/ai/conversations/${conv.id}/drafts?tenantId=${TENANT_ID}`),
       ]);
       setMessages(msgs);
       setDrafts(drs);
@@ -132,7 +132,7 @@ export default function AiWhatsappPage() {
   const resolveEscalation = async (close: boolean) => {
     if (!selected) return;
     try {
-      await apiFetch(`/v3/ai/whatsapp/conversations/${selected.id}/resolve?tenantId=${TENANT_ID}&close=${close}`, { method: 'POST' });
+      await apiFetch(`/v3/ai/conversations/${selected.id}/resolve?tenantId=${TENANT_ID}&close=${close}`, { method: 'POST' });
       setSuccess(t('aiWhatsapp.resolved'));
       setSelected(null);
       loadConversations();

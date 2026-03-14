@@ -279,7 +279,7 @@ public class TenantManagementService {
             summary.put("ordersCount", orderRepo.findByTenantId(tid).size());
             summary.put("customersCount", customerRepo.findByTenantId(tid).size());
 
-            subscriptionRepo.findByTenantId(tid).ifPresent(s -> {
+            subscriptionRepo.findByTenantIdAndActive(tid, true).ifPresent(s -> {
                 summary.put("subscriptionTier", s.getTierLevel());
                 summary.put("subscriptionActive", s.isActive());
             });

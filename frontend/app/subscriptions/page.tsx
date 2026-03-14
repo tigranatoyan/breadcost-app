@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
-import { Modal, Table, Spinner, Alert, Badge, Field, Success } from '@/components/ui';
+import { Modal, Spinner, Alert, Badge, Field, Success } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
 
 /* ── types ─────────────────────────────────────────────── */
@@ -146,7 +146,7 @@ export default function SubscriptionsPage() {
               {tiers.map(ti => (
                 <div key={ti.tierId} className="border rounded-lg p-4 bg-white shadow-sm">
                   <h3 className="text-lg font-bold mb-1">{ti.name}</h3>
-                  {ti.monthlyPrice != null && <p className="text-2xl font-bold text-blue-600 mb-2">{ti.monthlyPrice.toFixed(2)} <span className="text-sm text-gray-500">{ti.currency || ''}/mo</span></p>}
+                  {ti.monthlyPrice !== null && ti.monthlyPrice !== undefined && <p className="text-2xl font-bold text-blue-600 mb-2">{ti.monthlyPrice.toFixed(2)} <span className="text-sm text-gray-500">{ti.currency || ''}/mo</span></p>}
                   {ti.maxUsers && <p className="text-sm text-gray-500 mb-2">{t('subscriptions.maxUsers')}: {ti.maxUsers}</p>}
                   <ul className="space-y-1">
                     {ti.features.map((f, i) => <li key={i} className="text-sm flex items-center gap-1"><span className="text-green-500">✓</span> {f}</li>)}

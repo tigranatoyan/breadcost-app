@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Modal, Spinner, Alert, Field } from '@/components/ui';
 import { Badge, Button, SectionTitle } from '@/components/design-system';
-import { Plus, BookOpen, ChevronDown, ChevronUp, Clock3, Check } from 'lucide-react';
+import { Plus, ChevronDown, ChevronUp, Clock3, Check } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 
 interface Product {
@@ -223,7 +223,10 @@ export default function RecipesPage() {
       activities: step.activities ?? '',
       instruments: step.instruments ?? '',
       durationMinutes: step.durationMinutes ?? 30,
-      temperatureCelsius: step.temperatureCelsius != null ? step.temperatureCelsius : '',
+      temperatureCelsius:
+        step.temperatureCelsius !== null && step.temperatureCelsius !== undefined
+          ? step.temperatureCelsius
+          : '',
     });
     setEditStepId(step.stepId);
     setStepOpen(true);
@@ -612,7 +615,7 @@ export default function RecipesPage() {
                                       <div className="flex gap-3 mt-1 text-gray-400">
                                         {step.instruments && <span>🔧 {step.instruments}</span>}
                                         {step.durationMinutes && <span>⏱ {step.durationMinutes} min</span>}
-                                        {step.temperatureCelsius != null && <span>🌡 {step.temperatureCelsius}°C</span>}
+                                        {step.temperatureCelsius !== null && step.temperatureCelsius !== undefined && <span>🌡 {step.temperatureCelsius}°C</span>}
                                       </div>
                                     </div>
                                     <div className="flex gap-1 flex-shrink-0">
