@@ -75,8 +75,8 @@ export default function CustomersPage() {
   const loadCatalog = useCallback(async () => {
     try {
       setCatLoading(true);
-      const data = await apiFetch<CatalogProduct[]>(`/v2/products?tenantId=${TENANT_ID}`);
-      setCatalog(data);
+      const data = await apiFetch<{ content: CatalogProduct[] }>(`/v2/products?tenantId=${TENANT_ID}`);
+      setCatalog(data.content ?? []);
     } catch (e) { setError(String(e)); } finally { setCatLoading(false); }
   }, []);
 
