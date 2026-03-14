@@ -79,7 +79,7 @@ export default function SuppliersPage() {
   const [catalogSup, setCatalogSup] = useState<Supplier | null>(null);
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const [catLoading, setCatLoading] = useState(false);
-  const [catForm, setCatForm] = useState({ ingredientId: '', ingredientName: '', unitPrice: '', currency: 'UZS', leadTimeDays: '', moq: '', unit: 'kg' });
+  const [catForm, setCatForm] = useState({ ingredientId: '', ingredientName: '', unitPrice: '', currency: 'AMD', leadTimeDays: '', moq: '', unit: 'kg' });
   const [catSaving, setCatSaving] = useState(false);
 
   /* ── PO state ───────────────────────────────────────── */
@@ -209,13 +209,13 @@ export default function SuppliersPage() {
         method: 'POST',
         body: JSON.stringify({ tenantId: TENANT_ID, ...catForm, unitPrice: Number(catForm.unitPrice), leadTimeDays: catForm.leadTimeDays ? Number(catForm.leadTimeDays) : undefined, moq: catForm.moq ? Number(catForm.moq) : undefined }),
       });
-      setCatForm({ ingredientId: '', ingredientName: '', unitPrice: '', currency: 'UZS', leadTimeDays: '', moq: '', unit: 'kg' });
+      setCatForm({ ingredientId: '', ingredientName: '', unitPrice: '', currency: 'AMD', leadTimeDays: '', moq: '', unit: 'kg' });
       openCatalog(catalogSup);
     } catch (e) { setError(String(e)); } finally { setCatSaving(false); }
   };
 
   /* ── PO CRUD ────────────────────────────────────────── */
-  const addPOLine = () => setPoLines([...poLines, { ingredientId: '', ingredientName: '', qty: '', unit: 'kg', unitPrice: '', currency: 'UZS' }]);
+  const addPOLine = () => setPoLines([...poLines, { ingredientId: '', ingredientName: '', qty: '', unit: 'kg', unitPrice: '', currency: 'AMD' }]);
   const removePOLine = (i: number) => setPoLines(poLines.filter((_, idx) => idx !== i));
   const updatePOLine = (i: number, field: string, val: string) => setPoLines(poLines.map((l, idx) => idx === i ? { ...l, [field]: val } : l));
 

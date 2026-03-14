@@ -62,7 +62,7 @@ public class ReportsController {
                 "week", week,
                 "month", month,
                 "allTime", total,
-                "currency", "UZS"
+                "currency", "AMD"
         ));
     }
 

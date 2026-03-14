@@ -29,7 +29,7 @@ public class TenantConfigEntity {
 
     /** ISO 4217 currency code */
     @Builder.Default
-    private String mainCurrency = "UZS";
+    private String mainCurrency = "AMD";
 
     /** Whether the tenant is suspended by platform admin */
     @Builder.Default

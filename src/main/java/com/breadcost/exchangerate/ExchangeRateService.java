@@ -167,7 +167,7 @@ public class ExchangeRateService {
         int total = 0;
         for (TenantConfigEntity config : tenantConfigRepo.findAll()) {
             try {
-                String base = config.getMainCurrency() != null ? config.getMainCurrency() : "UZS";
+                String base = config.getMainCurrency() != null ? config.getMainCurrency() : "AMD";
                 List<ExchangeRateEntity> fetched = fetchRatesFromApi(config.getTenantId(), base, defaultTargets);
                 total += fetched.size();
             } catch (Exception e) {
