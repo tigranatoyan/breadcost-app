@@ -84,7 +84,7 @@ const SECTIONS: NavSection[] = [
     titleKey: 'nav.supplyChain',
     items: [
       { href: '/suppliers', labelKey: 'nav.suppliers', icon: Package, featureKey: 'SUPPLIER' },
-      { href: '/deliveries', labelKey: 'nav.deliveries', icon: Truck, featureKey: 'DELIVERY' },
+      { href: '/deliveries', labelKey: 'nav.deliveries', icon: Truck },
     ],
     roles: ['admin', 'management'],
   },
@@ -121,7 +121,7 @@ const SECTIONS: NavSection[] = [
   },
   {
     titleKey: 'nav.driverSection',
-    items: [{ href: '/driver', labelKey: 'nav.driver', icon: MapPin, featureKey: 'DELIVERY' }],
+    items: [{ href: '/driver', labelKey: 'nav.driver', icon: MapPin }],
     roles: ['admin', 'management'],
   },
   {
