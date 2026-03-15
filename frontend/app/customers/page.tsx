@@ -64,6 +64,7 @@ export default function CustomersPage() {
   const [orderLines, setOrderLines] = useState<{ productId: string; productName: string; qty: string }[]>([]);
   const [orderSaving, setOrderSaving] = useState(false);
   const [orderDetail, setOrderDetail] = useState<CustomerOrder | null>(null);
+  const [selectedCustomerId, setSelectedCustomerId] = useState('');
 
   /* loaders */
   const loadCustomers = useCallback(async () => {
@@ -83,16 +84,17 @@ export default function CustomersPage() {
   }, []);
 
   const loadOrders = useCallback(async () => {
+    if (!selectedCustomerId) { setOrders([]); return; }
     try {
       setOrdersLoading(true);
       const data = await apiFetch<CustomerOrder[]>(`/v1/orders?tenantId=${TENANT_ID}`);
-      setOrders(data);
+      setOrders(data.filter((o: CustomerOrder) => o.customerId === selectedCustomerId));
     } catch (e) { setError(String(e)); } finally { setOrdersLoading(false); }
-  }, []);
+  }, [selectedCustomerId]);
 
   useEffect(() => { loadCustomers(); }, [loadCustomers]);
   useEffect(() => { if (tab === 'catalog') loadCatalog(); }, [tab, loadCatalog]);
-  useEffect(() => { if (tab === 'orders') loadOrders(); }, [tab, loadOrders]);
+  useEffect(() => { if (tab === 'orders') loadOrders(); }, [tab, loadOrders, selectedCustomerId]);
 
   /* register customer */
   const registerCustomer = async (e: React.FormEvent) => {
@@ -200,10 +202,18 @@ export default function CustomersPage() {
       {/* ───────── ORDERS ───────── */}
       {tab === 'orders' && (
         <>
-          <div className="flex justify-end mb-4">
-            <Button variant="primary" size="sm" onClick={() => { setShowCreateOrder(true); addLine(); }}>+ {t('customers.createOrder')}</Button>
+          <div className="flex items-center gap-4 mb-4">
+            <select className="input w-64" value={selectedCustomerId} onChange={e => setSelectedCustomerId(e.target.value)}>
+              <option value="">— {t('customers.selectCustomer')} —</option>
+              {customers.map(c => <option key={c.customerId} value={c.customerId}>{c.name}</option>)}
+            </select>
+            {selectedCustomerId && (
+              <Button variant="primary" size="sm" onClick={() => { setShowCreateOrder(true); setOrderForm({ customerId: selectedCustomerId }); addLine(); }}>+ {t('customers.createOrder')}</Button>
+            )}
           </div>
-          {ordersLoading ? <Spinner /> : (
+          {!selectedCustomerId ? (
+            <p className="text-gray-500 text-sm">{t('customers.selectCustomerHint')}</p>
+          ) : ordersLoading ? <Spinner /> : (
             <Table
               cols={[t('customers.orderId'), t('customers.customer'), t('common.status'), t('customers.total'), t('common.date')]}
               rows={orders.map(o => [

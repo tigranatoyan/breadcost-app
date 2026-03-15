@@ -1093,6 +1093,8 @@ const en = {
     addItem: 'Add Item',
     noOrders: 'No customer orders.',
     orderDetail: 'Order Detail',
+    selectCustomer: 'Select customer',
+    selectCustomerHint: 'Select a customer above to view their orders.',
   },
 
   // ── Subscriptions ──────────────────────────────────────────────────────────
