@@ -8,6 +8,7 @@ import {
   RefreshCw, ShoppingCart, CheckCircle2, Circle,
   Truck, ChefHat, ClipboardCheck,
 } from 'lucide-react';
+import { useDateFmt, useDateTimeFmt } from '@/lib/i18n';
 
 interface OrderLine {
   productName: string;
@@ -61,17 +62,10 @@ const TIMELINE_STEPS = [
   { status: 'DELIVERED', icon: CheckCircle2, label: 'Delivered' },
 ];
 
-function formatDate(iso: string): string {
-  try { return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); }
-  catch { return iso; }
-}
-function formatDateTime(ms: number): string {
-  try { return new Date(ms).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }
-  catch { return String(ms); }
-}
-
 export default function MyOrdersPage() {
   const router = useRouter();
+  const formatDate = useDateFmt();
+  const formatDateTime = useDateTimeFmt();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);

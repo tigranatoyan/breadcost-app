@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, API_BASE, TENANT_ID } from '@/lib/api';
-import { useT } from '@/lib/i18n';
+import { useT, useDateFmt } from '@/lib/i18n';
 import { Modal, Table, Spinner, Alert, Badge, Field, Success, useConfirm } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
 
@@ -60,6 +60,7 @@ interface SupplierApiConfig {
 /* ── page ──────────────────────────────────────────────── */
 export default function SuppliersPage() {
   const t = useT();
+  const fmtDate = useDateFmt();
   const [askConfirm, confirmModal] = useConfirm({ confirmLabel: t('common.confirm'), cancelLabel: t('common.cancel') });
 
   /* tabs */
@@ -383,7 +384,7 @@ export default function SuppliersPage() {
                 po.supplierName || po.supplierId.slice(0, 8),
                 <Badge key={`s-${po.poId}`} status={po.status} />,
                 po.totalAmount !== null && po.totalAmount !== undefined ? `${po.totalAmount.toFixed(2)} ${po.currency || ''}` : '—',
-                po.createdAt ? new Date(po.createdAt).toLocaleDateString() : '—',
+                fmtDate(po.createdAt),
                 <div key={`a-${po.poId}`} className="flex gap-1 flex-wrap">
                   {po.status === 'DRAFT' && <Button variant="primary" size="xs" className="bg-green-600 hover:bg-green-700" onClick={() => approvePO(po.poId)}>{t('suppliers.approve')}</Button>}
                   <Button variant="secondary" size="xs" onClick={() => exportPO(po.poId)}>{t('suppliers.export')}</Button>

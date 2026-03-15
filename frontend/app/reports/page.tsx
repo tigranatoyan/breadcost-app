@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Badge } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
-import { useT } from '@/lib/i18n';
+import { useT, useDateFmt } from '@/lib/i18n';
 import { Download, RefreshCw, Zap } from 'lucide-react';
 
 // ─── types ────────────────────────────────────────────────────────────────────
@@ -135,6 +135,7 @@ function StatBox({ label, value, sub, color = 'text-gray-800' }: { label: string
 
 function OrdersReport({ orders }: { orders: Order[] }) {
   const t = useT();
+  const fmtDate = useDateFmt();
   const total = orders.length;
   const delivered = orders.filter((o) => o.status === 'DELIVERED').length;
   const cancelled = orders.filter((o) => o.status === 'CANCELLED').length;
@@ -255,7 +256,7 @@ function OrdersReport({ orders }: { orders: Order[] }) {
                   </td>
                   <td className="px-4 py-2.5"><Badge status={o.status} /></td>
                   <td className="px-4 py-2.5 text-gray-500 text-xs whitespace-nowrap">
-                    {o.requestedDeliveryTime ? new Date(o.requestedDeliveryTime).toLocaleDateString() : '—'}
+                    {fmtDate(o.requestedDeliveryTime)}
                   </td>
                   <td className="px-4 py-2.5 font-semibold">{fmtMoney(o.totalAmount ?? 0)}</td>
                   <td className="px-4 py-2.5 text-gray-400">{(o.lines ?? []).length}</td>
@@ -581,6 +582,7 @@ type ReportTab = 'orders' | 'inventory' | 'production' | 'revenue' | 'materialCo
 
 export default function ReportsPage() {
   const t = useT();
+  const fmtDate = useDateFmt();
   const [tab, setTab] = useState<ReportTab>('orders');
   const [orders, setOrders] = useState<Order[]>([]);
   const [positions, setPositions] = useState<StockPosition[]>([]);
@@ -645,7 +647,7 @@ export default function ReportsPage() {
       ['Order ID', 'Customer', 'Status', 'Delivery Date', 'Amount', 'Lines', 'Rush'],
       filteredOrders.map((o) => [
         o.orderId, o.customerName, o.status,
-        o.requestedDeliveryTime ? new Date(o.requestedDeliveryTime).toLocaleDateString() : '',
+        o.requestedDeliveryTime ? fmtDate(o.requestedDeliveryTime) : '',
         String(o.totalAmount ?? 0), String((o.lines ?? []).length),
         (o.rushOrder || o.isRushOrder) ? 'Yes' : 'No',
       ])

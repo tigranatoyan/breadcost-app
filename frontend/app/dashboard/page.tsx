@@ -5,7 +5,7 @@ import { PageSkeleton } from '@/components/ui';
 import { Badge, Card, StatCard, Progress, Button, SectionTitle } from '@/components/design-system';
 import { CircleDollarSign, ShoppingCart, Factory, Warehouse, AlertTriangle, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
-import { useI18n } from '@/lib/i18n';
+import { useI18n, useDateTimeFmt, BCP47 } from '@/lib/i18n';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 function msUntil(iso: string): number {
@@ -120,6 +120,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 // ─── main component ───────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const { t, locale } = useI18n();
+  const fmtDateTime = useDateTimeFmt();
   const [loading, setLoading] = useState(true);
   const [deptCount, setDeptCount] = useState(0);
   const [, setProductCount] = useState(0);
@@ -273,7 +274,7 @@ export default function DashboardPage() {
       <SectionTitle
         eyebrow={t('dashboard.overview') ?? 'Overview'}
         title={t('dashboard.title')}
-        subtitle={new Date().toLocaleDateString(locale === 'hy' ? 'hy-AM' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+        subtitle={new Date().toLocaleDateString(BCP47[locale], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
         action={<Button variant="secondary" size="sm" onClick={load}><RefreshCw className="h-4 w-4" /> {t('dashboard.refresh')}</Button>}
       />
 
@@ -390,7 +391,7 @@ export default function DashboardPage() {
                           )}
                         </div>
                         <div className="text-xs text-gray-400 mt-0.5">
-                          {new Date(o.requestedDeliveryTime).toLocaleString()} · {fmtMoney(o.totalAmount ?? 0)}
+                          {fmtDateTime(o.requestedDeliveryTime)} · {fmtMoney(o.totalAmount ?? 0)}
                         </div>
                       </div>
                       <div className={`text-xs ${timeColor} text-right whitespace-nowrap`}>{dtLabel}</div>
