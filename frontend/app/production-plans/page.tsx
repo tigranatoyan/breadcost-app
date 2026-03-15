@@ -351,12 +351,43 @@ export default function ProductionPlansPage() {
             ...['DRAFT', 'GENERATED', 'APPROVED', 'PUBLISHED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].map((s) => ({ value: s, label: s })),
           ]}
         />
-        <InputField
-          className="w-44"
-          type="date"
-          value={dateFilter}
-          onChange={(e) => setDateFilter(e.target.value)}
-        />
+        <div className="flex items-center gap-1">
+          <button
+            className="btn-xs bg-gray-200 text-gray-700 hover:bg-gray-300 px-2"
+            onClick={() => {
+              const d = dateFilter ? new Date(dateFilter) : new Date();
+              d.setDate(d.getDate() - 1);
+              setDateFilter(d.toISOString().substring(0, 10));
+            }}
+            title={t('common.previousDay')}
+          >
+            ◀
+          </button>
+          <InputField
+            className="w-44"
+            type="date"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+          />
+          <button
+            className="btn-xs bg-gray-200 text-gray-700 hover:bg-gray-300 px-2"
+            onClick={() => {
+              const d = dateFilter ? new Date(dateFilter) : new Date();
+              d.setDate(d.getDate() + 1);
+              setDateFilter(d.toISOString().substring(0, 10));
+            }}
+            title={t('common.nextDay')}
+          >
+            ▶
+          </button>
+          <button
+            className="btn-xs bg-blue-100 text-blue-700 hover:bg-blue-200 px-2"
+            onClick={() => setDateFilter(new Date().toISOString().substring(0, 10))}
+            title={t('common.today')}
+          >
+            {t('common.today')}
+          </button>
+        </div>
         {(statusFilter !== 'ALL' || dateFilter) && (
           <button
             className="text-xs text-gray-500 hover:text-gray-700 underline"
