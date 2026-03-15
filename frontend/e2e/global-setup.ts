@@ -1,6 +1,6 @@
 import { request } from '@playwright/test';
 
-const API_BASE = 'http://localhost:8085';
+const API_BASE = process.env.API_BASE ?? 'http://localhost:8080';
 
 /**
  * Playwright global setup – runs once before all tests.

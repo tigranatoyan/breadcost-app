@@ -33,7 +33,7 @@ export default defineConfig({
         command: process.platform === 'win32'
           ? 'cd .. && .\\gradlew.bat bootRun'
           : 'cd .. && ./gradlew bootRun',
-        url: 'http://localhost:8085/',
+        url: process.env.API_BASE ? `${process.env.API_BASE}/` : 'http://localhost:8080/',
         ignoreHTTPSErrors: true,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,

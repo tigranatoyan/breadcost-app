@@ -1,6 +1,6 @@
 import { test as base, Page } from '@playwright/test';
 
-const API_BASE = 'http://localhost:8085';
+const API_BASE = process.env.API_BASE ?? 'http://localhost:8080';
 const TENANT_ID = 'tenant1';
 
 export interface UserCredentials {
@@ -39,6 +39,15 @@ async function loginViaAPI(page: Page, creds: UserCredentials): Promise<void> {
     tenantId: data.tenantId ?? TENANT_ID,
     primaryRole: data.primaryRole,
   };
+
+  // Set the cookie so Next.js middleware (server-side) allows the request through.
+  await page.context().addCookies([{
+    name: 'bc_token',
+    value: data.token,
+    domain: 'localhost',
+    path: '/',
+    sameSite: 'Lax',
+  }]);
 
   // Use addInitScript so localStorage is set before the page's React code runs.
   // This avoids race conditions where the login page detects isLoggedIn() and
