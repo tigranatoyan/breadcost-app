@@ -426,6 +426,7 @@ const en = {
   // ── Inventory ──────────────────────────────────────────────────────────────
   inventory: {
     title: 'Inventory',
+    eyebrow: 'Warehouse',
     alerts: '⚠ {count} alert(s)',
     transfer: '↔ Transfer',
     receiveStock: '+ Receive Stock',

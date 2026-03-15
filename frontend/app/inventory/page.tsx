@@ -430,7 +430,7 @@ export default function InventoryPage() {
     <div className="max-w-[1800px]">
       {/* header */}
       <SectionTitle
-        eyebrow="Inventory"
+        eyebrow={t('inventory.eyebrow')}
         title={t('inventory.title')}
         subtitle={t('inventory.subtitle')}
         action={
