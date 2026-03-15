@@ -4,7 +4,8 @@ import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Modal, Table, Alert, Badge, Field, Success, PageSkeleton } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
-import { Plus } from 'lucide-react';
+import { Plus, Sparkles } from 'lucide-react';
+import Link from 'next/link';
 
 interface Dept {
   departmentId: string;
@@ -35,6 +36,7 @@ export default function ProductsPage() {
   // Search & filter (BC-1706)
   const [search, setSearch] = useState('');
   const [filterDept, setFilterDept] = useState('');
+  const [pricingCount, setPricingCount] = useState(0);
 
   // Edit modal (BC-1706)
   const [editProduct, setEditProduct] = useState<Product | null>(null);
@@ -62,6 +64,7 @@ export default function ProductsPage() {
       setProducts(prods);
       setDepts(deps);
       deptsRef.current = deps;
+      apiFetch<Array<unknown>>(`/v3/ai/pricing/pending?tenantId=${TENANT_ID}`).then((d) => setPricingCount(d.length)).catch(() => {});
     } catch (e) {
       setError(String(e));
     } finally {
@@ -154,6 +157,14 @@ export default function ProductsPage() {
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}
+
+      {/* AI Insights banner (BC-305) */}
+      {pricingCount > 0 && (
+        <Link href="/ai-pricing" className="flex items-center gap-2 mb-4 rounded-lg border border-purple-200 bg-purple-50 px-4 py-2.5 text-sm hover:bg-purple-100 transition">
+          <Sparkles className="h-4 w-4 text-purple-600" />
+          <span className="text-purple-800 font-medium">{t('aiInsights.pricingSuggestions', { count: pricingCount })}</span>
+        </Link>
+      )}
 
       {/* ── Search & Filter (BC-1706) ─────────────────────────────────── */}
       {!loading && products.length > 0 && (

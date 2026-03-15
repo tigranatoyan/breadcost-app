@@ -1429,6 +1429,14 @@ const en = {
     openCatalog: 'Open Catalog',
   },
 
+  // ── AI Insights (BC-305) ──────────────────────────────────────────────────
+  aiInsights: {
+    pricingSuggestions: '{count} AI pricing suggestions available',
+    replenishmentHints: '{count} AI replenishment hints available',
+    demandForecasts: '{count} demand forecasts available',
+    productionSuggestions: '{count} AI production suggestions for today',
+  },
+
   // ── Analytics ──────────────────────────────────────────────────────────────
   analytics: {
     eyebrow: 'Analytics',

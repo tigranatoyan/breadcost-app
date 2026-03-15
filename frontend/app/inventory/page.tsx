@@ -5,6 +5,8 @@ import { Modal, Spinner, Alert, Badge, Field } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
 import { getRole } from '@/lib/auth';
+import Link from 'next/link';
+import { Sparkles } from 'lucide-react';
 
 const SITE_ID = 'MAIN';
 const REASON_CODES = ['WASTE', 'SPOILAGE', 'COUNT_CORRECTION', 'OTHER'] as const;
@@ -138,6 +140,7 @@ export default function InventoryPage() {
   const [importOpen, setImportOpen] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importSaving, setImportSaving] = useState(false);
+  const [replenishCount, setReplenishCount] = useState(0);
 
   // ─── load ─────────────────────────────────────────────────────────────────
 
@@ -153,6 +156,7 @@ export default function InventoryPage() {
       setPositions(pos);
       setItems(itms);
       setDepartments(depts);
+      apiFetch<Array<unknown>>(`/v3/ai/suggestions/replenishment/pending?tenantId=${TENANT_ID}`).then((d) => setReplenishCount(d.length)).catch(() => {});
     } catch (e) {
       setError(String(e));
     } finally {
@@ -480,6 +484,14 @@ export default function InventoryPage() {
           {success}
           <button className="ml-4 text-green-500 hover:text-green-700" onClick={() => setSuccess('')}>✕</button>
         </div>
+      )}
+
+      {/* AI Insights banner (BC-305) */}
+      {replenishCount > 0 && (
+        <Link href="/ai-suggestions" className="flex items-center gap-2 mb-4 rounded-lg border border-purple-200 bg-purple-50 px-4 py-2.5 text-sm hover:bg-purple-100 transition">
+          <Sparkles className="h-4 w-4 text-purple-600" />
+          <span className="text-purple-800 font-medium">{t('aiInsights.replenishmentHints', { count: replenishCount })}</span>
+        </Link>
       )}
 
       {/* tabs */}
