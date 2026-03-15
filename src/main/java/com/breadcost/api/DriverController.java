@@ -73,6 +73,11 @@ public class DriverController {
         return service.getActiveSessions(tenantId);
     }
 
+    @GetMapping("/sessions")
+    public List<DriverSessionEntity> getAllSessions(@RequestParam String tenantId) {
+        return service.getAllSessions(tenantId);
+    }
+
     @GetMapping("/sessions/{sessionId}/updates")
     public List<DriverStopUpdateEntity> getStopUpdates(@PathVariable String sessionId) {
         return service.getStopUpdates(sessionId);

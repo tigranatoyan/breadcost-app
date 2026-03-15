@@ -133,6 +133,10 @@ public class DriverService {
         return sessionRepo.findByTenantIdAndStatus(tenantId, "ACTIVE");
     }
 
+    public List<DriverSessionEntity> getAllSessions(String tenantId) {
+        return sessionRepo.findByTenantId(tenantId);
+    }
+
     public List<DriverStopUpdateEntity> getStopUpdates(String sessionId) {
         return stopUpdateRepo.findBySessionId(sessionId);
     }

@@ -40,6 +40,13 @@ interface ManifestItem {
   status: string;
   customerName?: string;
 }
+interface DeliveryRun {
+  runId: string;
+  runNumber?: number;
+  driverName?: string;
+  scheduledDate?: string;
+  status: string;
+}
 
 /* ── page ──────────────────────────────────────────────── */
 export default function DriverPage() {
@@ -59,11 +66,14 @@ export default function DriverPage() {
   /* packaging */
   const [packaging, setPackaging] = useState<PackagingConfirmation[]>([]);
   const [packagingLoading, setPackagingLoading] = useState(false);
+  const [packagingRunId, setPackagingRunId] = useState('');
+  const [deliveryRuns, setDeliveryRuns] = useState<DeliveryRun[]>([]);
 
   /* payments */
   const [payments, setPayments] = useState<DriverPayment[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
   const [paySessionId, setPaySessionId] = useState('');
+  const [allSessions, setAllSessions] = useState<DriverSession[]>([]);
 
   /* ── loaders ─────────────────────────────────────────── */
   const loadSessions = useCallback(async () => {
@@ -100,6 +110,14 @@ export default function DriverPage() {
 
   /* ── effects ─────────────────────────────────────────── */
   useEffect(() => { if (tab === 'sessions') loadSessions(); }, [tab, loadSessions]);
+  useEffect(() => {
+    if (tab === 'packaging' && deliveryRuns.length === 0)
+      apiFetch<DeliveryRun[]>(`/v2/delivery-runs?tenantId=${TENANT_ID}`).then(setDeliveryRuns).catch(() => {});
+  }, [tab, deliveryRuns.length]);
+  useEffect(() => {
+    if (tab === 'payments' && allSessions.length === 0)
+      apiFetch<DriverSession[]>(`/v3/driver/sessions?tenantId=${TENANT_ID}`).then(setAllSessions).catch(() => {});
+  }, [tab, allSessions.length]);
 
   const tabs: { key: typeof tab; label: string }[] = [
     { key: 'sessions', label: t('driver.activeSessions') },
@@ -152,12 +170,19 @@ export default function DriverPage() {
       {tab === 'packaging' && (
         <div className="space-y-4">
           <div className="flex gap-2 items-end">
-            <Field label={t('driver.runId')}><input className="input w-full" value={paySessionId} onChange={e => setPaySessionId(e.target.value)} /></Field>
+            <Field label={t('driver.runId')}>
+              <select className="input w-full" value={packagingRunId} onChange={e => setPackagingRunId(e.target.value)}>
+                <option value="">{t('driver.selectRun')}</option>
+                {deliveryRuns.map(r => (
+                  <option key={r.runId} value={r.runId}>RUN-{String(r.runNumber ?? 0).padStart(3, '0')} — {r.driverName || r.scheduledDate || r.runId.slice(0, 8)}</option>
+                ))}
+              </select>
+            </Field>
             <Button variant="primary" size="sm" className="h-10" onClick={async () => {
-              if (!paySessionId.trim()) return;
+              if (!packagingRunId) return;
               setPackagingLoading(true);
               try {
-                const p = await apiFetch<PackagingConfirmation>(`/v3/driver/packaging/${paySessionId}?tenantId=${TENANT_ID}`);
+                const p = await apiFetch<PackagingConfirmation>(`/v3/driver/packaging/${packagingRunId}?tenantId=${TENANT_ID}`);
                 setPackaging(p ? [p] : []);
               } catch (e) { setError(String(e)); }
               finally { setPackagingLoading(false); }
@@ -183,7 +208,14 @@ export default function DriverPage() {
       {tab === 'payments' && (
         <div className="space-y-4">
           <div className="flex gap-2 items-end">
-            <Field label={t('driver.sessionId')}><input className="input w-full" value={paySessionId} onChange={e => setPaySessionId(e.target.value)} /></Field>
+            <Field label={t('driver.sessionId')}>
+              <select className="input w-full" value={paySessionId} onChange={e => setPaySessionId(e.target.value)}>
+                <option value="">{t('driver.selectSession')}</option>
+                {allSessions.map(s => (
+                  <option key={s.id} value={s.id}>{s.driverName} — {s.status} ({s.startTime?.slice(0, 10)})</option>
+                ))}
+              </select>
+            </Field>
             <Button variant="primary" size="sm" className="h-10" onClick={loadPayments}>{t('driver.lookup')}</Button>
           </div>
           {paymentsLoading ? <Spinner /> : (

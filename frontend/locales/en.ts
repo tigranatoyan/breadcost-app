@@ -1184,6 +1184,8 @@ const en = {
     date: 'Date',
     customer: 'Customer',
     noManifest: 'No manifest items.',
+    selectRun: '— Select a delivery run —',
+    selectSession: '— Select a session —',
   },
 
   // ── Mobile Admin ───────────────────────────────────────────────────────────
