@@ -16,7 +16,7 @@ import { cn, SidebarItem } from './design-system';
 
 // ─── nav definition ─────────────────────────────────────────────────────────
 
-type NavItem = { href: string; labelKey: string; icon: LucideIcon; featureKey?: string };
+type NavItem = { href: string; labelKey: string; icon: LucideIcon; featureKey?: string; accent?: boolean };
 type NavSection = { titleKey?: string; items: NavItem[]; roles: Role[] };
 
 const SECTIONS: NavSection[] = [
@@ -46,6 +46,16 @@ const SECTIONS: NavSection[] = [
     titleKey: 'nav.reportsSection',
     items: [{ href: '/reports', labelKey: 'nav.reports', icon: BarChart3 }],
     roles: ['admin', 'management', 'viewer', 'finance'],
+  },
+  {
+    titleKey: 'nav.aiSection',
+    items: [
+      { href: '/ai-whatsapp', labelKey: 'nav.aiWhatsapp', icon: MessageCircle, featureKey: 'AI_BOT', accent: true },
+      { href: '/ai-suggestions', labelKey: 'nav.aiSuggestions', icon: Sparkles, featureKey: 'AI_BOT' },
+      { href: '/ai-pricing', labelKey: 'nav.aiPricing', icon: TrendingUp, featureKey: 'AI_BOT' },
+      { href: '/quality-predictions', labelKey: 'nav.qualityPredictions', icon: ShieldCheck, featureKey: 'AI_BOT' },
+    ],
+    roles: ['admin', 'management'],
   },
   {
     titleKey: 'nav.myShift',
@@ -108,16 +118,6 @@ const SECTIONS: NavSection[] = [
       { href: '/report-builder', labelKey: 'nav.reportBuilder', icon: BarChart3 },
     ],
     roles: ['admin', 'management', 'finance'],
-  },
-  {
-    titleKey: 'nav.aiSection',
-    items: [
-      { href: '/ai-whatsapp', labelKey: 'nav.aiWhatsapp', icon: MessageCircle, featureKey: 'AI_BOT' },
-      { href: '/ai-suggestions', labelKey: 'nav.aiSuggestions', icon: Sparkles, featureKey: 'AI_BOT' },
-      { href: '/ai-pricing', labelKey: 'nav.aiPricing', icon: TrendingUp, featureKey: 'AI_BOT' },
-      { href: '/quality-predictions', labelKey: 'nav.qualityPredictions', icon: ShieldCheck, featureKey: 'AI_BOT' },
-    ],
-    roles: ['admin', 'management'],
   },
   {
     titleKey: 'nav.driverSection',
@@ -256,6 +256,7 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
                       icon={item.icon}
                       label={t(item.labelKey)}
                       active={active}
+                      accent={item.accent}
                     />
                   </Link>
                 );

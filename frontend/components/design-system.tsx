@@ -231,19 +231,22 @@ interface SidebarItemProps {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   active?: boolean;
+  accent?: boolean;
   onClick?: () => void;
 }
 
-export function SidebarItem({ icon: Icon, label, active, onClick }: SidebarItemProps) {
+export function SidebarItem({ icon: Icon, label, active, accent, onClick }: SidebarItemProps) {
   return (
     <button
       onClick={onClick}
       className={cn(
         'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition',
-        active ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-300 hover:bg-slate-800 hover:text-white',
+        active
+          ? accent ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-800 text-white shadow-sm'
+          : accent ? 'text-emerald-400 hover:bg-emerald-900/40 hover:text-emerald-300' : 'text-slate-300 hover:bg-slate-800 hover:text-white',
       )}
     >
-      <Icon className="h-4 w-4" />
+      <Icon className={cn('h-4 w-4', accent && !active && 'text-emerald-400')} />
       <span>{label}</span>
     </button>
   );
