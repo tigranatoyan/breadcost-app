@@ -426,6 +426,8 @@
     completeBtn: '✓ Ավարտել',
     details: 'Մանրամասներ',
     pendingRemaining: '+{count} սպասում',
+    // A7-03
+    qualityRisk: 'Ռիսկ',
   },
 
   inventory: {
