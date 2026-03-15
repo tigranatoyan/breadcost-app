@@ -834,7 +834,7 @@ export default function ReportsPage() {
         )}
       </div>
 
-      {revBanner}
+      {tab === 'revenue' && revBanner}
 
       {/* Tab bar */}
       <div className="flex gap-1 mb-6 bg-gray-100 rounded-xl p-1 w-fit flex-wrap">
