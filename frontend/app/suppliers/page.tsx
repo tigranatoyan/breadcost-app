@@ -56,6 +56,13 @@ interface SupplierApiConfig {
   format: string;
   enabled: boolean;
 }
+interface Item {
+  itemId: string;
+  name: string;
+  type: string;
+  baseUom: string;
+  active: boolean;
+}
 
 /* ── page ──────────────────────────────────────────────── */
 export default function SuppliersPage() {
@@ -94,6 +101,9 @@ export default function SuppliersPage() {
   const [poDetail, setPoDetail] = useState<{ po: PO; lines: POLine[] } | null>(null);
   const [poDetailLoading, setPoDetailLoading] = useState(false);
 
+  /* ── items (ingredients) for dropdown ─────────────── */
+  const [items, setItems] = useState<Item[]>([]);
+
   /* ── API Config state ───────────────────────────────── */
   const [apiConfigs, setApiConfigs] = useState<SupplierApiConfig[]>([]);
   const [apiLoading, setApiLoading] = useState(false);
@@ -126,7 +136,15 @@ export default function SuppliersPage() {
     } catch (e) { setError(String(e)); } finally { setPoLoading(false); }
   }, []);
 
+  const loadItems = useCallback(async () => {
+    try {
+      const data = await apiFetch<Item[]>(`/v1/items?tenantId=${TENANT_ID}&activeOnly=true`);
+      setItems(data.filter(i => i.type === 'INGREDIENT'));
+    } catch (e) { setError(String(e)); }
+  }, []);
+
   useEffect(() => { loadSuppliers(); }, [loadSuppliers]);
+  useEffect(() => { loadItems(); }, [loadItems]);
   useEffect(() => { if (tab === 'purchase-orders') loadPOs(); }, [tab, loadPOs]);
 
   /* ── API Config CRUD ────────────────────────────────── */
@@ -361,7 +379,10 @@ export default function SuppliersPage() {
           {/* A1.5 — ingredient → supplier lookup */}
           <div className="mb-4 p-3 bg-gray-50 rounded-lg flex items-end gap-3">
             <Field label={t('suppliers.ingredientLookup')}>
-              <input className="input" value={lookupId} onChange={e => setLookupId(e.target.value)} placeholder={t('suppliers.ingredientIdPlaceholder')} />
+              <select className="input" value={lookupId} onChange={e => setLookupId(e.target.value)}>
+                <option value="">— {t('common.select')} —</option>
+                {items.map(it => <option key={it.itemId} value={it.itemId}>{it.name} ({it.baseUom})</option>)}
+              </select>
             </Field>
             <Button variant="secondary" size="sm" onClick={lookupSuppliers} disabled={lookupLoading}>{lookupLoading ? '…' : t('suppliers.findSuppliers')}</Button>
           </div>
@@ -465,8 +486,15 @@ export default function SuppliersPage() {
                 empty={t('suppliers.catalogEmpty')}
               />
               <form onSubmit={addCatalogItem} className="mt-4 grid grid-cols-3 gap-3 items-end">
-                <Field label={t('suppliers.ingredientId')}><input className="input w-full" required value={catForm.ingredientId} onChange={e => setCatForm({ ...catForm, ingredientId: e.target.value })} /></Field>
-                <Field label={t('suppliers.ingredientName')}><input className="input w-full" value={catForm.ingredientName} onChange={e => setCatForm({ ...catForm, ingredientName: e.target.value })} /></Field>
+                <Field label={t('suppliers.ingredient')}>
+                  <select className="input w-full" required value={catForm.ingredientId} onChange={e => {
+                    const item = items.find(it => it.itemId === e.target.value);
+                    setCatForm({ ...catForm, ingredientId: e.target.value, ingredientName: item?.name || '' });
+                  }}>
+                    <option value="">— {t('common.select')} —</option>
+                    {items.map(it => <option key={it.itemId} value={it.itemId}>{it.name} ({it.baseUom})</option>)}
+                  </select>
+                </Field>
                 <Field label={t('suppliers.unitPrice')}><input className="input w-full" type="number" step="0.01" required value={catForm.unitPrice} onChange={e => setCatForm({ ...catForm, unitPrice: e.target.value })} /></Field>
                 <Field label={t('suppliers.currency')}><input className="input w-full" value={catForm.currency} onChange={e => setCatForm({ ...catForm, currency: e.target.value })} /></Field>
                 <Field label={t('suppliers.leadTime')}><input className="input w-full" type="number" value={catForm.leadTimeDays} onChange={e => setCatForm({ ...catForm, leadTimeDays: e.target.value })} /></Field>
@@ -494,9 +522,16 @@ export default function SuppliersPage() {
             </div>
             <h3 className="font-semibold text-sm mt-4">{t('suppliers.lines')}</h3>
             {poLines.map((line, i) => (
-              <div key={i} className="grid grid-cols-6 gap-2 items-end">
-                <Field label={t('suppliers.ingredientId')}><input className="input w-full" required value={line.ingredientId} onChange={e => updatePOLine(i, 'ingredientId', e.target.value)} /></Field>
-                <Field label={t('suppliers.ingredientName')}><input className="input w-full" value={line.ingredientName} onChange={e => updatePOLine(i, 'ingredientName', e.target.value)} /></Field>
+              <div key={i} className="grid grid-cols-5 gap-2 items-end">
+                <Field label={t('suppliers.ingredient')}>
+                  <select className="input w-full" required value={line.ingredientId} onChange={e => {
+                    const item = items.find(it => it.itemId === e.target.value);
+                    setPoLines(poLines.map((l, idx) => idx === i ? { ...l, ingredientId: e.target.value, ingredientName: item?.name || '', unit: item?.baseUom || l.unit } : l));
+                  }}>
+                    <option value="">— {t('common.select')} —</option>
+                    {items.map(it => <option key={it.itemId} value={it.itemId}>{it.name} ({it.baseUom})</option>)}
+                  </select>
+                </Field>
                 <Field label={t('suppliers.qty')}><input className="input w-full" type="number" step="0.01" required value={line.qty} onChange={e => updatePOLine(i, 'qty', e.target.value)} /></Field>
                 <Field label={t('suppliers.unit')}><input className="input w-full" value={line.unit} onChange={e => updatePOLine(i, 'unit', e.target.value)} /></Field>
                 <Field label={t('suppliers.unitPrice')}><input className="input w-full" type="number" step="0.01" required value={line.unitPrice} onChange={e => updatePOLine(i, 'unitPrice', e.target.value)} /></Field>
