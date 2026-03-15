@@ -5,11 +5,14 @@ import com.breadcost.masterdata.ItemService;
 import com.breadcost.masterdata.ItemService.CreateItemRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -52,5 +55,14 @@ public class ItemController {
             @RequestParam String tenantId,
             @RequestBody CreateItemRequest req) {
         return ResponseEntity.ok(itemService.update(tenantId, itemId, req));
+    }
+
+    @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('Admin','ProductionUser')")
+    public ResponseEntity<Map<String, Object>> importCsv(
+            @RequestParam String tenantId,
+            @RequestPart("file") MultipartFile file) {
+        var result = itemService.importCsv(tenantId, file);
+        return ResponseEntity.ok(result);
     }
 }
