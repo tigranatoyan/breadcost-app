@@ -333,7 +333,7 @@ export default function ProductionPlansPage() {
     <div className="max-w-[1800px]">
       <div className="mb-4">
         <SectionTitle
-          eyebrow="Production"
+          eyebrow={t('productionPlans.eyebrow')}
           title={t('productionPlans.title')}
           subtitle={t('productionPlans.subtitle')}
           action={<Button variant="primary" size="sm" onClick={() => setOpen(true)}><Plus className="h-4 w-4" /> {t('productionPlans.newPlan')}</Button>}

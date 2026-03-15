@@ -578,6 +578,7 @@ const en = {
   // ── Production Plans ───────────────────────────────────────────────────────
   productionPlans: {
     title: 'Production Plans',
+    eyebrow: 'Production',
     newPlan: '+ New Plan',
     planCount: '{count} plan(s)',
     noPlans: 'No production plans yet.',
