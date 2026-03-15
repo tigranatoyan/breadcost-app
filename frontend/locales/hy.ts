@@ -207,6 +207,17 @@
     todayValue: '\u0538\u0576\u0564\u0570\u0561\u0576\u0578\u0582\u0580\u055d {value}',
     activePlansWidget: '\u0531\u056f\u057f\u056b\u057e \u0561\u0580\u057f\u0561\u0564\u0580. \u057a\u056c\u0561\u0576\u0576\u0565\u0580',
     activePlansCount: '{count} \u0561\u056f\u057f\u056b\u057e \u057a\u056c\u0561\u0576',
+    // A8-01
+    configTitle: 'Հարմարեցնել վահանակը',
+    widget_kpi: 'KPI քարտեր',
+    widget_todayOrders: 'Այսօրվա պատվերներ',
+    widget_activePlans: 'Ակտիվ պլաններ',
+    widget_nextEvent: 'Հաջորդ իրադարձություն',
+    widget_deliveryTimeline: 'Առաքման ժամանակացույց',
+    widget_issues: 'Հայտնաբերված խնդիրներ',
+    widget_stockAlerts: 'Պահեստի ազդանշաններ',
+    widget_revenue: 'Եկամուտ',
+    widget_productionFloor: 'Արտադրական հարկ',
   },
 
   orders: {

@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { PageSkeleton } from '@/components/ui';
 import { Badge, Card, StatCard, Progress, Button, SectionTitle } from '@/components/design-system';
-import { CircleDollarSign, ShoppingCart, Factory, Warehouse, AlertTriangle, RefreshCw } from 'lucide-react';
+import { CircleDollarSign, ShoppingCart, Factory, Warehouse, AlertTriangle, RefreshCw, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { useI18n, useDateTimeFmt, BCP47 } from '@/lib/i18n';
 
@@ -117,6 +117,24 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   return <h2 className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500 mb-3">{children}</h2>;
 }
 
+// ─── widget config ────────────────────────────────────────────────────────────
+const WIDGET_IDS = ['kpi', 'todayOrders', 'activePlans', 'nextEvent', 'deliveryTimeline', 'issues', 'stockAlerts', 'revenue', 'productionFloor'] as const;
+type WidgetId = typeof WIDGET_IDS[number];
+const WIDGET_STORAGE_KEY = 'bc_dashboard_widgets';
+
+function getVisibleWidgets(): Set<WidgetId> {
+  if (typeof window === 'undefined') return new Set(WIDGET_IDS);
+  try {
+    const raw = localStorage.getItem(WIDGET_STORAGE_KEY);
+    if (!raw) return new Set(WIDGET_IDS);
+    return new Set(JSON.parse(raw) as WidgetId[]);
+  } catch { return new Set(WIDGET_IDS); }
+}
+
+function saveVisibleWidgets(ids: Set<WidgetId>) {
+  localStorage.setItem(WIDGET_STORAGE_KEY, JSON.stringify([...ids]));
+}
+
 // ─── main component ───────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const { t, locale } = useI18n();
@@ -131,7 +149,19 @@ export default function DashboardPage() {
   const [serverAlerts, setServerAlerts] = useState<StockAlert[]>([]);
   const [revenue, setRevenue] = useState<RevenueSummary | null>(null);
   const [tick, setTick] = useState(0);
+  const [visibleWidgets, setVisibleWidgets] = useState<Set<WidgetId>>(() => getVisibleWidgets());
+  const [showConfig, setShowConfig] = useState(false);
   const today = new Date().toISOString().substring(0, 10);
+
+  const toggleWidget = (id: WidgetId) => {
+    setVisibleWidgets((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      saveVisibleWidgets(next);
+      return next;
+    });
+  };
+  const show = (id: WidgetId) => visibleWidgets.has(id);
 
   const load = useCallback(() => {
     Promise.all([
@@ -275,17 +305,39 @@ export default function DashboardPage() {
         eyebrow={t('dashboard.overview') ?? 'Overview'}
         title={t('dashboard.title')}
         subtitle={new Date().toLocaleDateString(BCP47[locale], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-        action={<Button variant="secondary" size="sm" onClick={load}><RefreshCw className="h-4 w-4" /> {t('dashboard.refresh')}</Button>}
+        action={<div className="flex gap-2">
+          <Button variant="secondary" size="sm" onClick={() => setShowConfig(!showConfig)}><Settings className="h-4 w-4" /></Button>
+          <Button variant="secondary" size="sm" onClick={load}><RefreshCw className="h-4 w-4" /> {t('dashboard.refresh')}</Button>
+        </div>}
       />
 
+      {/* Widget config panel */}
+      {showConfig && (
+        <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+          <div className="text-sm font-semibold text-gray-700 mb-3">{t('dashboard.configTitle')}</div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {WIDGET_IDS.map((id) => (
+              <label key={id} className="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" checked={visibleWidgets.has(id)} onChange={() => toggleWidget(id)} className="rounded" />
+                {t(`dashboard.widget_${id}` as any)}
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* KPI row */}
+      {show('kpi') && (
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {stats.map((s) => <KpiCard key={s.label} {...s} />)}
       </div>
+      )}
 
       {/* BC-1807: Today's Orders + Active Plans widgets */}
+      {(show('todayOrders') || show('activePlans')) && (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Today's Orders */}
+        {show('todayOrders') && (
         <Card className="p-5" title={t('dashboard.todaysOrders')} action={
             <Link href="/orders" className="text-xs text-blue-600 hover:underline">{t('dashboard.view')}</Link>}>
           <div className="grid grid-cols-2 gap-3">
@@ -312,8 +364,10 @@ export default function DashboardPage() {
             </div>
           )}
         </Card>
+        )}
 
         {/* Active Plans */}
+        {show('activePlans') && (
         <Card className="p-5" title={t('dashboard.activePlansWidget')} action={
             <Link href="/production-plans" className="text-xs text-blue-600 hover:underline">{t('dashboard.view')}</Link>}>
           <div className="grid grid-cols-2 gap-3">
@@ -349,10 +403,12 @@ export default function DashboardPage() {
             </div>
           )}
         </Card>
+        )}
       </div>
+      )}
 
       {/* Next big event banner */}
-      {nextEvent && (
+      {show('nextEvent') && nextEvent && (
         <div className={`${nextEvent.accent} text-white rounded-xl px-6 py-4 flex items-center justify-between`}>
           <div>
             <div className="text-xs font-semibold uppercase tracking-wide opacity-70 mb-0.5">{t('dashboard.nextEvent')}</div>
@@ -363,8 +419,10 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {(show('deliveryTimeline') || show('issues')) && (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Delivery Timeline (spans 2 cols) */}
+        {show('deliveryTimeline') && (
         <div className="lg:col-span-2 space-y-4">
           <SectionLabel>{t('dashboard.deliveryTimeline')}</SectionLabel>
           <Card>
@@ -403,8 +461,10 @@ export default function DashboardPage() {
             )}
           </Card>
         </div>
+        )}
 
         {/* Issues panel */}
+        {show('issues') && (
         <div className="space-y-4">
           <SectionLabel>{t('dashboard.issuesDetected')}</SectionLabel>
           <Card>
@@ -427,10 +487,12 @@ export default function DashboardPage() {
             )}
           </Card>
         </div>
+        )}
       </div>
+      )}
 
       {/* Stock Alerts Widget (BC-1505) */}
-      {serverAlerts.length > 0 && (
+      {show('stockAlerts') && serverAlerts.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <SectionLabel>{t('dashboard.stockAlertsWidget')}</SectionLabel>
@@ -460,7 +522,7 @@ export default function DashboardPage() {
       )}
 
       {/* Revenue Widget (BC-1604) */}
-      {revenue && (
+      {show('revenue') && revenue && (
         <div className="space-y-4">
           <SectionLabel>{t('dashboard.revenueWidget')}</SectionLabel>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -480,6 +542,7 @@ export default function DashboardPage() {
       )}
 
       {/* Production Floor */}
+      {show('productionFloor') && (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <SectionLabel>{t('dashboard.productionFloor')}</SectionLabel>
@@ -512,6 +575,7 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+      )}
 
       {/* Quick-start guide if empty */}
       {deptCount === 0 && (
