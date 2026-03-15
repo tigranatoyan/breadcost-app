@@ -4,7 +4,8 @@ import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Modal, Spinner, Alert, Success, Badge, Field, useConfirm } from '@/components/ui';
 import { SectionTitle, Button, SelectField, InputField } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
-import { Plus, ShieldAlert } from 'lucide-react';
+import { Plus, ShieldAlert, Sparkles } from 'lucide-react';
+import Link from 'next/link';
 
 interface WorkOrder {
   workOrderId: string;
@@ -77,6 +78,7 @@ export default function ProductionPlansPage() {
   const [schedules, setSchedules] = useState<Record<string, PlanSchedule>>({});
   const [loadingSchedule, setLoadingSchedule] = useState('');
   const [qualityRisks, setQualityRisks] = useState<Record<string, { riskLevel: string; recommendation: string }>>({});
+  const [prodSuggestCount, setProdSuggestCount] = useState(0);
   const [form, setForm] = useState({
     planDate: new Date().toISOString().substring(0, 10),
     shift: 'MORNING',
@@ -111,6 +113,7 @@ export default function ProductionPlansPage() {
       risks.forEach((r) => { map[r.productId] = r; });
       setQualityRisks(map);
     }).catch(() => {});
+    apiFetch<Array<unknown>>(`/v3/ai/suggestions/production?tenantId=${TENANT_ID}&planDate=${new Date().toISOString().slice(0, 10)}`).then((d) => setProdSuggestCount(d.length)).catch(() => {});
   }, []);
 
   const reloadPlan = async (planId: string) => {
@@ -441,6 +444,14 @@ export default function ProductionPlansPage() {
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {info && <Success msg={info} onClose={() => setInfo('')} />}
+
+      {/* AI Insights banner (BC-305) */}
+      {prodSuggestCount > 0 && (
+        <Link href="/ai-suggestions" className="flex items-center gap-2 mb-4 rounded-lg border border-purple-200 bg-purple-50 px-4 py-2.5 text-sm hover:bg-purple-100 transition">
+          <Sparkles className="h-4 w-4 text-purple-600" />
+          <span className="text-purple-800 font-medium">{t('aiInsights.productionSuggestions', { count: prodSuggestCount })}</span>
+        </Link>
+      )}
 
       {loading ? (
         <Spinner />

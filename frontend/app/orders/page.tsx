@@ -4,7 +4,8 @@ import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Modal, Alert, Badge, Field, PageSkeleton, Pagination, useToast } from '@/components/ui';
 import { SectionTitle, Button, InputField, SelectField } from '@/components/design-system';
 import { useT, useDateFmt, useDateTimeFmt } from '@/lib/i18n';
-import { Plus, Calendar, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, Calendar, ChevronUp, ChevronDown, Sparkles } from 'lucide-react';
+import Link from 'next/link';
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -131,6 +132,7 @@ export default function OrdersPage() {
   // cancel reason dialog
   const [cancelTarget, setCancelTarget] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState('');
+  const [forecastCount, setForecastCount] = useState(0);
 
   // ─── load ────────────────────────────────────────────────────────────────────
 
@@ -149,6 +151,7 @@ export default function OrdersPage() {
       setTotalPages(pagedResult.totalPages);
       setProducts(prods);
       setCustomers(custs);
+      apiFetch<Array<unknown>>(`/v3/ai/suggestions/forecast?tenantId=${TENANT_ID}`).then((d) => setForecastCount(d.length)).catch(() => {});
     } catch (e) {
       setError(String(e));
     } finally {
@@ -348,6 +351,14 @@ export default function OrdersPage() {
       </div>
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
+
+      {/* AI Insights banner (BC-305) */}
+      {forecastCount > 0 && (
+        <Link href="/ai-suggestions" className="flex items-center gap-2 mb-4 rounded-lg border border-purple-200 bg-purple-50 px-4 py-2.5 text-sm hover:bg-purple-100 transition">
+          <Sparkles className="h-4 w-4 text-purple-600" />
+          <span className="text-purple-800 font-medium">{t('aiInsights.demandForecasts', { count: forecastCount })}</span>
+        </Link>
+      )}
 
       {/* filters */}
       <div className="flex flex-wrap gap-3 mb-4">
