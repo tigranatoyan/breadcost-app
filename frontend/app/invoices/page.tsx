@@ -91,6 +91,10 @@ export default function InvoicesPage() {
   const [discForm, setDiscForm] = useState({ productId: '', categoryId: '', discountPercent: '', minQty: '', validFrom: '', validTo: '' });
   const [discSaving, setDiscSaving] = useState(false);
 
+  /* lookup data for dropdowns */
+  const [customers, setCustomers] = useState<{ customerId: string; name: string }[]>([]);
+  const [products, setProducts] = useState<{ productId: string; name: string }[]>([]);
+
   /* loaders */
   const loadInvoices = useCallback(async () => {
     try {
@@ -101,7 +105,18 @@ export default function InvoicesPage() {
     } catch (e) { setError(String(e)); } finally { setLoading(false); }
   }, [statusFilter]);
 
-  useEffect(() => { loadInvoices(); }, [loadInvoices]);
+  const loadDropdowns = useCallback(async () => {
+    try {
+      const [c, p] = await Promise.all([
+        apiFetch<{ customerId: string; name: string }[]>(`/v2/customers?tenantId=${TENANT_ID}`),
+        apiFetch<{ productId: string; name: string }[]>(`/v1/products?tenantId=${TENANT_ID}`),
+      ]);
+      setCustomers(c);
+      setProducts(p);
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => { loadInvoices(); loadDropdowns(); }, [loadInvoices, loadDropdowns]);
 
   const openDetail = async (inv: Invoice) => {
     setDetailInv(inv);
@@ -281,7 +296,10 @@ export default function InvoicesPage() {
         <>
           <div className="flex gap-2 mb-4 items-end">
             <Field label={t('invoices.customerId')}>
-              <input className="input" value={discountCustomerId} onChange={e => setDiscountCustomerId(e.target.value)} placeholder="customer-id" />
+              <select className="input" value={discountCustomerId} onChange={e => setDiscountCustomerId(e.target.value)}>
+                <option value="">— {t('common.select')} —</option>
+                {customers.map(c => <option key={c.customerId} value={c.customerId}>{c.name}</option>)}
+              </select>
             </Field>
             <Button variant="primary" size="sm" onClick={loadDiscountRules}>{t('common.load')}</Button>
             {discountCustomerId && <Button variant="secondary" size="sm" onClick={() => setShowAddDisc(true)}>+ {t('invoices.addDiscount')}</Button>}
@@ -387,7 +405,12 @@ export default function InvoicesPage() {
       {showAddDisc && (
         <Modal title={t('invoices.addDiscount')} onClose={() => setShowAddDisc(false)}>
           <form onSubmit={addDiscountRule} className="space-y-4">
-            <Field label={t('invoices.product')}><input className="input w-full" value={discForm.productId} onChange={e => setDiscForm({ ...discForm, productId: e.target.value })} /></Field>
+            <Field label={t('invoices.product')}>
+              <select className="input w-full" value={discForm.productId} onChange={e => setDiscForm({ ...discForm, productId: e.target.value })}>
+                <option value="">— {t('common.select')} —</option>
+                {products.map(p => <option key={p.productId} value={p.productId}>{p.name}</option>)}
+              </select>
+            </Field>
             <Field label={t('invoices.category')}><input className="input w-full" value={discForm.categoryId} onChange={e => setDiscForm({ ...discForm, categoryId: e.target.value })} /></Field>
             <Field label={t('invoices.discountPct')}><input className="input w-full" type="number" step="0.1" required value={discForm.discountPercent} onChange={e => setDiscForm({ ...discForm, discountPercent: e.target.value })} /></Field>
             <Field label={t('invoices.minQty')}><input className="input w-full" type="number" value={discForm.minQty} onChange={e => setDiscForm({ ...discForm, minQty: e.target.value })} /></Field>
