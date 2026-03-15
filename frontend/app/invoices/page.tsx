@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
-import { Modal, Table, Spinner, Alert, Badge, Field, Success } from '@/components/ui';
+import { Modal, Table, Spinner, Alert, Badge, Field, Success, useConfirm } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
 
 /* ── types ─────────────────────────────────────────────── */
@@ -47,6 +47,7 @@ interface CreditInfo {
 /* ── page ──────────────────────────────────────────────── */
 export default function InvoicesPage() {
   const t = useT();
+  const [askConfirm, confirmModal] = useConfirm({ confirmLabel: t('common.confirm'), cancelLabel: t('common.cancel') });
 
   const [tab, setTab] = useState<'invoices' | 'discounts'>('invoices');
 
@@ -144,7 +145,7 @@ export default function InvoicesPage() {
   };
 
   const voidInvoice = async (id: string) => {
-    if (!confirm(t('invoices.confirmVoid'))) return;
+    if (!await askConfirm(t('invoices.confirmVoid'))) return;
     try {
       await apiFetch(`/v2/invoices/${id}/void?tenantId=${TENANT_ID}`, { method: 'PUT' });
       setSuccess(t('invoices.voided'));
@@ -401,6 +402,7 @@ export default function InvoicesPage() {
           </form>
         </Modal>
       )}
+      {confirmModal}
     </div>
   );
 }

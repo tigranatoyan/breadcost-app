@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
-import { Modal, Spinner, Alert, Badge, Field } from '@/components/ui';
+import { Modal, Spinner, Alert, Badge, Field, useConfirm } from '@/components/ui';
 import { SectionTitle, Button, SelectField, InputField } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
 import { Plus } from 'lucide-react';
@@ -61,6 +61,7 @@ interface PlanSchedule {
 
 export default function ProductionPlansPage() {
   const t = useT();
+  const [askConfirm, confirmModal] = useConfirm({ confirmLabel: t('common.confirm'), cancelLabel: t('common.cancel') });
   const [plans, setPlans] = useState<Plan[]>([]);
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [dateFilter, setDateFilter] = useState('');
@@ -114,7 +115,7 @@ export default function ProductionPlansPage() {
 
   const planAction = async (planId: string, action: string) => {
     if (actionId) return;
-    if (action === 'approve' && !confirm(t('productionPlans.confirmApprove'))) return;
+    if (action === 'approve' && !await askConfirm(t('productionPlans.confirmApprove'))) return;
     try {
       setActionId(`${planId}-${action}`);
       await apiFetch(
@@ -674,6 +675,7 @@ export default function ProductionPlansPage() {
           </form>
         </Modal>
       )}
+      {confirmModal}
     </div>
   );
 }
