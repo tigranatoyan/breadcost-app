@@ -226,6 +226,9 @@ const en = {
     widget_stockAlerts: 'Stock Alerts',
     widget_revenue: 'Revenue',
     widget_productionFloor: 'Production Floor',
+    widget_financialAnalytics: 'Financial Analytics',
+    widget_topProducts: 'Top Products',
+    widget_customerInsights: 'Customer Insights',
   },
 
   // ── Orders ─────────────────────────────────────────────────────────────────

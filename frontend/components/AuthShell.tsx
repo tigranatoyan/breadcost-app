@@ -114,7 +114,7 @@ const SECTIONS: NavSection[] = [
   {
     titleKey: 'nav.analytics',
     items: [
-      { href: '/analytics', labelKey: 'nav.analytics', icon: TrendingUp },
+      { href: '/dashboard', labelKey: 'nav.analytics', icon: TrendingUp },
       { href: '/report-builder', labelKey: 'nav.reportBuilder', icon: BarChart3 },
     ],
     roles: ['admin', 'management', 'finance'],
