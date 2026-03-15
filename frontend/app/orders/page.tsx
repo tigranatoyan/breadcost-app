@@ -29,6 +29,7 @@ interface OrderLine {
 
 interface Order {
   orderId: string;
+  orderNumber?: number;
   customerName: string;
   status: string;
   requestedDeliveryTime: string;
@@ -449,7 +450,7 @@ export default function OrdersPage() {
                 <div className="border-t px-4 py-3 space-y-3">
                   {/* meta row */}
                   <div className="flex flex-wrap gap-4 text-xs text-gray-500">
-                    <span><span className="font-medium text-gray-700">{t('orders.orderId')}:</span> {o.orderId.slice(0, 8)}…</span>
+                    <span><span className="font-medium text-gray-700">{t('orders.orderId')}:</span> {o.orderNumber ? `ORD-${String(o.orderNumber).padStart(4, '0')}` : o.orderId.slice(0, 8)}</span>
                     <span><span className="font-medium text-gray-700">{t('orders.placed')}:</span> {fmtDateTime(o.orderPlacedAt)}</span>
                     <span><span className="font-medium text-gray-700">{t('orders.delivery')}:</span> {fmtDateTime(o.requestedDeliveryTime)}</span>
                     {o.notes && <span><span className="font-medium text-gray-700">{t('common.notes')}:</span> {o.notes}</span>}

@@ -149,8 +149,13 @@ public class OrderService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         // Persist
+        int nextOrderNumber = orderRepository.findTopByTenantIdOrderByOrderNumberDesc(tenantId)
+                .map(OrderEntity::getOrderNumber)
+                .map(n -> n + 1)
+                .orElse(1);
         OrderEntity entity = OrderEntity.builder()
                 .orderId(orderId)
+                .orderNumber(nextOrderNumber)
                 .tenantId(tenantId)
                 .siteId(siteId)
                 .customerId(customerId)

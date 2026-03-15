@@ -21,12 +21,14 @@ interface DeliveryRun {
 }
 interface RunOrder {
   orderId: string;
+  orderNumber?: number;
   customerName?: string;
   address?: string;
   status?: string;
 }
 interface ManifestEntry {
   orderId: string;
+  orderNumber?: number;
   customerName?: string;
   address?: string;
   items?: { productName: string; qty: number }[];
@@ -224,7 +226,7 @@ export default function DeliveriesPage() {
                       });
                     }}
                   />
-                  <span className="font-mono text-xs text-gray-500">{o.orderId.slice(0, 8)}</span>
+                  <span className="font-mono text-xs text-gray-500">{o.orderNumber ? `ORD-${String(o.orderNumber).padStart(4, '0')}` : o.orderId.slice(0, 8)}</span>
                   <span className="flex-1">{o.customerName}</span>
                   <span className="text-gray-500">{o.totalAmount?.toLocaleString()}</span>
                 </label>
@@ -253,7 +255,7 @@ export default function DeliveriesPage() {
               <Table
                 cols={[t('deliveries.orderId'), t('deliveries.customer'), t('deliveries.address'), t('common.status'), t('common.actions')]}
                 rows={runOrders.map(o => [
-                  o.orderId.slice(0, 8),
+                  o.orderNumber ? `ORD-${String(o.orderNumber).padStart(4, '0')}` : o.orderId.slice(0, 8),
                   o.customerName || '—',
                   o.address || '—',
                   <Badge key={`os-${o.orderId}`} status={o.status || ''} />,
@@ -271,7 +273,7 @@ export default function DeliveriesPage() {
                   <Table
                     cols={[t('deliveries.orderId'), t('deliveries.customer'), t('deliveries.address'), t('deliveries.items')]}
                     rows={manifest.map(m => [
-                      m.orderId.slice(0, 8),
+                      m.orderNumber ? `ORD-${String(m.orderNumber).padStart(4, '0')}` : m.orderId.slice(0, 8),
                       m.customerName || '—',
                       m.address || '—',
                       m.items?.map(i => `${i.productName} x${i.qty}`).join(', ') || '—',
