@@ -97,6 +97,9 @@ export default function RecipesPage() {
   const [editIngRows, setEditIngRows] = useState<ReturnType<typeof newIng>[]>([]);
   const [savingIngredients, setSavingIngredients] = useState(false);
 
+  /* items for ingredient dropdowns */
+  const [allItems, setAllItems] = useState<{ itemId: string; name: string; baseUom: string }[]>([]);
+
   const startEditIngredients = (r: Recipe) => {
     setEditIngRecipeId(r.recipeId);
     setEditIngRows(
@@ -151,8 +154,9 @@ export default function RecipesPage() {
     Promise.all([
       apiFetch<Product[]>(`/v1/products?tenantId=${TENANT_ID}`),
       apiFetch<Dept[]>(`/v1/departments?tenantId=${TENANT_ID}`),
+      apiFetch<{ itemId: string; name: string; baseUom: string }[]>(`/v1/items?tenantId=${TENANT_ID}&activeOnly=true`),
     ])
-      .then(([prods, deps]) => { setProducts(prods); setDepts(deps); })
+      .then(([prods, deps, items]) => { setProducts(prods); setDepts(deps); setAllItems(items); })
       .catch((e) => setError(String(e)))
       .finally(() => setInitLoading(false));
   }, []);
@@ -488,12 +492,17 @@ export default function RecipesPage() {
                                     {editIngRows.map((row, idx) => (
                                       <tr key={idx}>
                                         <td className="py-1 pr-2">
-                                          <input className="input text-xs py-0.5" value={row.itemId}
-                                            onChange={(e) => setEditIngRows((rows) => rows.map((r2, i) => i === idx ? { ...r2, itemId: e.target.value } : r2))} />
+                                          <select className="input text-xs py-0.5" value={row.itemId}
+                                            onChange={(e) => {
+                                              const item = allItems.find(it => it.itemId === e.target.value);
+                                              setEditIngRows((rows) => rows.map((r2, i) => i === idx ? { ...r2, itemId: e.target.value, itemName: item?.name || r2.itemName } : r2));
+                                            }}>
+                                            <option value="">—</option>
+                                            {allItems.map(it => <option key={it.itemId} value={it.itemId}>{it.name}</option>)}
+                                          </select>
                                         </td>
                                         <td className="py-1 pr-2">
-                                          <input className="input text-xs py-0.5" value={row.itemName}
-                                            onChange={(e) => setEditIngRows((rows) => rows.map((r2, i) => i === idx ? { ...r2, itemName: e.target.value } : r2))} />
+                                          <input className="input text-xs py-0.5" value={row.itemName} readOnly tabIndex={-1} />
                                         </td>
                                         <td className="py-1 pr-2">
                                           <input className="input text-xs py-0.5" type="number" value={row.recipeQty}
@@ -755,21 +764,27 @@ export default function RecipesPage() {
                     <div className="grid grid-cols-2 gap-2 mb-2">
                       <div>
                         <label className="text-xs text-gray-500">{t('recipes.itemId')} *</label>
-                        <input
+                        <select
                           className="input"
-                          placeholder="e.g. flour-001"
                           required
                           value={ing.itemId}
-                          onChange={(e) => updateIng(i, 'itemId', e.target.value)}
-                        />
+                          onChange={(e) => {
+                            const item = allItems.find(it => it.itemId === e.target.value);
+                            updateIng(i, 'itemId', e.target.value);
+                            if (item) updateIng(i, 'itemName', item.name);
+                          }}
+                        >
+                          <option value="">— {t('common.select')} —</option>
+                          {allItems.map(it => <option key={it.itemId} value={it.itemId}>{it.name}</option>)}
+                        </select>
                       </div>
                       <div>
                         <label className="text-xs text-gray-500">{t('recipes.itemName')}</label>
                         <input
                           className="input"
-                          placeholder="e.g. Wheat Flour"
                           value={ing.itemName}
-                          onChange={(e) => updateIng(i, 'itemName', e.target.value)}
+                          readOnly
+                          tabIndex={-1}
                         />
                       </div>
                     </div>

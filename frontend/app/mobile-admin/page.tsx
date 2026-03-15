@@ -47,6 +47,15 @@ export default function MobileAdminPage() {
   const [sendModal, setSendModal] = useState(false);
   const [nf, setNf] = useState({ customerId: '', title: '', body: '', notificationType: 'GENERAL', referenceId: '' });
 
+  /* customers for dropdowns */
+  const [customers, setCustomers] = useState<{ customerId: string; name: string }[]>([]);
+
+  useEffect(() => {
+    apiFetch<{ customerId: string; name: string }[]>(`/v2/customers?tenantId=${TENANT_ID}`)
+      .then(setCustomers)
+      .catch(() => {});
+  }, []);
+
   /* ── loaders ─────────────────────────────────────────── */
   const loadDevices = useCallback(async () => {
     setDevicesLoading(true);
@@ -115,7 +124,12 @@ export default function MobileAdminPage() {
       {tab === 'devices' && (
         <div className="space-y-4">
           <div className="flex gap-2 items-end">
-            <Field label={t('mobileAdmin.customerId')}><input className="input w-full" value={custFilter} onChange={e => setCustFilter(e.target.value)} /></Field>
+            <Field label={t('mobileAdmin.customerId')}>
+              <select className="input w-full" value={custFilter} onChange={e => setCustFilter(e.target.value)}>
+                <option value="">— {t('common.select')} —</option>
+                {customers.map(c => <option key={c.customerId} value={c.customerId}>{c.name}</option>)}
+              </select>
+            </Field>
             <Button variant="primary" size="sm" className="h-10" onClick={loadDevices}>{t('mobileAdmin.search')}</Button>
           </div>
           {devicesLoading ? <Spinner /> : (
@@ -138,7 +152,12 @@ export default function MobileAdminPage() {
       {tab === 'notifications' && (
         <div className="space-y-4">
           <div className="flex gap-2 items-end">
-            <Field label={t('mobileAdmin.customerId')}><input className="input w-full" value={notifCust} onChange={e => setNotifCust(e.target.value)} /></Field>
+            <Field label={t('mobileAdmin.customerId')}>
+              <select className="input w-full" value={notifCust} onChange={e => setNotifCust(e.target.value)}>
+                <option value="">— {t('common.select')} —</option>
+                {customers.map(c => <option key={c.customerId} value={c.customerId}>{c.name}</option>)}
+              </select>
+            </Field>
             <Button variant="primary" size="sm" className="h-10" onClick={loadNotifs}>{t('mobileAdmin.search')}</Button>
             <Button variant="primary" size="sm" className="bg-green-600 hover:bg-green-700 h-10 ml-auto" onClick={() => setSendModal(true)}>{t('mobileAdmin.sendNotification')}</Button>
           </div>
@@ -162,7 +181,12 @@ export default function MobileAdminPage() {
       {sendModal && (
         <Modal title={t('mobileAdmin.sendNotification')} onClose={() => setSendModal(false)}>
           <div className="space-y-3">
-            <Field label={t('mobileAdmin.customerId')}><input className="input w-full" value={nf.customerId} onChange={e => setNf({ ...nf, customerId: e.target.value })} /></Field>
+            <Field label={t('mobileAdmin.customerId')}>
+              <select className="input w-full" value={nf.customerId} onChange={e => setNf({ ...nf, customerId: e.target.value })}>
+                <option value="">— {t('common.select')} —</option>
+                {customers.map(c => <option key={c.customerId} value={c.customerId}>{c.name}</option>)}
+              </select>
+            </Field>
             <Field label={t('mobileAdmin.notifTitle')}><input className="input w-full" value={nf.title} onChange={e => setNf({ ...nf, title: e.target.value })} /></Field>
             <Field label={t('mobileAdmin.body')}><input className="input w-full" value={nf.body} onChange={e => setNf({ ...nf, body: e.target.value })} /></Field>
             <Field label={t('mobileAdmin.type')}><input className="input w-full" value={nf.notificationType} onChange={e => setNf({ ...nf, notificationType: e.target.value })} /></Field>

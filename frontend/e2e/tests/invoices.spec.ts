@@ -39,8 +39,8 @@ test.describe('Invoices', () => {
     await inv.discountsTab.click();
     await page.waitForLoadState('load');
 
-    // Should see customer ID input field
-    await expect(page.getByPlaceholder(/customer/i)).toBeVisible();
+    // Should see customer dropdown on discounts tab
+    await expect(page.locator('select').first()).toBeVisible();
   });
 
   test('invoice row shows action buttons when invoices exist', async ({ page }) => {
