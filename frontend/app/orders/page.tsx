@@ -492,7 +492,7 @@ export default function OrdersPage() {
                         {o.lines.map((ln) => (
                           <tr key={ln.orderLineId}>
                             <td className="px-2 py-1.5 font-medium">{ln.productName}</td>
-                            <td className="px-2 py-1.5 text-right">{ln.qty} {ln.uom}</td>
+                            <td className="px-2 py-1.5 text-right">{ln.qty} {t(`units.${ln.uom}` as any) || ln.uom}</td>
                             <td className="px-2 py-1.5 text-right">
                               {(ln.unitPrice ?? 0).toFixed(2)}
                             </td>
@@ -621,7 +621,7 @@ export default function OrdersPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500">{t('orders.qty')} ({line.uom})</label>
+                        <label className="text-xs text-gray-500">{t('orders.qty')} ({t(`units.${line.uom}` as any) || line.uom})</label>
                         <input
                           className="input"
                           type="number"

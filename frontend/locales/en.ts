@@ -68,6 +68,15 @@ const en = {
     PARTIAL: 'Partial',
   },
 
+  // ── Units of Measure ───────────────────────────────────────────────────────
+  units: {
+    PCS: 'pcs',
+    KG: 'kg',
+    G: 'g',
+    L: 'L',
+    ML: 'ml',
+  },
+
   // ── Auth / Login ────────────────────────────────────────────────────────────
   login: {
     title: 'BreadCost',
