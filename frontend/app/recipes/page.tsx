@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Modal, Spinner, Alert, Field, useConfirm } from '@/components/ui';
 import { Badge, Button, SectionTitle } from '@/components/design-system';
-import { Plus, ChevronDown, ChevronUp, Clock3, Check } from 'lucide-react';
+import { Plus, ChevronDown, ChevronUp, Clock3, Check, BookOpen, Copy, Trash2 } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 
 interface Product {
@@ -49,6 +49,22 @@ interface TechnologyStep {
   instruments: string | null;
   durationMinutes: number | null;
   temperatureCelsius: number | null;
+}
+
+interface RecipeTemplate {
+  templateId: string;
+  tenantId: string;
+  name: string;
+  description: string | null;
+  category: string;
+  batchSize: number;
+  batchSizeUom: string;
+  expectedYield: number;
+  yieldUom: string;
+  productionNotes: string | null;
+  leadTimeHours: number | null;
+  ingredients: { ingredientLineId: string; itemId: string; itemName: string }[];
+  steps: { stepId: string; name: string; stepNumber: number }[];
 }
 
 const newStepForm = (recipeId: string, nextNum: number) => ({
@@ -100,6 +116,15 @@ export default function RecipesPage() {
   /* items for ingredient dropdowns */
   const [allItems, setAllItems] = useState<{ itemId: string; name: string; baseUom: string }[]>([]);
 
+  /* ── Template state ────────────────────────────────────────────────────── */
+  const [templates, setTemplates] = useState<RecipeTemplate[]>([]);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
+  const [saveTemplateRecipeId, setSaveTemplateRecipeId] = useState('');
+  const [tplForm, setTplForm] = useState({ name: '', description: '', category: 'General' });
+  const [savingTemplate, setSavingTemplate] = useState(false);
+  const [applyingTemplate, setApplyingTemplate] = useState('');
+
   const startEditIngredients = (r: Recipe) => {
     setEditIngRecipeId(r.recipeId);
     setEditIngRows(
@@ -119,6 +144,59 @@ export default function RecipesPage() {
   const cancelEditIngredients = () => {
     setEditIngRecipeId(null);
     setEditIngRows([]);
+  };
+
+  /* ── Template actions ────────────────────────────────────────────────── */
+  const loadTemplates = useCallback(async () => {
+    try {
+      const data = await apiFetch<RecipeTemplate[]>(`/v1/recipe-templates?tenantId=${TENANT_ID}`);
+      setTemplates(data);
+    } catch { setTemplates([]); }
+  }, []);
+
+  const openSaveTemplate = (recipeId: string) => {
+    setSaveTemplateRecipeId(recipeId);
+    setTplForm({ name: '', description: '', category: 'General' });
+    setSaveTemplateOpen(true);
+  };
+
+  const submitSaveTemplate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setSavingTemplate(true);
+      await apiFetch('/v1/recipe-templates', {
+        method: 'POST',
+        body: JSON.stringify({
+          tenantId: TENANT_ID,
+          recipeId: saveTemplateRecipeId,
+          ...tplForm,
+        }),
+      });
+      setSaveTemplateOpen(false);
+      loadTemplates();
+    } catch (err) { setError(String(err)); }
+    finally { setSavingTemplate(false); }
+  };
+
+  const applyTemplate = async (templateId: string) => {
+    if (!selectedPid) { setError('Select a product first'); return; }
+    try {
+      setApplyingTemplate(templateId);
+      await apiFetch('/v1/recipes/from-template', {
+        method: 'POST',
+        body: JSON.stringify({ tenantId: TENANT_ID, templateId, productId: selectedPid }),
+      });
+      loadRecipes(selectedPid);
+    } catch (err) { setError(String(err)); }
+    finally { setApplyingTemplate(''); }
+  };
+
+  const deleteTemplate = async (templateId: string) => {
+    if (!await askConfirm(t('recipes.deleteTemplate'))) return;
+    try {
+      await apiFetch(`/v1/recipe-templates/${templateId}?tenantId=${TENANT_ID}`, { method: 'DELETE' });
+      loadTemplates();
+    } catch (err) { setError(String(err)); }
   };
 
   const saveIngredients = async (recipeId: string) => {
@@ -156,7 +234,7 @@ export default function RecipesPage() {
       apiFetch<Dept[]>(`/v1/departments?tenantId=${TENANT_ID}`),
       apiFetch<{ itemId: string; name: string; baseUom: string }[]>(`/v1/items?tenantId=${TENANT_ID}&activeOnly=true`),
     ])
-      .then(([prods, deps, items]) => { setProducts(prods); setDepts(deps); setAllItems(items); })
+      .then(([prods, deps, items]) => { setProducts(prods); setDepts(deps); setAllItems(items); loadTemplates(); })
       .catch((e) => setError(String(e)))
       .finally(() => setInitLoading(false));
   }, []);
@@ -345,14 +423,23 @@ export default function RecipesPage() {
         title={t('recipes.title')}
         subtitle={t('recipes.subtitle') ?? 'Select a product above to view its recipes.'}
         action={
-          <Button
-            variant="primary"
-            size="sm"
-            disabled={!selectedPid}
-            onClick={openForm}
-          >
-            <Plus className="h-4 w-4" /> {t('recipes.newRecipe')}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setShowTemplates((v) => !v)}
+            >
+              <BookOpen className="h-4 w-4" /> {t('recipes.templates')}
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={!selectedPid}
+              onClick={openForm}
+            >
+              <Plus className="h-4 w-4" /> {t('recipes.newRecipe')}
+            </Button>
+          </div>
         }
       />
 
@@ -382,6 +469,51 @@ export default function RecipesPage() {
               </select>
             </div>
           </div>
+
+          {/* ── Template Library (expandable) ── */}
+          {showTemplates && (
+            <div className="mb-5 rounded-2xl border border-blue-200 bg-blue-50/50 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-blue-800">
+                  <BookOpen className="inline h-4 w-4 mr-1" />
+                  {t('recipes.templateLibrary')}
+                </h3>
+              </div>
+              {templates.length === 0 ? (
+                <p className="text-xs text-gray-500 py-4 text-center">{t('recipes.noTemplates')}</p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {templates.map((tpl) => (
+                    <div key={tpl.templateId} className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+                      <div className="flex items-start justify-between mb-1">
+                        <div>
+                          <span className="font-medium text-sm text-gray-800">{tpl.name}</span>
+                          <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">{tpl.category}</span>
+                        </div>
+                        <button className="text-red-400 hover:text-red-600" onClick={() => deleteTemplate(tpl.templateId)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                      {tpl.description && <p className="text-xs text-gray-500 mb-2">{tpl.description}</p>}
+                      <div className="text-xs text-gray-400 mb-2">
+                        {tpl.batchSize} {tpl.batchSizeUom} → {tpl.expectedYield} {tpl.yieldUom}
+                        {' · '}{tpl.ingredients?.length ?? 0} {t('recipes.ingr')}
+                        {' · '}{tpl.steps?.length ?? 0} {t('recipes.steps').toLowerCase()}
+                      </div>
+                      <Button
+                        variant="primary" size="xs"
+                        disabled={!selectedPid || applyingTemplate === tpl.templateId}
+                        onClick={() => applyTemplate(tpl.templateId)}
+                      >
+                        <Copy className="h-3 w-3" />
+                        {applyingTemplate === tpl.templateId ? '…' : t('recipes.useTemplate')}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {loading ? (
             <Spinner />
@@ -428,6 +560,13 @@ export default function RecipesPage() {
                           {activating === r.recipeId ? t('recipes.activating') : t('recipes.activate')}
                         </Button>
                       )}
+                      <Button
+                        variant="secondary"
+                        size="xs"
+                        onClick={(ev) => { ev.stopPropagation(); openSaveTemplate(r.recipeId); }}
+                      >
+                        <BookOpen className="h-3 w-3" /> {t('recipes.saveAsTemplate')}
+                      </Button>
                       <span className="text-gray-400">
                         {expanded === r.recipeId ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                       </span>
@@ -923,6 +1062,35 @@ export default function RecipesPage() {
           </form>
         </Modal>
       )}
+
+      {/* ── Save as Template modal ─────────────────────────────────────────── */}
+      {saveTemplateOpen && (
+        <Modal title={t('recipes.saveTemplateTitle')} onClose={() => setSaveTemplateOpen(false)}>
+          <form onSubmit={submitSaveTemplate} className="space-y-4">
+            <Field label={t('recipes.templateName')}>
+              <input className="input" required value={tplForm.name}
+                onChange={(e) => setTplForm((f) => ({ ...f, name: e.target.value }))} />
+            </Field>
+            <Field label={t('recipes.templateDescription')}>
+              <textarea className="input min-h-[60px] resize-y" value={tplForm.description}
+                onChange={(e) => setTplForm((f) => ({ ...f, description: e.target.value }))} />
+            </Field>
+            <Field label={t('recipes.templateCategory')}>
+              <input className="input" placeholder="e.g. Bread, Pastry, Fast Food" value={tplForm.category}
+                onChange={(e) => setTplForm((f) => ({ ...f, category: e.target.value }))} />
+            </Field>
+            <div className="flex justify-end gap-2 pt-2 border-t">
+              <Button variant="secondary" size="sm" onClick={() => setSaveTemplateOpen(false)}>
+                {t('common.cancel')}
+              </Button>
+              <Button variant="primary" size="sm" type="submit" disabled={savingTemplate}>
+                {savingTemplate ? t('common.saving') : t('common.save')}
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
       {confirmModal}
     </div>
   );

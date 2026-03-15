@@ -21,6 +21,8 @@ public class RecipeService {
 
     private final RecipeRepository recipeRepository;
     private final ProductRepository productRepository;
+    private final RecipeTemplateRepository templateRepository;
+    private final TechnologyStepRepository stepRepository;
 
     // -------------------------------------------------------------------------
     // Request DTOs
@@ -209,6 +211,85 @@ public class RecipeService {
             BigDecimal totalRecipeWeight,
             String weightUom
     ) {}
+
+    // -------------------------------------------------------------------------
+    // Create from template
+    // -------------------------------------------------------------------------
+
+    @CacheEvict(value = {"recipes", "activeRecipe", "recipe", "recipeMaterials"}, allEntries = true)
+    @Transactional
+    public RecipeEntity createFromTemplate(String tenantId, String templateId,
+                                            String productId, String createdBy) {
+        RecipeTemplateEntity tpl = templateRepository.findById(templateId)
+                .filter(t -> t.getTenantId().equals(tenantId))
+                .orElseThrow(() -> new IllegalArgumentException("Template not found: " + templateId));
+
+        productRepository.findById(productId)
+                .filter(p -> p.getTenantId().equals(tenantId))
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Product not found or does not belong to tenant: " + productId));
+
+        int nextVersion = recipeRepository.findMaxVersionNumber(tenantId, productId) + 1;
+        String recipeId = UUID.randomUUID().toString();
+
+        // Copy ingredients from template
+        List<RecipeIngredientEntity> ingredientEntities = tpl.getIngredients().stream()
+                .map(i -> RecipeIngredientEntity.builder()
+                        .ingredientLineId(UUID.randomUUID().toString())
+                        .recipeId(recipeId)
+                        .tenantId(tenantId)
+                        .itemId(i.getItemId())
+                        .itemName(i.getItemName())
+                        .unitMode(RecipeIngredient.UnitMode.valueOf(i.getUnitMode()))
+                        .recipeQty(i.getRecipeQty())
+                        .recipeUom(i.getRecipeUom())
+                        .pieceQty(i.getPieceQty())
+                        .weightPerPiece(i.getWeightPerPiece())
+                        .pieceWeightUom(i.getPieceWeightUom())
+                        .purchasingUnitSize(i.getPurchasingUnitSize())
+                        .purchasingUom(i.getPurchasingUom())
+                        .wasteFactor(i.getWasteFactor())
+                        .build())
+                .collect(Collectors.toList());
+
+        RecipeEntity entity = RecipeEntity.builder()
+                .recipeId(recipeId)
+                .tenantId(tenantId)
+                .productId(productId)
+                .versionNumber(nextVersion)
+                .status(Recipe.RecipeStatus.DRAFT)
+                .batchSize(tpl.getBatchSize())
+                .batchSizeUom(tpl.getBatchSizeUom())
+                .expectedYield(tpl.getExpectedYield())
+                .yieldUom(tpl.getYieldUom())
+                .productionNotes(tpl.getProductionNotes())
+                .leadTimeHours(tpl.getLeadTimeHours())
+                .ingredients(ingredientEntities)
+                .createdBy(createdBy)
+                .build();
+
+        RecipeEntity saved = recipeRepository.save(entity);
+
+        // Copy technology steps from template
+        for (RecipeTemplateStepEntity ts : tpl.getSteps()) {
+            TechnologyStepEntity step = TechnologyStepEntity.builder()
+                    .stepId(UUID.randomUUID().toString())
+                    .tenantId(tenantId)
+                    .recipeId(recipeId)
+                    .stepNumber(ts.getStepNumber())
+                    .name(ts.getName())
+                    .activities(ts.getActivities())
+                    .instruments(ts.getInstruments())
+                    .durationMinutes(ts.getDurationMinutes())
+                    .temperatureCelsius(ts.getTemperatureCelsius())
+                    .build();
+            stepRepository.save(step);
+        }
+
+        log.info("Recipe created from template '{}' for product {}: recipeId={}, version={}",
+                tpl.getName(), productId, recipeId, nextVersion);
+        return saved;
+    }
 
     // -------------------------------------------------------------------------
     // Helpers

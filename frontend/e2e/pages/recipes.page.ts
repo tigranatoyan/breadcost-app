@@ -5,12 +5,14 @@ export class RecipesPage {
   readonly newRecipeButton: Locator;
   readonly departmentFilter: Locator;
   readonly productFilter: Locator;
+  readonly templatesButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.newRecipeButton = page.getByRole('button', { name: /new recipe/i });
     this.departmentFilter = page.locator('select').first();
     this.productFilter = page.locator('select').nth(1);
+    this.templatesButton = page.getByRole('button', { name: /templates/i });
   }
 
   async goto() {

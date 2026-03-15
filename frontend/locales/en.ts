@@ -363,6 +363,21 @@ const en = {
     allDepartments: 'All Departments',
     confirmActivate: 'Activate this recipe? The current active version will be archived.',
     unitMode: 'Unit Mode',
+    // Templates (BC-317)
+    templates: 'Templates',
+    templateLibrary: 'Template Library',
+    saveAsTemplate: 'Save as Template',
+    createFromTemplate: 'From Template',
+    templateName: 'Template Name',
+    templateDescription: 'Description',
+    templateCategory: 'Category',
+    noTemplates: 'No templates yet. Save a recipe as a template to get started.',
+    saveTemplateTitle: 'Save Recipe as Template',
+    useTemplate: 'Use Template',
+    deleteTemplate: 'Delete this template?',
+    templateSaved: 'Template saved!',
+    recipeCreated: 'Recipe created from template!',
+    workshop: 'Workshop',
   },
 
   // ── Departments ────────────────────────────────────────────────────────────

@@ -67,6 +67,12 @@ public class RecipeController {
             @NotNull List<IngredientRequest> ingredients
     ) {}
 
+    public record CreateFromTemplateRequest(
+            @NotBlank String tenantId,
+            @NotBlank String templateId,
+            @NotBlank String productId
+    ) {}
+
     public record MaterialRequirementsRequest(
             @NotBlank String tenantId,
             @NotNull @Positive BigDecimal batchMultiplier
@@ -137,6 +143,19 @@ public class RecipeController {
                         req.productionNotes(), req.leadTimeHours(), ingredients,
                         getPrincipalName()
                 ));
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    /**
+     * POST /v1/recipes/from-template
+     * Create a new recipe version from a template (DRAFT) — copies ingredients + steps
+     */
+    @PostMapping("/from-template")
+    @PreAuthorize("hasAnyRole('Admin', 'Technologist')")
+    public ResponseEntity<RecipeEntity> createFromTemplate(
+            @Valid @RequestBody CreateFromTemplateRequest req) {
+        RecipeEntity created = recipeService.createFromTemplate(
+                req.tenantId(), req.templateId(), req.productId(), getPrincipalName());
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
