@@ -57,16 +57,12 @@ const ALL_STATUSES = ['DRAFT', 'CONFIRMED', 'IN_PRODUCTION', 'READY', 'OUT_FOR_D
 
 const STATUS_NEXT: Record<string, string | null> = {
   CONFIRMED: 'IN_PRODUCTION',
-  IN_PRODUCTION: 'READY',
-  READY: 'OUT_FOR_DELIVERY',
-  OUT_FOR_DELIVERY: 'DELIVERED',
+  // READY status auto-set by plan completion (BC-280)
+  // Delivery transitions managed on /deliveries + /driver pages (BC-259)
 };
 
 const STATUS_NEXT_KEY: Record<string, string> = {
   CONFIRMED: 'orders.startProduction',
-  IN_PRODUCTION: 'orders.markReady',
-  READY: 'orders.outForDelivery',
-  OUT_FOR_DELIVERY: 'orders.markDelivered',
 };
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
