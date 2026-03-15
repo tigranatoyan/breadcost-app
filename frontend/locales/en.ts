@@ -447,6 +447,8 @@ const en = {
     completeBtn: '✓ Complete',
     details: 'Details',
     pendingRemaining: '+{count} more pending',
+    // A7-03 - quality risk
+    qualityRisk: 'Risk',
   },
 
   // ── Inventory ──────────────────────────────────────────────────────────────

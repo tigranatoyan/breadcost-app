@@ -4,7 +4,7 @@ import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Badge, Alert } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
 import { useT, useI18n, BCP47 } from '@/lib/i18n';
-import { Clock3, Play, Check, X, Factory, ClipboardList, Wrench, Thermometer, AlertCircle, Zap } from 'lucide-react';
+import { Clock3, Play, Check, X, Factory, ClipboardList, Wrench, Thermometer, AlertCircle, Zap, ShieldAlert } from 'lucide-react';
 
 // â”€â”€â”€ interfaces â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -56,6 +56,15 @@ interface Plan {
   shift: string;
   status: string;
   workOrders: WorkOrder[];
+}
+
+interface QualityRisk {
+  predictionId: string;
+  productId: string;
+  productName: string;
+  riskLevel: string;
+  predictedYieldPct: number;
+  recommendation: string;
 }
 
 // â”€â”€â”€ step key helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -397,6 +406,9 @@ export default function FloorPage() {
   const recipeCache = useRef<Record<string, RecipeDetail>>({});
   const stepsCache = useRef<Record<string, TechnologyStep[]>>({});
 
+  // Quality risk data
+  const [qualityRisks, setQualityRisks] = useState<Record<string, QualityRisk>>({});
+
   const today = now.toISOString().substring(0, 10);
 
   useEffect(() => {
@@ -419,6 +431,17 @@ export default function FloorPage() {
   }, [viewDate]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Load quality risk predictions
+  useEffect(() => {
+    apiFetch<QualityRisk[]>(`/v3/ai/suggestions/quality/high-risk?tenantId=${TENANT_ID}`)
+      .then((risks) => {
+        const map: Record<string, QualityRisk> = {};
+        risks.forEach((r) => { map[r.productId] = r; });
+        setQualityRisks(map);
+      })
+      .catch(() => {}); // non-critical
+  }, []);
 
   const reloadPlan = async (planId: string) => {
     try {
@@ -539,7 +562,14 @@ export default function FloorPage() {
             <div key={wo.workOrderId} className="flex items-center gap-3 bg-blue-100 border border-blue-200 rounded-xl px-4 py-3">
               <Play className="h-5 w-5 text-blue-600 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-blue-900">{wo.productName}</div>
+                <div className="font-semibold text-blue-900 flex items-center gap-1.5">
+                  {wo.productName}
+                  {qualityRisks[wo.productId] && (
+                    <span className="inline-flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-full font-semibold bg-red-100 text-red-700">
+                      <ShieldAlert className="h-3 w-3" /> {t('floor.qualityRisk')}
+                    </span>
+                  )}
+                </div>
                 <div className="text-xs text-blue-600">{t('floor.target')}: {wo.targetQty} {wo.targetUom} · {planShift}</div>
               </div>
               <Button
@@ -683,7 +713,19 @@ export default function FloorPage() {
                     >
                       <span className="flex-shrink-0">{woStatusIcon[wo.status] ?? <Clock3 className="h-5 w-5 text-gray-300" />}</span>
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium">{wo.productName}</div>
+                        <div className="text-sm font-medium flex items-center gap-1.5">
+                          {wo.productName}
+                          {qualityRisks[wo.productId] && (
+                            <span className={`inline-flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-full font-semibold ${
+                              qualityRisks[wo.productId].riskLevel === 'HIGH'
+                                ? 'bg-red-100 text-red-700'
+                                : 'bg-amber-100 text-amber-700'
+                            }`} title={qualityRisks[wo.productId].recommendation}>
+                              <ShieldAlert className="h-3 w-3" />
+                              {t('floor.qualityRisk')}
+                            </span>
+                          )}
+                        </div>
                         <div className="text-xs text-gray-400">
                           {t('floor.target')}: {wo.targetQty} {wo.targetUom}
                           {wo.batchCount ? ` · ${t('floor.batches', {count: wo.batchCount})}` : ''}

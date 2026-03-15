@@ -4,7 +4,7 @@ import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Modal, Spinner, Alert, Success, Badge, Field, useConfirm } from '@/components/ui';
 import { SectionTitle, Button, SelectField, InputField } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
-import { Plus } from 'lucide-react';
+import { Plus, ShieldAlert } from 'lucide-react';
 
 interface WorkOrder {
   workOrderId: string;
@@ -76,6 +76,7 @@ export default function ProductionPlansPage() {
   const [loadingMats, setLoadingMats] = useState('');
   const [schedules, setSchedules] = useState<Record<string, PlanSchedule>>({});
   const [loadingSchedule, setLoadingSchedule] = useState('');
+  const [qualityRisks, setQualityRisks] = useState<Record<string, { riskLevel: string; recommendation: string }>>({});
   const [form, setForm] = useState({
     planDate: new Date().toISOString().substring(0, 10),
     shift: 'MORNING',
@@ -100,6 +101,17 @@ export default function ProductionPlansPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Load quality risk predictions
+  useEffect(() => {
+    apiFetch<{ productId: string; riskLevel: string; recommendation: string }[]>(
+      `/v3/ai/suggestions/quality/high-risk?tenantId=${TENANT_ID}`
+    ).then((risks) => {
+      const map: Record<string, { riskLevel: string; recommendation: string }> = {};
+      risks.forEach((r) => { map[r.productId] = r; });
+      setQualityRisks(map);
+    }).catch(() => {});
+  }, []);
 
   const reloadPlan = async (planId: string) => {
     try {
@@ -499,7 +511,17 @@ export default function ProductionPlansPage() {
                           {p.workOrders.map((wo) => (
                             <tr key={wo.workOrderId}>
                               <td className="py-1.5 pr-3 font-medium">
-                                {wo.productName}
+                                <span className="flex items-center gap-1.5">
+                                  {wo.productName}
+                                  {qualityRisks[wo.productId] && (
+                                    <span className={`inline-flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-full font-semibold ${
+                                      qualityRisks[wo.productId].riskLevel === 'HIGH' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                                    }`} title={qualityRisks[wo.productId].recommendation}>
+                                      <ShieldAlert className="h-3 w-3" />
+                                      {t('floor.qualityRisk')}
+                                    </span>
+                                  )}
+                                </span>
                               </td>
                               <td className="py-1.5 pr-3">{wo.departmentName}</td>
                               <td className="py-1.5 pr-3">
