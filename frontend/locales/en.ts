@@ -839,6 +839,7 @@ const en = {
     createRun: 'Create Delivery Run',
     created: 'Delivery run created.',
     runId: 'Run ID',
+    runNumber: 'Run #',
     driver: 'Driver',
     driverName: 'Driver Name',
     vehicle: 'Vehicle',

@@ -17,6 +17,7 @@ interface DeliveryRun {
   completedAt?: string;
   notes?: string;
   createdAt?: string;
+  runNumber?: number;
 }
 interface RunOrder {
   orderId: string;
@@ -159,9 +160,9 @@ export default function DeliveriesPage() {
 
       {loading ? <Spinner /> : (
         <Table
-          cols={[t('deliveries.runId'), t('deliveries.driver'), t('deliveries.vehicle'), t('deliveries.scheduledDate'), t('common.status'), t('common.actions')]}
+          cols={[t('deliveries.runNumber'), t('deliveries.driver'), t('deliveries.vehicle'), t('deliveries.scheduledDate'), t('common.status'), t('common.actions')]}
           rows={runs.map(r => [
-            <button key={r.runId} className="text-blue-600 underline text-sm" onClick={() => openDetail(r)}>{r.runId.slice(0, 8)}</button>,
+            <button key={r.runId} className="text-blue-600 underline text-sm" onClick={() => openDetail(r)}>RUN-{String(r.runNumber ?? 0).padStart(3, '0')}</button>,
             r.driverName || r.driverId || '—',
             r.vehiclePlate || '—',
             r.scheduledDate || '—',
@@ -239,7 +240,7 @@ export default function DeliveriesPage() {
 
       {/* detail modal */}
       {detailRun && (
-        <Modal title={`${t('deliveries.runDetail')} — ${detailRun.runId.slice(0, 8)}`} onClose={() => { setDetailRun(null); setManifest(null); }} wide>
+        <Modal title={`${t('deliveries.runDetail')} — RUN-${String(detailRun.runNumber ?? 0).padStart(3, '0')}`} onClose={() => { setDetailRun(null); setManifest(null); }} wide>
           {detailLoading ? <Spinner /> : (
             <>
               <div className="grid grid-cols-2 gap-4 mb-4 text-sm">

@@ -39,6 +39,8 @@ public class DeliveryRunEntity {
     @Column(length = 2000)
     private String notes;
 
+    private Integer runNumber;
+
     private Instant createdAt;
     private Instant updatedAt;
 
