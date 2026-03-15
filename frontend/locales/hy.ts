@@ -870,6 +870,10 @@
     ingredientIdPlaceholder: 'Մուտքագրեք բաղկացուցիչի ID…',
     findSuppliers: 'Օրոնել',
     noSuppliersForIngredient: 'Տվյալ բաղկացուցիչի համար մատակարարներ չկան։',
+    // A3-05
+    adminSection: 'Մատակարարների կառավարում',
+    operationsSection: 'Գնումների գործարկներ',
+    lookupSection: 'Մատակարարների համեմատություն',
   },
 
   deliveries: {

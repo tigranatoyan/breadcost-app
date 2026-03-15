@@ -919,6 +919,10 @@ const en = {
     ingredientIdPlaceholder: 'Enter ingredient ID…',
     findSuppliers: 'Lookup',
     noSuppliersForIngredient: 'No suppliers found for this ingredient.',
+    // A3-05 - section labels
+    adminSection: 'Supplier Management',
+    operationsSection: 'Procurement Operations',
+    lookupSection: 'Supplier Comparison',
   },
 
   // ── Deliveries ─────────────────────────────────────────────────────────────
