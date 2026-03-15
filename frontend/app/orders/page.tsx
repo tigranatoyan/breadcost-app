@@ -127,6 +127,9 @@ export default function OrdersPage() {
   // action in-flight
   const [actionId, setActionId] = useState('');
 
+  // edit mode
+  const [editTarget, setEditTarget] = useState<string | null>(null);
+
   // cancel reason dialog
   const [cancelTarget, setCancelTarget] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState('');
@@ -181,6 +184,28 @@ export default function OrdersPage() {
       customRushPremiumPct: '',
       lines: products.length > 0 ? [makeDefaultLine(products)] : [],
     });
+    setEditTarget(null);
+    setOpen(true);
+  };
+
+  const openEdit = (o: Order) => {
+    setForm({
+      customerName: o.customerName,
+      requestedDeliveryTime: o.requestedDeliveryTime ? o.requestedDeliveryTime.slice(0, 16) : '',
+      notes: o.notes || '',
+      forceRush: o.rushOrder,
+      customRushPremiumPct: o.rushPremiumPct ? String(o.rushPremiumPct) : '',
+      lines: o.lines.map((l) => ({
+        productId: l.productId,
+        productName: l.productName,
+        departmentId: '',
+        departmentName: '',
+        qty: l.qty,
+        uom: l.uom,
+        unitPrice: String(l.unitPrice ?? 0),
+      })),
+    });
+    setEditTarget(o.orderId);
     setOpen(true);
   };
 
@@ -215,29 +240,40 @@ export default function OrdersPage() {
     e.preventDefault();
     try {
       setSaving(true);
-      await apiFetch(`/v1/orders?tenantId=${TENANT_ID}`, {
-        method: 'POST',
-        body: JSON.stringify({
-          tenantId: TENANT_ID,
-          customerName: form.customerName,
-          requestedDeliveryTime: new Date(form.requestedDeliveryTime).toISOString(),
-          notes: form.notes || null,
-          forceRush: form.forceRush,
-          customRushPremiumPct: form.customRushPremiumPct ? parseFloat(form.customRushPremiumPct) : null,
-          lines: form.lines.map((l) => ({
-            productId: l.productId,
-            productName: l.productName,
-            departmentId: l.departmentId,
-            departmentName: l.departmentName,
-            qty: l.qty,
-            uom: l.uom,
-            unitPrice: parseFloat(l.unitPrice) || 0,
-          })),
-        }),
-      });
+      const payload = {
+        tenantId: TENANT_ID,
+        customerName: form.customerName,
+        requestedDeliveryTime: new Date(form.requestedDeliveryTime).toISOString(),
+        notes: form.notes || null,
+        forceRush: form.forceRush,
+        customRushPremiumPct: form.customRushPremiumPct ? parseFloat(form.customRushPremiumPct) : null,
+        lines: form.lines.map((l) => ({
+          productId: l.productId,
+          productName: l.productName,
+          departmentId: l.departmentId,
+          departmentName: l.departmentName,
+          qty: l.qty,
+          uom: l.uom,
+          unitPrice: parseFloat(l.unitPrice) || 0,
+        })),
+      };
+      if (editTarget) {
+        const updated = await apiFetch<Order>(`/v1/orders/${editTarget}?tenantId=${TENANT_ID}`, {
+          method: 'PUT',
+          body: JSON.stringify(payload),
+        });
+        setOrders((prev) => prev.map((o) => (o.orderId === editTarget ? updated : o)));
+        toastSuccess(t('orders.orderUpdated'));
+      } else {
+        await apiFetch(`/v1/orders?tenantId=${TENANT_ID}`, {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+        load();
+        toastSuccess(t('orders.orderCreated'));
+      }
       setOpen(false);
-      load();
-      toastSuccess(t('orders.orderCreated'));
+      setEditTarget(null);
     } catch (e) {
       toastError(String(e));
     } finally {
@@ -378,6 +414,12 @@ export default function OrdersPage() {
                   className="flex gap-1 shrink-0"
                   onClick={(e) => e.stopPropagation()}
                 >
+                  {/* DRAFT → Edit */}
+                  {o.status === 'DRAFT' && (
+                    <Button variant="secondary" size="xs" disabled={actionId === o.orderId} onClick={() => openEdit(o)}>
+                      {t('orders.editBtn')}
+                    </Button>
+                  )}
                   {/* DRAFT → Confirm */}
                   {o.status === 'DRAFT' && (
                     <Button variant="primary" size="xs" disabled={actionId === o.orderId} onClick={() => doConfirm(o.orderId)}>
@@ -481,9 +523,9 @@ export default function OrdersPage() {
 
       {!loading && <Pagination page={page} totalPages={totalPages} onPageChange={changePage} />}
 
-      {/* ─── Create Order Modal ─────────────────────────────────────────────── */}
+      {/* ─── Create / Edit Order Modal ──────────────────────────────────────── */}
       {open && (
-        <Modal title={t('orders.newOrderTitle')} onClose={() => setOpen(false)} wide>
+        <Modal title={editTarget ? t('orders.editOrderTitle') : t('orders.newOrderTitle')} onClose={() => { setOpen(false); setEditTarget(null); }} wide>
           <form onSubmit={submit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <Field label={t('orders.customerName')}>
@@ -609,11 +651,11 @@ export default function OrdersPage() {
             </div>
 
             <div className="flex justify-end gap-2 pt-2 border-t">
-              <Button variant="secondary" size="sm" type="button" onClick={() => setOpen(false)}>
+              <Button variant="secondary" size="sm" type="button" onClick={() => { setOpen(false); setEditTarget(null); }}>
                 {t('common.cancel')}
               </Button>
               <Button variant="primary" size="sm" type="submit" disabled={saving || form.lines.length === 0}>
-                {saving ? t('common.saving') : t('orders.newOrder')}
+                {saving ? t('common.saving') : editTarget ? t('common.save') : t('orders.newOrder')}
               </Button>
             </div>
           </form>
