@@ -275,7 +275,7 @@ export default function SuppliersPage() {
       const res = await fetch(`${API_BASE}/v2/purchase-orders/${id}/export?tenantId=${TENANT_ID}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('bc_token')}` },
       });
-      if (!res.ok) throw new Error('Export failed');
+      if (!res.ok) throw new Error(t('suppliers.exportFailed'));
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -328,7 +328,7 @@ export default function SuppliersPage() {
   /* ── render ─────────────────────────────────────────── */
   return (
     <div className="max-w-[1800px]">
-      <SectionTitle eyebrow="Supply Chain" title={t('suppliers.title')} />
+      <SectionTitle eyebrow={t('suppliers.eyebrow')} title={t('suppliers.title')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}

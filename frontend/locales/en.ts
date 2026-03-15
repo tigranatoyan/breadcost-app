@@ -835,6 +835,8 @@ const en = {
   // ── Suppliers & Purchase Orders ────────────────────────────────────────────
   suppliers: {
     title: 'Suppliers & Purchase Orders',
+    eyebrow: 'Supply Chain',
+    exportFailed: 'Export failed',
     tab_suppliers: 'Suppliers',
     tab_purchase_orders: 'Purchase Orders',
     tab_api_config: 'API Config',
