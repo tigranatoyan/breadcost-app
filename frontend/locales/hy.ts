@@ -418,6 +418,14 @@
     wasteQty: 'Թափոններ',
     qualityScore: 'Որակի միավոր',
     qualityNotes: 'Որակի նոտեր',
+    // A2-14
+    actionRequired: 'Գործողություն անհրաժեշտ',
+    actionCount: '{started} ընթացքում · {pending} սպասում',
+    startNext: '▶ Սկսել հաջորդը',
+    startBtn: '▶ Սկսել',
+    completeBtn: '✓ Ավարտել',
+    details: 'Մանրամասներ',
+    pendingRemaining: '+{count} սպասում',
   },
 
   inventory: {
