@@ -28,7 +28,7 @@ export class SuppliersPage {
   }
 
   ingredientLookupInput(): Locator {
-    return this.page.getByPlaceholder(/ingredient/i);
+    return this.page.locator('.bg-gray-50 select').first();
   }
 
   findSuppliersButton(): Locator {
