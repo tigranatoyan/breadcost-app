@@ -218,6 +218,9 @@
     widget_stockAlerts: 'Պահեստի ազդանշաններ',
     widget_revenue: 'Եկամուտ',
     widget_productionFloor: 'Արտադրական հարկ',
+    widget_financialAnalytics: 'Ֆինանսական վերլուծություն',
+    widget_topProducts: 'Լավագույն արտադրանքներ',
+    widget_customerInsights: 'Հաճախորդի վերլուծություն',
   },
 
   orders: {

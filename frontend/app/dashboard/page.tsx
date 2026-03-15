@@ -2,8 +2,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { PageSkeleton } from '@/components/ui';
-import { Badge, Card, StatCard, Progress, Button, SectionTitle } from '@/components/design-system';
-import { CircleDollarSign, ShoppingCart, Factory, Warehouse, AlertTriangle, RefreshCw, Settings } from 'lucide-react';
+import { Badge, Card, StatCard, Progress, Button, SectionTitle, Table } from '@/components/design-system';
+import { CircleDollarSign, ShoppingCart, Factory, Warehouse, AlertTriangle, RefreshCw, Settings, DollarSign, TrendingUp, Users, Package } from 'lucide-react';
 import Link from 'next/link';
 import { useI18n, useDateTimeFmt, BCP47 } from '@/lib/i18n';
 
@@ -118,7 +118,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 // ─── widget config ────────────────────────────────────────────────────────────
-const WIDGET_IDS = ['kpi', 'todayOrders', 'activePlans', 'nextEvent', 'deliveryTimeline', 'issues', 'stockAlerts', 'revenue', 'productionFloor'] as const;
+const WIDGET_IDS = ['kpi', 'todayOrders', 'activePlans', 'nextEvent', 'deliveryTimeline', 'issues', 'stockAlerts', 'revenue', 'productionFloor', 'financialAnalytics', 'topProducts', 'customerInsights'] as const;
 type WidgetId = typeof WIDGET_IDS[number];
 const WIDGET_STORAGE_KEY = 'bc_dashboard_widgets';
 
@@ -148,6 +148,8 @@ export default function DashboardPage() {
   const [stockItems, setStockItems] = useState<StockItem[]>([]);
   const [serverAlerts, setServerAlerts] = useState<StockAlert[]>([]);
   const [revenue, setRevenue] = useState<RevenueSummary | null>(null);
+  const [topProducts, setTopProducts] = useState<Array<Record<string, unknown>>>([]);
+  const [analyticsKpis, setAnalyticsKpis] = useState<Record<string, string>>({});
   const [tick, setTick] = useState(0);
   const [visibleWidgets, setVisibleWidgets] = useState<Set<WidgetId>>(() => getVisibleWidgets());
   const [showConfig, setShowConfig] = useState(false);
@@ -173,6 +175,18 @@ export default function DashboardPage() {
       apiFetch<StockItem[]>(`/v1/items?tenantId=${TENANT_ID}`).then(setStockItems).catch(() => {}),
       apiFetch<StockAlert[]>(`/v1/inventory/alerts?tenantId=${TENANT_ID}`).then(setServerAlerts).catch(() => {}),
       apiFetch<RevenueSummary>(`/v1/reports/revenue-summary?tenantId=${TENANT_ID}`).then(setRevenue).catch(() => {}),
+      apiFetch<Array<Record<string, unknown>>>(`/v1/reports/top-products?tenantId=${TENANT_ID}&limit=8`).then(setTopProducts).catch(() => {}),
+      (async () => {
+        const keys = ['gross_margin_pct', 'avg_order_value', 'overdue_invoices', 'active_customers', 'order_frequency', 'customer_lifetime_value', 'disputed_invoice_rate'];
+        const results: Record<string, string> = {};
+        for (const key of keys) {
+          try {
+            const val = await apiFetch<Record<string, unknown>>(`/v2/reports/kpi?blockKey=${key}&tenantId=${TENANT_ID}`);
+            results[key] = val?.value != null ? String(val.value) : '\u2014';
+          } catch { results[key] = '\u2014'; }
+        }
+        setAnalyticsKpis(results);
+      })(),
     ])
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -538,6 +552,48 @@ export default function DashboardPage() {
               </Card>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Financial Analytics (BC-309: merged from /analytics) */}
+      {show('financialAnalytics') && (
+        <div className="space-y-4">
+          <SectionLabel>{t('dashboard.widget_financialAnalytics')}</SectionLabel>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <StatCard icon={DollarSign} label={t('analytics.grossMargin')} value={`${analyticsKpis.gross_margin_pct ?? '\u2014'}%`} />
+            <StatCard icon={ShoppingCart} label={t('analytics.avgOrderValue')} value={analyticsKpis.avg_order_value ?? '\u2014'} />
+            <StatCard icon={AlertTriangle} label={t('analytics.overdueInvoices')} value={analyticsKpis.overdue_invoices ?? '\u2014'} />
+            <StatCard icon={TrendingUp} label={t('analytics.disputeRate')} value={`${analyticsKpis.disputed_invoice_rate ?? '\u2014'}%`} />
+          </div>
+        </div>
+      )}
+
+      {/* Customer Insights (BC-309: merged from /analytics) */}
+      {show('customerInsights') && (
+        <div className="space-y-4">
+          <SectionLabel>{t('dashboard.widget_customerInsights')}</SectionLabel>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <StatCard icon={Users} label={t('analytics.activeCustomers')} value={analyticsKpis.active_customers ?? '\u2014'} />
+            <StatCard icon={ShoppingCart} label={t('analytics.orderFrequency')} value={`${analyticsKpis.order_frequency ?? '\u2014'}x`} />
+            <StatCard icon={DollarSign} label={t('analytics.customerLtv')} value={analyticsKpis.customer_lifetime_value ?? '\u2014'} />
+          </div>
+        </div>
+      )}
+
+      {/* Top Products (BC-309: merged from /analytics) */}
+      {show('topProducts') && topProducts.length > 0 && (
+        <div className="space-y-4">
+          <SectionLabel>{t('dashboard.widget_topProducts')}</SectionLabel>
+          <Table
+            cols={[t('analytics.productCol'), t('analytics.qtySold'), t('analytics.revenueCol'), t('analytics.ordersCol')]}
+            rows={topProducts.map((p) => [
+              String(p.name || p.productName || ''),
+              String(p.totalQty ?? 0),
+              Number(p.totalRevenue ?? 0).toLocaleString(),
+              String(p.orderCount ?? 0),
+            ])}
+            empty={t('analytics.noProductData')}
+          />
         </div>
       )}
 
