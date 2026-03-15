@@ -276,6 +276,11 @@ export default function ProductionPlansPage() {
         action: 'approve',
         cls: 'bg-purple-600 text-white hover:bg-purple-700',
       });
+      btns.push({
+        label: t('productionPlans.reject'),
+        action: 'reject',
+        cls: 'bg-red-600 text-white hover:bg-red-700',
+      });
     }
     if (p.status === 'APPROVED' || p.status === 'PUBLISHED') {
       btns.push({
