@@ -628,6 +628,8 @@ const en = {
     deletePlan: '🗑 Delete',
     zeroWorkOrders: 'No work orders were generated. There are no confirmed orders matching this plan date.',
     workOrdersGenerated: '{count} work order(s) generated successfully.',
+    autoPlan: '⚡ Auto-Plan from Orders',
+    autoPlanCreated: 'Auto-plan created from confirmed orders.',
     yieldPlaceholder: 'Yield',
     notesPlaceholder: 'Optional instructions for the production team',
     workOrderCount: '{count} work order(s)',
