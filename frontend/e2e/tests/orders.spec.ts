@@ -61,10 +61,7 @@ test.describe('Orders', () => {
     await page.waitForLoadState('load');
 
     // Filter to DRAFT orders
-    await orders.statusFilter.selectOption({ label: 'DRAFT' }).catch(() => {
-      // Some implementations use value instead of label
-      return orders.statusFilter.selectOption('DRAFT');
-    });
+    await orders.statusFilter.selectOption('DRAFT');
     await page.waitForLoadState('load');
 
     // Try to confirm the first draft order if available
