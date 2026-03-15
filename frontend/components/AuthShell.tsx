@@ -393,8 +393,9 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
               </div>
               <h2 className="text-xl font-semibold text-gray-900">{t('subscription.upgradeRequired')}</h2>
               <p className="mt-2 max-w-md text-gray-500">{t('subscription.upgradeMessage')}</p>
+              <p className="mt-1 text-xs text-gray-400">{t('subscription.featureNeeded', { feature: currentItem?.featureKey ?? '' })}</p>
               <button
-                onClick={() => router.push('/dashboard')}
+                onClick={() => router.push('/subscriptions')}
                 className="mt-6 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
               >
                 {t('subscription.upgradeCta')}

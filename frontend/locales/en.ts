@@ -1154,6 +1154,27 @@ const en = {
     expiringSoon: '⚠ {count} subscription(s) expiring soon',
     deactivateExpired: 'Deactivate Expired',
     expiredDeactivated: 'Expired subscriptions deactivated.',
+    // BC-304 - tier clarity
+    recommended: 'Recommended',
+    currentPlan: 'Current Plan',
+    selectPlan: 'Select Plan',
+    upToUsers: 'Up to {count} users',
+    basicDesc: 'Essential tools for small bakeries getting started',
+    standardDesc: 'Full operations suite for growing businesses',
+    enterpriseDesc: 'Unlimited access with AI-powered automation',
+    feature_ORDERS: 'Order Management',
+    feature_POS: 'Point of Sale',
+    feature_INVENTORY: 'Inventory Tracking',
+    feature_CUSTOMERS: 'Customer Records',
+    feature_DELIVERY: 'Delivery Management',
+    feature_INVOICING: 'Invoicing & Billing',
+    feature_LOYALTY: 'Loyalty Program',
+    feature_REPORTS: 'Advanced Reports',
+    feature_PRODUCTION: 'Production Planning',
+    feature_AI_BOT: 'AI Assistant & WhatsApp',
+    feature_WHATSAPP: 'WhatsApp Integration',
+    feature_SUPPLIER: 'Supplier Management',
+    feature_SUBSCRIPTIONS: 'Platform Administration',
   },
 
   // ── Tenant Management ──────────────────────────────────────────────────────
@@ -1476,7 +1497,8 @@ const en = {
   subscription: {
     upgradeRequired: 'Upgrade Required',
     upgradeMessage: 'Your current plan does not include this feature. Please contact your administrator to upgrade.',
-    upgradeCta: 'Go to Dashboard',
+    upgradeCta: 'View Plans',
+    featureNeeded: 'Required feature: {feature}',
   },
 } as const;
 

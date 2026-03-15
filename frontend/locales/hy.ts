@@ -1097,6 +1097,27 @@
     expiringSoon: '⚠ {count} բաժանորդագրություն(ներ) լրանում է/են',
     deactivateExpired: 'Անջատել ժամկետանցը',
     expiredDeactivated: 'Իամկետ բաժանորդագրությունները անջատվեցին։',
+    // BC-304 - tier clarity
+    recommended: 'Հանրահսված',
+    currentPlan: 'Ընթացիկ պլան',
+    selectPlan: 'Ընտրել պլանը',
+    upToUsers: 'Մինչև {count} օգտագործ',
+    basicDesc: 'Հիմնական գործիքներ սկսնակ հացատունների համար',
+    standardDesc: 'ԉամբողջ գորածման փաթեթ աճող բիզնեսի համար',
+    enterpriseDesc: 'Անսահման հասանելիություն Ա԰-ի ՠետ',
+    feature_ORDERS: 'Պատվերների կառավարում',
+    feature_POS: 'Վաճառքի կետ',
+    feature_INVENTORY: 'Պահեստի հաշվարկում',
+    feature_CUSTOMERS: 'Հաճախորդներ',
+    feature_DELIVERY: 'Առաքման կառավարում',
+    feature_INVOICING: 'Հաշվարկներ և վճարում',
+    feature_LOYALTY: 'Հավատարմության ծրագիր',
+    feature_REPORTS: 'Ընդլայնված հաշվետվություններ',
+    feature_PRODUCTION: 'Արտադրության պլանավորում',
+    feature_AI_BOT: 'Ա԰ օգնական և WhatsApp',
+    feature_WHATSAPP: 'WhatsApp ինտեգրացիա',
+    feature_SUPPLIER: 'Մատակարարների կառավարում',
+    feature_SUBSCRIPTIONS: 'Պլատֆորմի կառավարում',
   },
 
   // ── Tenant Management ──────────────────────────────────────────────────────
@@ -1407,7 +1428,8 @@
   subscription: {
     upgradeRequired: '\u0531\u0576\u0570\u0580\u0561\u056a\u0565\u0577\u057f \u0567 \u0569\u0561\u0580\u0574\u0561\u0581\u0576\u0565\u056c',
     upgradeMessage: '\u0541\u0565\u0580 \u0568\u0576\u0569\u0561\u0581\u056b\u056f \u057a\u056c\u0561\u0576\u0568 \u0579\u056b \u0576\u0565\u0580\u0561\u057c\u0578\u0582\u0574 \u0561\u0575\u057d \u0570\u0576\u0561\u0580\u0561\u057e\u0578\u0580\u0578\u0582\u0569\u0575\u0578\u0582\u0576\u0568\u0589 \u053f\u0561\u057a\u057e\u0565\u0584 \u0561\u0564\u0574\u056b\u0576\u056b\u057d\u057f\u0580\u0561\u057f\u0578\u0580\u056b \u0570\u0565\u057f\u055d \u0569\u0561\u0580\u0574\u0561\u0581\u0576\u0565\u056c\u0578\u0582 \u0570\u0561\u0574\u0561\u0580\u0589',
-    upgradeCta: '\u054e\u0565\u0580\u0561\u0564\u0561\u057c\u0576\u0561\u056c \u057e\u0561\u0570\u0561\u0576\u0561\u056f',
+    upgradeCta: '\u054f\u0565\u057d\u0576\u0565\u056c \u057a\u056c\u0561\u0576\u0576\u0565\u0580\u0568',
+    featureNeeded: '\u054a\u0561\u0570\u0561\u0576\u057b\u057e\u0578\u0572 \u0570\u0576\u0561\u0580\u0561\u057e\u0578\u0580\u0578\u0582\u0569\u0575\u0578\u0582\u0576\u056d {feature}',
   },
 } as const;
 

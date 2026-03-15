@@ -3,7 +3,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Modal, Spinner, Alert, Badge, Field, Success } from '@/components/ui';
-import { SectionTitle, Button } from '@/components/design-system';
+import { SectionTitle, Button, Card } from '@/components/design-system';
+
+const TIER_META: Record<string, { description: string; color: string; recommended?: boolean }> = {
+  BASIC: { description: 'subscriptions.basicDesc', color: 'border-gray-200' },
+  STANDARD: { description: 'subscriptions.standardDesc', color: 'border-blue-400 ring-2 ring-blue-100', recommended: true },
+  ENTERPRISE: { description: 'subscriptions.enterpriseDesc', color: 'border-purple-400' },
+};
 
 /* ── types ─────────────────────────────────────────────── */
 interface SubTier {
@@ -142,17 +148,42 @@ export default function SubscriptionsPage() {
       {tab === 'tiers' && (
         <>
           {loading ? <Spinner /> : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {tiers.map(ti => (
-                <div key={ti.tierId} className="border rounded-lg p-4 bg-white shadow-sm">
-                  <h3 className="text-lg font-bold mb-1">{ti.name}</h3>
-                  {ti.monthlyPrice !== null && ti.monthlyPrice !== undefined && <p className="text-2xl font-bold text-blue-600 mb-2">{ti.monthlyPrice.toFixed(2)} <span className="text-sm text-gray-500">{ti.currency || ''}/mo</span></p>}
-                  {ti.maxUsers && <p className="text-sm text-gray-500 mb-2">{t('subscriptions.maxUsers')}: {ti.maxUsers}</p>}
-                  <ul className="space-y-1">
-                    {ti.features.map((f, i) => <li key={i} className="text-sm flex items-center gap-1"><span className="text-green-500">✓</span> {f}</li>)}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {tiers.map(ti => {
+                const meta = TIER_META[ti.level] ?? { description: '', color: 'border-gray-200' };
+                const isCurrent = tenantSub?.tierId === ti.level;
+                return (
+                <div key={ti.tierId} className={`relative border-2 rounded-2xl p-6 bg-white shadow-sm flex flex-col ${meta.color} ${isCurrent ? 'bg-blue-50/30' : ''}`}>
+                  {meta.recommended && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-3 py-0.5 rounded-full">
+                      {t('subscriptions.recommended')}
+                    </span>
+                  )}
+                  {isCurrent && (
+                    <span className="absolute -top-3 right-4 bg-green-600 text-white text-xs font-bold px-3 py-0.5 rounded-full">
+                      {t('subscriptions.currentPlan')}
+                    </span>
+                  )}
+                  <h3 className="text-xl font-bold mb-1">{ti.name}</h3>
+                  <p className="text-sm text-gray-500 mb-3">{t(meta.description as any)}</p>
+                  {ti.monthlyPrice !== null && ti.monthlyPrice !== undefined && (
+                    <p className="text-3xl font-bold text-blue-600 mb-1">
+                      {ti.monthlyPrice.toFixed(0)} <span className="text-sm text-gray-500 font-normal">{ti.currency || 'AMD'}/mo</span>
+                    </p>
+                  )}
+                  {ti.maxUsers && <p className="text-sm text-gray-500 mb-4">{t('subscriptions.upToUsers', { count: ti.maxUsers })}</p>}
+                  <div className="flex-1" />
+                  <ul className="space-y-1.5 mb-4">
+                    {ti.features.map((f, i) => <li key={i} className="text-sm flex items-center gap-2"><span className="text-green-500 text-base">✓</span> {t(`subscriptions.feature_${f}` as any) || f}</li>)}
                   </ul>
+                  {!isCurrent && (
+                    <Button variant={meta.recommended ? 'primary' : 'secondary'} size="sm" onClick={() => { setAssignTier(ti.level); setShowAssign(true); }}>
+                      {t('subscriptions.selectPlan')}
+                    </Button>
+                  )}
                 </div>
-              ))}
+                );
+              })}
               {tiers.length === 0 && <p className="text-sm text-gray-500 col-span-3">{t('subscriptions.noTiers')}</p>}
             </div>
           )}
