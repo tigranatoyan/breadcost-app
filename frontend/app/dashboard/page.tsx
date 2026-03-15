@@ -302,7 +302,7 @@ export default function DashboardPage() {
             <div className="mt-3 divide-y max-h-32 overflow-y-auto">
               {todayOrders.slice(0, 5).map((o) => (
                 <div key={o.orderId} className="flex items-center justify-between py-1.5 text-xs">
-                  <span className="font-medium truncate">{o.customerName}</span>
+                  <span className="font-medium">{o.customerName}</span>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-gray-500">{fmtMoney(o.totalAmount ?? 0)}</span>
                     <Badge status={o.status} />
@@ -382,7 +382,7 @@ export default function DashboardPage() {
                     <div key={o.orderId} className={`px-5 py-3 flex items-center gap-3 ${rowBg}`}>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium truncate">{o.customerName}</span>
+                          <span className="text-sm font-medium">{o.customerName}</span>
                           {(o.rushOrder || o.isRushOrder) && <span className="text-orange-500 text-xs font-bold">⚡ RUSH</span>}
                           {conflictsInOrder > 0 && (
                             <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">

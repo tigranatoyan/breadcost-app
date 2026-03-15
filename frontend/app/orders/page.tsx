@@ -385,7 +385,7 @@ export default function OrdersPage() {
                 onClick={() => setExpanded(expanded === o.orderId ? null : o.orderId)}
               >
                 {/* customer */}
-                <span className="font-medium text-sm flex-1 min-w-0 truncate">
+                <span className="font-medium text-sm flex-1 min-w-0">
                   {o.customerName}
                 </span>
                 {/* delivery date */}
