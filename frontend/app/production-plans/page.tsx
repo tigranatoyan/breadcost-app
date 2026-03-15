@@ -71,7 +71,7 @@ export default function ProductionPlansPage() {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [actionId, setActionId] = useState('');
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [mats, setMats] = useState<Record<string, MatReq[]>>({});
   const [loadingMats, setLoadingMats] = useState('');
   const [schedules, setSchedules] = useState<Record<string, PlanSchedule>>({});
@@ -228,10 +228,10 @@ export default function ProductionPlansPage() {
   };
 
   const toggleExpand = (planId: string) => {
-    if (expanded === planId) {
-      setExpanded(null);
+    if (expanded.has(planId)) {
+      setExpanded((prev) => { const next = new Set(prev); next.delete(planId); return next; });
     } else {
-      setExpanded(planId);
+      setExpanded((prev) => new Set(prev).add(planId));
       loadMats(planId);
       loadSchedule(planId);
     }
@@ -409,12 +409,12 @@ export default function ProductionPlansPage() {
                   {planBtns(p)}
                 </div>
                 <span className="text-gray-400 text-xs shrink-0">
-                  {expanded === p.planId ? '▲' : '▼'}
+                  {expanded.has(p.planId) ? '▲' : '▼'}
                 </span>
               </div>
 
               {/* Expanded: work orders + materials */}
-              {expanded === p.planId && (
+              {expanded.has(p.planId) && (
                 <div className="border-t">
                   {/* Work orders */}
                   <div className="px-4 py-3">
