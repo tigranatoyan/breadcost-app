@@ -887,6 +887,7 @@ const en = {
   // ── Deliveries ─────────────────────────────────────────────────────────────
   deliveries: {
     title: 'Delivery Management',
+    eyebrow: 'Logistics',
     createRun: 'Create Delivery Run',
     created: 'Delivery run created.',
     runId: 'Run ID',

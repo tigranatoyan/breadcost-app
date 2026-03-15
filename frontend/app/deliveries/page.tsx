@@ -152,7 +152,7 @@ export default function DeliveriesPage() {
   return (
     <div className="max-w-[1800px]">
       <SectionTitle
-        eyebrow="Logistics"
+        eyebrow={t('deliveries.eyebrow')}
         title={t('deliveries.title')}
         action={<Button variant="primary" size="sm" onClick={() => setShowCreate(true)}>+ {t('deliveries.createRun')}</Button>}
       />
