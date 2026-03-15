@@ -127,7 +127,7 @@ export default function DriverPage() {
 
   return (
     <div className="space-y-6">
-      <SectionTitle eyebrow="Logistics" title={t('driver.title')} />
+      <SectionTitle eyebrow={t('deliveries.eyebrow')} title={t('driver.title')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}
@@ -212,7 +212,7 @@ export default function DriverPage() {
               <select className="input w-full" value={paySessionId} onChange={e => setPaySessionId(e.target.value)}>
                 <option value="">{t('driver.selectSession')}</option>
                 {allSessions.map(s => (
-                  <option key={s.id} value={s.id}>{s.driverName} — {s.status} ({s.startTime?.slice(0, 10)})</option>
+                  <option key={s.id} value={s.id}>{s.driverName} — {t(`statusLabels.${s.status}` as any)} ({s.startTime?.slice(0, 10)})</option>
                 ))}
               </select>
             </Field>
