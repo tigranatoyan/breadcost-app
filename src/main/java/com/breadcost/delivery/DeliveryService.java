@@ -44,6 +44,7 @@ public class DeliveryService {
                 .scheduledDate(scheduledDate)
                 .courierCharge(courierCharge != null ? courierCharge : BigDecimal.ZERO)
                 .notes(notes)
+                .runNumber(runRepository.maxRunNumber(tenantId) + 1)
                 .build();
         log.info("Creating delivery run: tenantId={} driver={}", tenantId, driverId);
         return runRepository.save(run);
