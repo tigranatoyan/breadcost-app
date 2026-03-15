@@ -23,6 +23,8 @@ interface ConvertResult {
 }
 
 /* ── page ──────────────────────────────────────────────── */
+const CURRENCIES = ['AMD', 'USD', 'EUR', 'RUB', 'GEL', 'GBP', 'CHF', 'TRY', 'AED', 'CNY', 'JPY', 'KRW', 'INR', 'BRL', 'CAD', 'AUD'] as const;
+
 export default function ExchangeRatesPage() {
   const t = useT();
 
@@ -142,7 +144,7 @@ export default function ExchangeRatesPage() {
       <div className="rounded border p-4 bg-gray-50">
         <h3 className="font-semibold mb-2">{t('exchangeRates.lookup')}</h3>
         <div className="flex gap-2 items-end">
-          <Field label={t('exchangeRates.targetCurrency')}><input className="border rounded px-2 py-1 w-24" value={lookupCode} onChange={e => setLookupCode(e.target.value)} /></Field>
+          <Field label={t('exchangeRates.targetCurrency')}><select className="border rounded px-2 py-1 w-24" value={lookupCode} onChange={e => setLookupCode(e.target.value)}><option value="">—</option>{CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}</select></Field>
           <Field label={t('exchangeRates.rateDate')}><input type="date" className="border rounded px-2 py-1" value={lookupDate} onChange={e => setLookupDate(e.target.value)} /></Field>
           <Button variant="primary" size="sm" onClick={doLookup} className="h-fit">{t('exchangeRates.lookup')}</Button>
         </div>
@@ -153,8 +155,8 @@ export default function ExchangeRatesPage() {
       <div className="rounded border p-4 bg-gray-50">
         <h3 className="font-semibold mb-2">{t('exchangeRates.convert')}</h3>
         <div className="flex gap-2 items-end flex-wrap">
-          <Field label={t('exchangeRates.fromCurrency')}><input className="border rounded px-2 py-1 w-24" value={convFrom} onChange={e => setConvFrom(e.target.value)} /></Field>
-          <Field label={t('exchangeRates.toCurrency')}><input className="border rounded px-2 py-1 w-24" value={convTo} onChange={e => setConvTo(e.target.value)} /></Field>
+          <Field label={t('exchangeRates.fromCurrency')}><select className="border rounded px-2 py-1 w-24" value={convFrom} onChange={e => setConvFrom(e.target.value)}><option value="">—</option>{CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}</select></Field>
+          <Field label={t('exchangeRates.toCurrency')}><select className="border rounded px-2 py-1 w-24" value={convTo} onChange={e => setConvTo(e.target.value)}><option value="">—</option>{CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}</select></Field>
           <Field label={t('exchangeRates.amount')}><input type="number" className="border rounded px-2 py-1 w-32" value={convAmount} onChange={e => setConvAmount(e.target.value)} /></Field>
           <Field label={t('exchangeRates.rateDate')}><input type="date" className="border rounded px-2 py-1" value={convDate} onChange={e => setConvDate(e.target.value)} /></Field>
           <Button variant="primary" size="sm" onClick={doConvert} className="h-fit">{t('exchangeRates.convert')}</Button>
@@ -166,8 +168,8 @@ export default function ExchangeRatesPage() {
       {showAdd && (
         <Modal title={t('exchangeRates.addRate')} onClose={() => setShowAdd(false)}>
           <form onSubmit={addRate} className="space-y-4">
-            <Field label={t('exchangeRates.baseCurrency')}><input className="border rounded px-2 py-1 w-full" value={form.baseCurrency} onChange={e => setForm({ ...form, baseCurrency: e.target.value })} required /></Field>
-            <Field label={t('exchangeRates.targetCurrency')}><input className="border rounded px-2 py-1 w-full" value={form.currencyCode} onChange={e => setForm({ ...form, currencyCode: e.target.value })} required /></Field>
+            <Field label={t('exchangeRates.baseCurrency')}><select className="border rounded px-2 py-1 w-full" value={form.baseCurrency} onChange={e => setForm({ ...form, baseCurrency: e.target.value })} required>{CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}</select></Field>
+            <Field label={t('exchangeRates.targetCurrency')}><select className="border rounded px-2 py-1 w-full" value={form.currencyCode} onChange={e => setForm({ ...form, currencyCode: e.target.value })} required><option value="">—</option>{CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}</select></Field>
             <Field label={t('exchangeRates.rate')}><input type="number" step="0.0001" className="border rounded px-2 py-1 w-full" value={form.rate} onChange={e => setForm({ ...form, rate: e.target.value })} required /></Field>
             <Field label={t('exchangeRates.rateDate')}><input type="date" className="border rounded px-2 py-1 w-full" value={form.rateDate} onChange={e => setForm({ ...form, rateDate: e.target.value })} required /></Field>
             <div className="flex justify-end gap-2">
@@ -182,7 +184,7 @@ export default function ExchangeRatesPage() {
       {showFetch && (
         <Modal title={t('exchangeRates.fetchApi')} onClose={() => setShowFetch(false)}>
           <div className="space-y-4">
-            <Field label={t('exchangeRates.baseCurrency')}><input className="border rounded px-2 py-1 w-full" value={fetchBase} onChange={e => setFetchBase(e.target.value)} /></Field>
+            <Field label={t('exchangeRates.baseCurrency')}><select className="border rounded px-2 py-1 w-full" value={fetchBase} onChange={e => setFetchBase(e.target.value)}>{CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}</select></Field>
             <Field label={t('exchangeRates.fetchTargets')}><input className="border rounded px-2 py-1 w-full" value={fetchTargets} onChange={e => setFetchTargets(e.target.value)} /></Field>
             <div className="flex justify-end gap-2">
               <Button variant="secondary" size="sm" onClick={() => setShowFetch(false)}>{t('common.cancel')}</Button>

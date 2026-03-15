@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
+import { useT } from '@/lib/i18n';
 import { Spinner, Alert, Success } from '@/components/ui';
 import { SectionTitle, Button, Card, StatCard, Table } from '@/components/design-system';
 import { Building2, Users, ShoppingCart, Download, Globe } from 'lucide-react';
@@ -45,6 +46,7 @@ interface Branding {
 }
 
 export default function TenantManagementPage() {
+  const t = useT();
   const [tab, setTab] = useState<'overview' | 'onboarding' | 'branding' | 'export'>('overview');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -80,7 +82,7 @@ export default function TenantManagementPage() {
   const approve = async (id: string) => {
     try {
       await apiFetch(`/v3/tenants/onboarding/${id}/approve`, { method: 'POST' });
-      setSuccess('Tenant provisioned successfully');
+      setSuccess(t('tenantMgmt.provisioned'));
       loadRequests();
     } catch (e) { setError(String(e)); }
   };
@@ -114,7 +116,7 @@ export default function TenantManagementPage() {
       await apiFetch(`/v3/tenants/${TENANT_ID}/branding`, {
         method: 'PUT', body: JSON.stringify(branding),
       });
-      setSuccess('Branding saved');
+      setSuccess(t('tenantMgmt.brandingSaved'));
     } catch (e) { setError(String(e)); }
   };
 
@@ -135,22 +137,22 @@ export default function TenantManagementPage() {
       a.download = `tenant-export-${TENANT_ID}-${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      setSuccess('Data exported as JSON');
+      setSuccess(t('tenantMgmt.exported'));
     } catch (e) { setError(String(e)); }
     finally { setExporting(false); }
   };
 
   /* ── Tab rendering ───────────────────────────────────── */
   const tabs = [
-    { key: 'overview', label: 'Platform Overview' },
-    { key: 'onboarding', label: 'Onboarding Requests' },
-    { key: 'branding', label: 'Branding' },
-    { key: 'export', label: 'Data Export' },
+    { key: 'overview', label: t('tenantMgmt.tabOverview') },
+    { key: 'onboarding', label: t('tenantMgmt.tabOnboarding') },
+    { key: 'branding', label: t('tenantMgmt.tabBranding') },
+    { key: 'export', label: t('tenantMgmt.tabExport') },
   ] as const;
 
   return (
     <div className="space-y-6">
-      <SectionTitle eyebrow="D4" title="Tenant Management" subtitle="Multi-tenant administration" />
+      <SectionTitle eyebrow="D4" title={t('tenantMgmt.title')} subtitle={t('tenantMgmt.subtitle')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}
@@ -174,25 +176,25 @@ export default function TenantManagementPage() {
       {tab === 'overview' && (overviewLoading ? <Spinner /> : overview && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <StatCard icon={Building2} label="Total Tenants" value={String(overview.totalTenants)} />
-            <StatCard icon={Users} label="Pending Onboarding" value={String(overview.pendingOnboarding)} />
-            <StatCard icon={ShoppingCart} label="Total Orders" value={
-              String(overview.tenants.reduce((s, t) => s + t.ordersCount, 0))
+            <StatCard icon={Building2} label={t('tenantMgmt.totalTenants')} value={String(overview.totalTenants)} />
+            <StatCard icon={Users} label={t('tenantMgmt.pendingOnboarding')} value={String(overview.pendingOnboarding)} />
+            <StatCard icon={ShoppingCart} label={t('tenantMgmt.totalOrders')} value={
+              String(overview.tenants.reduce((s, tn) => s + tn.ordersCount, 0))
             } />
           </div>
-          <Card title="Tenants">
+          <Card title={t('tenantMgmt.tenantsCard')}>
             <Table
-              cols={['Tenant', 'Currency', 'Products', 'Orders', 'Customers', 'Tier', 'Active']}
-              rows={overview.tenants.map((t) => [
-                t.displayName || t.tenantId,
-                t.currency,
-                String(t.productsCount),
-                String(t.ordersCount),
-                String(t.customersCount),
-                t.subscriptionTier || '—',
-                t.subscriptionActive ? 'Yes' : 'No',
+              cols={[t('tenantMgmt.colTenant'), t('tenantMgmt.colCurrency'), t('tenantMgmt.colProducts'), t('tenantMgmt.colOrders'), t('tenantMgmt.colCustomers'), t('tenantMgmt.colTier'), t('tenantMgmt.colActive')]}
+              rows={overview.tenants.map((tn) => [
+                tn.displayName || tn.tenantId,
+                tn.currency,
+                String(tn.productsCount),
+                String(tn.ordersCount),
+                String(tn.customersCount),
+                tn.subscriptionTier || '—',
+                tn.subscriptionActive ? t('tenantMgmt.yes') : t('tenantMgmt.no'),
               ])}
-              empty="No tenants"
+              empty={t('tenantMgmt.noTenants')}
             />
           </Card>
         </div>
@@ -200,9 +202,9 @@ export default function TenantManagementPage() {
 
       {/* ── Onboarding Tab ────────────────────────────── */}
       {tab === 'onboarding' && (onboardingLoading ? <Spinner /> : (
-        <Card title="Onboarding Requests">
+        <Card title={t('tenantMgmt.onboardingCard')}>
           <Table
-            cols={['Business', 'Owner', 'Email', 'Tier', 'Status', 'Actions']}
+            cols={[t('tenantMgmt.colBusiness'), t('tenantMgmt.colOwner'), t('tenantMgmt.colEmail'), t('tenantMgmt.colTier'), t('tenantMgmt.colStatus'), t('tenantMgmt.colActions')]}
             rows={requests.map((r) => [
               r.businessName,
               r.ownerName || '—',
@@ -211,7 +213,7 @@ export default function TenantManagementPage() {
               r.status,
               r.status === 'PENDING' ? '...' : '—',
             ])}
-            empty="No onboarding requests"
+            empty={t('tenantMgmt.noRequests')}
           />
           {/* Action buttons for pending requests */}
           {requests.filter((r) => r.status === 'PENDING').map((r) => (
@@ -219,8 +221,8 @@ export default function TenantManagementPage() {
               <span className="text-sm font-medium">{r.businessName}</span>
               <span className="text-xs text-gray-500">{r.ownerEmail}</span>
               <div className="ml-auto flex gap-2">
-                <Button size="sm" onClick={() => approve(r.requestId)}>Approve</Button>
-                <Button size="sm" variant="danger" onClick={() => reject(r.requestId)}>Reject</Button>
+                <Button size="sm" onClick={() => approve(r.requestId)}>{t('tenantMgmt.approve')}</Button>
+                <Button size="sm" variant="danger" onClick={() => reject(r.requestId)}>{t('tenantMgmt.reject')}</Button>
               </div>
             </div>
           ))}
@@ -229,10 +231,10 @@ export default function TenantManagementPage() {
 
       {/* ── Branding Tab ──────────────────────────────── */}
       {tab === 'branding' && (brandingLoading ? <Spinner /> : branding && (
-        <Card title="Tenant Branding" action={<Button onClick={saveBranding}>Save</Button>}>
+        <Card title={t('tenantMgmt.brandingCard')} action={<Button onClick={saveBranding}>{t('tenantMgmt.save')}</Button>}>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('tenantMgmt.businessName')}</label>
               <input
                 className="w-full px-3 py-2 border rounded-lg text-sm"
                 value={branding.receiptBusinessName || ''}
@@ -240,7 +242,7 @@ export default function TenantManagementPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('tenantMgmt.logoUrl')}</label>
               <input
                 className="w-full px-3 py-2 border rounded-lg text-sm"
                 value={branding.logoUrl || ''}
@@ -248,7 +250,7 @@ export default function TenantManagementPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Primary Color</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('tenantMgmt.primaryColor')}</label>
               <div className="flex gap-2 items-center">
                 <input type="color" value={branding.primaryColor || '#2563eb'}
                   onChange={(e) => setBranding({ ...branding, primaryColor: e.target.value })} />
@@ -256,7 +258,7 @@ export default function TenantManagementPage() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Accent Color</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('tenantMgmt.accentColor')}</label>
               <div className="flex gap-2 items-center">
                 <input type="color" value={branding.accentColor || '#f59e0b'}
                   onChange={(e) => setBranding({ ...branding, accentColor: e.target.value })} />
@@ -264,7 +266,7 @@ export default function TenantManagementPage() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Locale</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('tenantMgmt.locale')}</label>
               <select className="w-full px-3 py-2 border rounded-lg text-sm"
                 value={branding.locale || 'en'}
                 onChange={(e) => setBranding({ ...branding, locale: e.target.value })}>
@@ -275,7 +277,7 @@ export default function TenantManagementPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Timezone</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('tenantMgmt.timezone')}</label>
               <input
                 className="w-full px-3 py-2 border rounded-lg text-sm"
                 value={branding.timezone || 'UTC'}
@@ -283,7 +285,7 @@ export default function TenantManagementPage() {
               />
             </div>
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Receipt Header</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('tenantMgmt.receiptHeader')}</label>
               <input
                 className="w-full px-3 py-2 border rounded-lg text-sm"
                 value={branding.receiptHeader || ''}
@@ -291,7 +293,7 @@ export default function TenantManagementPage() {
               />
             </div>
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Receipt Footer</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('tenantMgmt.receiptFooter')}</label>
               <textarea
                 className="w-full px-3 py-2 border rounded-lg text-sm"
                 rows={3}
@@ -302,27 +304,26 @@ export default function TenantManagementPage() {
           </div>
           {/* Color preview */}
           <div className="mt-4 p-4 rounded-lg" style={{ backgroundColor: branding.primaryColor || '#2563eb' }}>
-            <p className="text-white font-semibold">{branding.receiptBusinessName || 'Your Business'}</p>
-            <p className="text-white/80 text-sm">{branding.receiptHeader || 'Receipt Preview'}</p>
+            <p className="text-white font-semibold">{branding.receiptBusinessName || t('tenantMgmt.yourBusiness')}</p>
+            <p className="text-white/80 text-sm">{branding.receiptHeader || t('tenantMgmt.receiptPreview')}</p>
           </div>
         </Card>
       ))}
 
       {/* ── Export Tab ─────────────────────────────────── */}
       {tab === 'export' && (
-        <Card title="GDPR Data Export">
+        <Card title={t('tenantMgmt.exportCard')}>
           <p className="text-sm text-gray-600 mb-4">
-            Export all tenant data as a JSON file. This includes products, customers, orders,
-            subscription details, and configuration.
+            {t('tenantMgmt.exportDesc')}
           </p>
           <Button onClick={doExport}>
-            {exporting ? 'Exporting...' : <><Download className="w-4 h-4 mr-1 inline" /> Export Tenant Data</>}
+            {exporting ? t('tenantMgmt.exporting') : <><Download className="w-4 h-4 mr-1 inline" /> {t('tenantMgmt.exportButton')}</>}
           </Button>
           {exportData && (
             <div className="mt-4 grid grid-cols-3 gap-4">
-              <StatCard icon={ShoppingCart} label="Products" value={String((exportData as Record<string, unknown>).productsCount || 0)} />
-              <StatCard icon={Users} label="Customers" value={String((exportData as Record<string, unknown>).customersCount || 0)} />
-              <StatCard icon={Globe} label="Orders" value={String((exportData as Record<string, unknown>).ordersCount || 0)} />
+              <StatCard icon={ShoppingCart} label={t('tenantMgmt.colProducts')} value={String((exportData as Record<string, unknown>).productsCount || 0)} />
+              <StatCard icon={Users} label={t('tenantMgmt.colCustomers')} value={String((exportData as Record<string, unknown>).customersCount || 0)} />
+              <StatCard icon={Globe} label={t('tenantMgmt.colOrders')} value={String((exportData as Record<string, unknown>).ordersCount || 0)} />
             </div>
           )}
         </Card>
