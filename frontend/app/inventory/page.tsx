@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { apiFetch, TENANT_ID } from '@/lib/api';
+import { apiFetch, API_BASE, TENANT_ID } from '@/lib/api';
 import { Modal, Spinner, Alert, Badge, Field } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
@@ -133,6 +133,11 @@ export default function InventoryPage() {
     description: '',
     minStockThreshold: '0',
   });
+
+  // CSV import
+  const [importOpen, setImportOpen] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importSaving, setImportSaving] = useState(false);
 
   // ─── load ─────────────────────────────────────────────────────────────────
 
@@ -388,6 +393,37 @@ export default function InventoryPage() {
     }
   };
 
+  const submitImport = async () => {
+    if (!importFile) return;
+    try {
+      setImportSaving(true);
+      const fd = new FormData();
+      fd.append('file', importFile);
+      const res = await fetch(`${API_BASE}/v1/items/import?tenantId=${TENANT_ID}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${localStorage.getItem('bc_token')}` },
+        body: fd,
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      const created = data.created as number;
+      const errors = data.errors as { row: string; error: string }[];
+      if (errors.length > 0) {
+        setError(errors.map(e => `Row ${e.row}: ${e.error}`).join('; '));
+      }
+      if (created > 0) {
+        setSuccess(t('inventory.importSuccess', { count: created }));
+      }
+      setImportOpen(false);
+      setImportFile(null);
+      load();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setImportSaving(false);
+    }
+  };
+
   // ─── render ───────────────────────────────────────────────────────────────
 
   return (
@@ -425,9 +461,14 @@ export default function InventoryPage() {
               </>
             )}
             {tab === 'items' && (
-              <Button variant="primary" size="sm" onClick={openCreateItem}>
-                {t('inventory.newItem')}
-              </Button>
+              <>
+                <Button variant="secondary" size="sm" onClick={() => { setImportOpen(true); setImportFile(null); }}>
+                  {t('inventory.importCsv')}
+                </Button>
+                <Button variant="primary" size="sm" onClick={openCreateItem}>
+                  {t('inventory.newItem')}
+                </Button>
+              </>
             )}
           </div>
         }
@@ -896,6 +937,28 @@ export default function InventoryPage() {
               </Button>
             </div>
           </form>
+        </Modal>
+      )}
+
+      {/* ─── CSV Import Modal ───────────────────────────────────────────────── */}
+      {importOpen && (
+        <Modal title={t('inventory.importCsvTitle')} onClose={() => setImportOpen(false)}>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">{t('inventory.importCsvHint')}</p>
+            <code className="block text-xs bg-gray-100 p-2 rounded">name,type,baseUom,description,minStockThreshold</code>
+            <input
+              type="file"
+              accept=".csv"
+              className="input w-full"
+              onChange={e => setImportFile(e.target.files?.[0] ?? null)}
+            />
+            <div className="flex justify-end gap-2 pt-2 border-t">
+              <Button variant="secondary" size="sm" onClick={() => setImportOpen(false)}>{t('common.cancel')}</Button>
+              <Button variant="primary" size="sm" disabled={!importFile || importSaving} onClick={submitImport}>
+                {importSaving ? t('common.saving') : t('inventory.importBtn')}
+              </Button>
+            </div>
+          </div>
         </Modal>
       )}
 
