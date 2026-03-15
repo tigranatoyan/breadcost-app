@@ -96,7 +96,8 @@ To start working on R6 (or any future release):
 2. **Start Sprint**: all sprint tickets are To Do
 3. **During Sprint**: Tickets move To Do → In Progress → Done per the workflow phases above
 4. **Sprint End**: Close sprint, move incomplete tickets to next sprint, update velocity
-5. **Release Close**: When all tickets Done — mark release as shipped in Jira, tag in git: `git tag R6`
+5. **Push to remote**: `git push origin main` — ensure all sprint work is backed up to GitHub immediately after sprint close
+6. **Release Close**: When all tickets Done — mark release as shipped in Jira, tag in git: `git tag R6`
 
 For future releases:
 1. **Create Release** in Jira (version = `R7`, etc.)
