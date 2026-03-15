@@ -348,7 +348,7 @@ export default function ProductionPlansPage() {
           onChange={(e) => setStatusFilter(e.target.value)}
           options={[
             { value: 'ALL', label: t('common.allStatuses') },
-            ...['DRAFT', 'GENERATED', 'APPROVED', 'PUBLISHED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].map((s) => ({ value: s, label: s })),
+            ...['DRAFT', 'GENERATED', 'APPROVED', 'PUBLISHED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].map((s) => ({ value: s, label: t(`statusLabels.${s}` as any) })),
           ]}
         />
         <div className="flex items-center gap-1">

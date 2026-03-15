@@ -1,5 +1,6 @@
 'use client';
 import { ReactNode, ButtonHTMLAttributes, InputHTMLAttributes, SelectHTMLAttributes } from 'react';
+import { useT } from '@/lib/i18n';
 
 /* ── Utility ── */
 export function cn(...parts: (string | false | null | undefined)[]) {
@@ -213,10 +214,14 @@ interface BadgeProps {
 }
 
 export function Badge({ status, children }: BadgeProps) {
+  const t = useT();
   const cls = STATUS_COLORS[status] ?? 'bg-gray-100 text-gray-700';
+  const key = `statusLabels.${status}`;
+  const translated = t(key as any);
+  const label = children || (translated !== key ? translated : status.replace(/_/g, ' '));
   return (
     <span className={cn('inline-flex rounded-full px-2 py-0.5 text-xs font-medium', cls)}>
-      {children || status.replace(/_/g, ' ')}
+      {label}
     </span>
   );
 }

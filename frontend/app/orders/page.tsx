@@ -361,7 +361,7 @@ export default function OrdersPage() {
           className="w-44"
           options={[
             { value: 'ALL', label: t('common.allStatuses') },
-            ...ALL_STATUSES.map((s) => ({ value: s, label: s.replace(/_/g, ' ') })),
+            ...ALL_STATUSES.map((s) => ({ value: s, label: t(`statusLabels.${s}` as any) })),
           ]}
         />
         <InputField
@@ -467,7 +467,7 @@ export default function OrdersPage() {
                         <span key={s} className="flex items-center gap-1">
                           {i > 0 && <span className={`w-4 h-px ${reached ? 'bg-blue-400' : 'bg-gray-200'}`} />}
                           <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${current ? 'bg-blue-600 text-white' : reached ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-400'}`}>
-                            {s.replace(/_/g, ' ')}
+                            {t(`statusLabels.${s}` as any)}
                           </span>
                         </span>
                       );

@@ -38,6 +38,36 @@ const en = {
     load: 'Load',
   },
 
+  // ── Status Labels (used by Badge component & status filters) ───────────────
+  statusLabels: {
+    DRAFT: 'Draft',
+    CONFIRMED: 'Confirmed',
+    IN_PRODUCTION: 'In Production',
+    READY: 'Ready',
+    OUT_FOR_DELIVERY: 'Out for Delivery',
+    DELIVERED: 'Delivered',
+    CANCELLED: 'Cancelled',
+    APPROVED: 'Approved',
+    GENERATED: 'Generated',
+    PUBLISHED: 'Published',
+    IN_PROGRESS: 'In Progress',
+    COMPLETED: 'Completed',
+    OVERDUE: 'Overdue',
+    PENDING: 'Pending',
+    NOT_STARTED: 'Not Started',
+    ARCHIVED: 'Archived',
+    INACTIVE: 'Inactive',
+    STARTED: 'Started',
+    ACTIVE: 'Active',
+    EXPIRED: 'Expired',
+    SUBMITTED: 'Submitted',
+    REJECTED: 'Rejected',
+    OPEN: 'Open',
+    CLOSED: 'Closed',
+    RECEIVED: 'Received',
+    PARTIAL: 'Partial',
+  },
+
   // ── Auth / Login ────────────────────────────────────────────────────────────
   login: {
     title: 'BreadCost',

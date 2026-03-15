@@ -8,7 +8,7 @@ import {
   RefreshCw, ShoppingCart, CheckCircle2, Circle,
   Truck, ChefHat, ClipboardCheck,
 } from 'lucide-react';
-import { useDateFmt, useDateTimeFmt } from '@/lib/i18n';
+import { useDateFmt, useDateTimeFmt, useT } from '@/lib/i18n';
 
 interface OrderLine {
   productName: string;
@@ -64,6 +64,7 @@ const TIMELINE_STEPS = [
 
 export default function MyOrdersPage() {
   const router = useRouter();
+  const t = useT();
   const formatDate = useDateFmt();
   const formatDateTime = useDateTimeFmt();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -221,7 +222,7 @@ function OrderCard({
               #{order.orderId.slice(0, 8)}
             </span>
             <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[order.status] || 'bg-gray-100 text-gray-700'}`}>
-              {STATUS_LABELS[order.status] || order.status}
+              {t(`statusLabels.${order.status}` as any) || order.status}
             </span>
             {order.rushOrder && (
               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">Rush</span>
@@ -262,7 +263,7 @@ function OrderCard({
                             <Icon className="h-4 w-4" />
                           </div>
                           <span className={`mt-1 text-[10px] text-center leading-tight ${done ? 'font-medium text-gray-900' : 'text-gray-400'}`}>
-                            {step.label}
+                            {t(`statusLabels.${step.status}` as any)}
                           </span>
                         </div>
                         {i < TIMELINE_STEPS.length - 1 && (
