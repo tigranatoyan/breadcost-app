@@ -32,9 +32,10 @@ export class OrdersPage {
     notes?: string;
     lines: Array<{ productIndex: number; qty: string; price: string }>;
   }) {
-    // Fill customer name
+    // Select customer from dropdown (pick first available customer)
     const modal = this.page.locator('[class*="modal"], [role="dialog"], .fixed.inset-0').last();
-    await modal.getByPlaceholder(/supermarket/i).fill(opts.customerName);
+    const customerSelect = modal.locator('select').first();
+    await customerSelect.selectOption({ index: 1 });
 
     if (opts.notes) {
       await modal.getByPlaceholder(/notes/i).fill(opts.notes);
@@ -42,11 +43,11 @@ export class OrdersPage {
 
     for (let i = 0; i < opts.lines.length; i++) {
       const line = opts.lines[i];
-      // Select product from dropdown in the i-th row
+      // Select product from dropdown in the i-th row (offset by 1 for customer select)
       const selects = modal.locator('select');
       const selectCount = await selects.count();
-      if (selectCount > i) {
-        await selects.nth(i).selectOption({ index: line.productIndex });
+      if (selectCount > i + 1) {
+        await selects.nth(i + 1).selectOption({ index: line.productIndex });
       }
       // Fill qty and price
       const qtyInputs = modal.locator('input[type="number"]');

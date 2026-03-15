@@ -93,6 +93,7 @@ export default function OrdersPage() {
   const { toastSuccess, toastError } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [customers, setCustomers] = useState<{ customerId: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [page, setPage] = useState(0);
@@ -141,15 +142,17 @@ export default function OrdersPage() {
     try {
       setLoading(true);
       setError('');
-      const [pagedResult, prods] = await Promise.all([
+      const [pagedResult, prods, custs] = await Promise.all([
         apiFetch<{ content: Order[]; totalPages: number; totalElements: number }>(
           `/v1/orders/paged?tenantId=${TENANT_ID}&page=${p}&size=${PAGE_SIZE}`
         ),
         apiFetch<Product[]>(`/v1/products?tenantId=${TENANT_ID}`),
+        apiFetch<{ customerId: string; name: string }[]>(`/v2/customers?tenantId=${TENANT_ID}`),
       ]);
       setOrders(pagedResult.content);
       setTotalPages(pagedResult.totalPages);
       setProducts(prods);
+      setCustomers(custs);
     } catch (e) {
       setError(String(e));
     } finally {
@@ -530,13 +533,15 @@ export default function OrdersPage() {
           <form onSubmit={submit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <Field label={t('orders.customerName')}>
-                <input
+                <select
                   className="input"
                   required
-                  placeholder={t('orders.customerPlaceholder')}
                   value={form.customerName}
                   onChange={(e) => setForm((f) => ({ ...f, customerName: e.target.value }))}
-                />
+                >
+                  <option value="">— {t('common.select')} —</option>
+                  {customers.map(c => <option key={c.customerId} value={c.name}>{c.name}</option>)}
+                </select>
               </Field>
               <Field label={t('orders.requestedDelivery')}>
                 <input
