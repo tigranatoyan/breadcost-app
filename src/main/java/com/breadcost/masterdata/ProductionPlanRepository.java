@@ -9,7 +9,8 @@ import java.util.Optional;
 
 public interface ProductionPlanRepository extends JpaRepository<ProductionPlanEntity, String> {
     List<ProductionPlanEntity> findByTenantId(String tenantId);
-    List<ProductionPlanEntity> findByTenantIdAndPlanDate(String tenantId, LocalDate planDate);
-    List<ProductionPlanEntity> findByTenantIdAndStatus(String tenantId, ProductionPlan.Status status);
+    List<ProductionPlanEntity> findByTenantIdOrderByPlanDateDesc(String tenantId);
+    List<ProductionPlanEntity> findByTenantIdAndPlanDateOrderByPlanDateDesc(String tenantId, LocalDate planDate);
+    List<ProductionPlanEntity> findByTenantIdAndStatusOrderByPlanDateDesc(String tenantId, ProductionPlan.Status status);
     Optional<ProductionPlanEntity> findByTenantIdAndPlanIdOrderByCreatedAtDesc(String tenantId, String planId);
 }

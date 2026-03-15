@@ -477,12 +477,12 @@ public class ProductionPlanService {
 
     public List<ProductionPlanEntity> getPlans(String tenantId, LocalDate date, String status) {
         if (date != null) {
-            return planRepository.findByTenantIdAndPlanDate(tenantId, date);
+            return planRepository.findByTenantIdAndPlanDateOrderByPlanDateDesc(tenantId, date);
         }
         if (status != null) {
-            return planRepository.findByTenantIdAndStatus(tenantId, ProductionPlan.Status.valueOf(status.toUpperCase()));
+            return planRepository.findByTenantIdAndStatusOrderByPlanDateDesc(tenantId, ProductionPlan.Status.valueOf(status.toUpperCase()));
         }
-        return planRepository.findByTenantId(tenantId);
+        return planRepository.findByTenantIdOrderByPlanDateDesc(tenantId);
     }
 
     public Optional<ProductionPlanEntity> getPlan(String tenantId, String planId) {
