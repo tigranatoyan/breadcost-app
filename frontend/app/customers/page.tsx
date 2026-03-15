@@ -142,7 +142,7 @@ export default function CustomersPage() {
 
   return (
     <div className="max-w-[1800px]">
-      <SectionTitle eyebrow="CRM" title={t('customers.title')} />
+      <SectionTitle eyebrow={t('customers.eyebrow')} title={t('customers.title')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}

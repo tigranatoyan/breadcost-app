@@ -1044,6 +1044,7 @@ const en = {
   // ── Customers ──────────────────────────────────────────────────────────────
   customers: {
     title: 'Customer Management',
+    eyebrow: 'CRM',
     tab_customers: 'Customers',
     tab_catalog: 'Product Catalog',
     tab_orders: 'Customer Orders',
