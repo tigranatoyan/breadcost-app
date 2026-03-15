@@ -105,6 +105,15 @@ public class ProductionPlanController {
         return ResponseEntity.ok(planService.completePlan(tenantId, planId));
     }
 
+    @DeleteMapping("/{planId}")
+    @PreAuthorize("hasAnyRole('Admin','Manager')")
+    public ResponseEntity<Void> deletePlan(
+            @PathVariable String planId,
+            @RequestParam String tenantId) {
+        planService.deletePlan(tenantId, planId);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/{planId}/material-requirements")
     @PreAuthorize("hasAnyRole('Admin','ProductionUser','FinanceUser')")
     public ResponseEntity<List<PlanMaterialRequirement>> getMaterialRequirements(

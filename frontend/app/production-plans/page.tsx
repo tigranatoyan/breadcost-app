@@ -139,6 +139,19 @@ export default function ProductionPlansPage() {
     }
   };
 
+  const deletePlan = async (planId: string) => {
+    if (!await askConfirm(t('productionPlans.confirmDelete'))) return;
+    try {
+      setActionId(`${planId}-delete`);
+      await apiFetch(`/v1/production-plans/${planId}?tenantId=${TENANT_ID}`, { method: 'DELETE' });
+      setPlans((prev) => prev.filter((p) => p.planId !== planId));
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setActionId('');
+    }
+  };
+
   const [yieldInputs, setYieldInputs] = useState<Record<string, string>>({});
 
   const woAction = async (
@@ -278,19 +291,36 @@ export default function ProductionPlansPage() {
         cls: 'bg-green-600 text-white hover:bg-green-700',
       });
     }
-    return btns.map((b) => (
-      <button
-        key={b.action}
-        className={`btn-xs ${b.cls}`}
-        disabled={busy}
-        onClick={(e) => {
-          e.stopPropagation();
-          planAction(p.planId, b.action);
-        }}
-      >
-        {busy ? '…' : b.label}
-      </button>
-    ));
+    return [
+      ...btns.map((b) => (
+        <button
+          key={b.action}
+          className={`btn-xs ${b.cls}`}
+          disabled={busy}
+          onClick={(e) => {
+            e.stopPropagation();
+            planAction(p.planId, b.action);
+          }}
+        >
+          {busy ? '…' : b.label}
+        </button>
+      )),
+      ...(p.status === 'DRAFT' || p.status === 'GENERATED'
+        ? [
+            <button
+              key="delete"
+              className="btn-xs bg-red-600 text-white hover:bg-red-700"
+              disabled={busy}
+              onClick={(e) => {
+                e.stopPropagation();
+                deletePlan(p.planId);
+              }}
+            >
+              {t('productionPlans.deletePlan')}
+            </button>,
+          ]
+        : []),
+    ];
   };
 
   const filteredPlans = plans.filter((p) => {
