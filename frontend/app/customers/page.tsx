@@ -27,6 +27,7 @@ interface CatalogProduct {
 }
 interface CustomerOrder {
   orderId: string;
+  orderNumber?: number;
   customerId: string;
   status: string;
   totalAmount?: number;
@@ -206,7 +207,7 @@ export default function CustomersPage() {
             <Table
               cols={[t('customers.orderId'), t('customers.customer'), t('common.status'), t('customers.total'), t('common.date')]}
               rows={orders.map(o => [
-                <button key={o.orderId} className="text-blue-600 underline text-sm" onClick={() => openOrderDetail(o.orderId)}>{o.orderId.slice(0, 8)}</button>,
+                <button key={o.orderId} className="text-blue-600 underline text-sm" onClick={() => openOrderDetail(o.orderId)}>{o.orderNumber ? `ORD-${String(o.orderNumber).padStart(4, '0')}` : o.orderId.slice(0, 8)}</button>,
                 o.customerId.slice(0, 8),
                 <Badge key={`s-${o.orderId}`} status={o.status} />,
                 o.totalAmount !== null && o.totalAmount !== undefined ? `${o.totalAmount.toFixed(2)} ${o.currency || ''}` : '—',
@@ -268,7 +269,7 @@ export default function CustomersPage() {
 
       {/* order detail modal */}
       {orderDetail && (
-        <Modal title={`${t('customers.orderDetail')} — ${orderDetail.orderId.slice(0, 8)}`} onClose={() => setOrderDetail(null)} wide>
+        <Modal title={`${t('customers.orderDetail')} \u2014 ${orderDetail.orderNumber ? `ORD-${String(orderDetail.orderNumber).padStart(4, '0')}` : orderDetail.orderId.slice(0, 8)}`} onClose={() => setOrderDetail(null)} wide>
           <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
             <div><span className="font-medium">{t('common.status')}:</span> <Badge status={orderDetail.status} /></div>
             <div><span className="font-medium">{t('customers.total')}:</span> {orderDetail.totalAmount?.toFixed(2)} {orderDetail.currency}</div>

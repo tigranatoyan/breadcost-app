@@ -20,6 +20,9 @@ public class OrderEntity {
     @Id
     private String orderId;
 
+    @Column
+    private Integer orderNumber;
+
     @Column(nullable = false)
     private String tenantId;
 
