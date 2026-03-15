@@ -183,6 +183,16 @@ public class ProductionPlanService {
     }
 
     @Transactional
+    public ProductionPlanEntity rejectPlan(String tenantId, String planId) {
+        ProductionPlanEntity plan = findPlan(tenantId, planId);
+        if (plan.getStatus() != ProductionPlan.Status.GENERATED) {
+            throw new IllegalStateException("Only GENERATED plans can be rejected.");
+        }
+        plan.setStatus(ProductionPlan.Status.REJECTED);
+        return planRepository.save(plan);
+    }
+
+    @Transactional
     public ProductionPlanEntity startPlan(String tenantId, String planId) {
         ProductionPlanEntity plan = findPlan(tenantId, planId);
         boolean canStart = plan.getStatus() == ProductionPlan.Status.APPROVED

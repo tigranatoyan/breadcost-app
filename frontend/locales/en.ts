@@ -607,6 +607,7 @@ const en = {
     noWorkOrders: 'No work orders. Use "Generate Work Orders" to create them from confirmed orders.',
     generateWorkOrders: '⚡ Generate Work Orders',
     approve: '✓ Approve',
+    reject: '✗ Reject',
     start: '▶ Start',
     complete: '✓ Complete',
     scheduleLeadTime: 'Schedule (Lead Time)',

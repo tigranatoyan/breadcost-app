@@ -23,7 +23,8 @@ public class ProductionPlan {
         APPROVED,
         PUBLISHED,   // legacy alias for APPROVED
         IN_PROGRESS,
-        COMPLETED
+        COMPLETED,
+        REJECTED
     }
 
     public enum Shift {
