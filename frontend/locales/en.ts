@@ -556,6 +556,8 @@ const en = {
     shift: 'Shift',
     // Sprint 7 — BC-1806
     confirmApprove: 'Are you sure you want to approve this production plan? This will lock the plan for execution.',
+    confirmDelete: 'Are you sure you want to delete this production plan? This cannot be undone.',
+    deletePlan: '🗑 Delete',
     zeroWorkOrders: 'No work orders were generated. There are no confirmed orders matching this plan date.',
     workOrdersGenerated: '{count} work order(s) generated successfully.',
     yieldPlaceholder: 'Yield',

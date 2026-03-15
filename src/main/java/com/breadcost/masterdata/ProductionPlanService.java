@@ -205,6 +205,16 @@ public class ProductionPlanService {
         return planRepository.save(plan);
     }
 
+    @Transactional
+    public void deletePlan(String tenantId, String planId) {
+        ProductionPlanEntity plan = findPlan(tenantId, planId);
+        if (plan.getStatus() != ProductionPlan.Status.DRAFT
+                && plan.getStatus() != ProductionPlan.Status.GENERATED) {
+            throw new IllegalStateException("Only DRAFT or GENERATED plans can be deleted.");
+        }
+        planRepository.delete(plan);
+    }
+
     /**
      * Advance linked orders to READY when a plan completes.
      * Collects sourceOrderLineIds from all work orders and advances the parent orders.
