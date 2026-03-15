@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Badge, Alert } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
-import { useT } from '@/lib/i18n';
+import { useT, useI18n, BCP47 } from '@/lib/i18n';
 import { Clock3, Play, Check, X, Factory, ClipboardList, Wrench, Thermometer } from 'lucide-react';
 
 // â”€â”€â”€ interfaces â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -378,6 +378,7 @@ function WOPanel({
 
 export default function FloorPage() {
   const t = useT();
+  const { locale } = useI18n();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -509,7 +510,7 @@ export default function FloorPage() {
       <SectionTitle
         eyebrow="Production"
         title={t('floor.title')}
-        subtitle={now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) + (activePlan ? ` · ${t('floor.activeShift', {shift: activePlan.shift})}` : '')}
+        subtitle={now.toLocaleDateString(BCP47[locale], { weekday: 'long', month: 'long', day: 'numeric' }) + (activePlan ? ` · ${t('floor.activeShift', {shift: activePlan.shift})}` : '')}
       />
 
       {/* Date navigation */}

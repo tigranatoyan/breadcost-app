@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, API_BASE, TENANT_ID } from '@/lib/api';
-import { useT } from '@/lib/i18n';
+import { useT, useDateFmt, useDateTimeFmt } from '@/lib/i18n';
 import { Modal, Table, Spinner, Alert, Badge, Field, Success, useConfirm } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
 
@@ -31,6 +31,8 @@ interface ReportResult {
 /* ── page ──────────────────────────────────────────────── */
 export default function ReportBuilderPage() {
   const t = useT();
+  const fmtDate = useDateFmt();
+  const fmtDateTime = useDateTimeFmt();
   const [askConfirm, confirmModal] = useConfirm({ confirmLabel: t('common.confirm'), cancelLabel: t('common.cancel') });
 
   const [tab, setTab] = useState<'catalog' | 'reports'>('reports');
@@ -197,7 +199,7 @@ export default function ReportBuilderPage() {
                 r.name,
                 r.description || '—',
                 r.blocks.length.toString(),
-                r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '—',
+                fmtDate(r.createdAt),
                 <div key={r.reportId} className="flex gap-1 flex-wrap">
                   <Button variant="primary" size="xs" className="bg-green-600 hover:bg-green-700" onClick={() => runReport(r.reportId)} disabled={running}>{t('reportBuilder.run')}</Button>
                   <Button variant="secondary" size="xs" onClick={() => exportReport(r.reportId)}>{t('reportBuilder.export')}</Button>
@@ -277,7 +279,7 @@ export default function ReportBuilderPage() {
               </table>
             </div>
           )}
-          {result.generatedAt && <p className="text-xs text-gray-400 mt-2">{t('reportBuilder.generatedAt')}: {new Date(result.generatedAt).toLocaleString()}</p>}
+          {result.generatedAt && <p className="text-xs text-gray-400 mt-2">{t('reportBuilder.generatedAt')}: {fmtDateTime(result.generatedAt)}</p>}
         </Modal>
       )}
       {confirmModal}

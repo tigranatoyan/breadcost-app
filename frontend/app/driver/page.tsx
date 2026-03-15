@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
-import { useT } from '@/lib/i18n';
+import { useT, useDateTimeFmt } from '@/lib/i18n';
 import { Table, Spinner, Alert, Badge, Modal, Field, Success } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
 
@@ -44,6 +44,7 @@ interface ManifestItem {
 /* ── page ──────────────────────────────────────────────── */
 export default function DriverPage() {
   const t = useT();
+  const fmtDateTime = useDateTimeFmt();
 
   const [tab, setTab] = useState<'sessions' | 'packaging' | 'payments'>('sessions');
   const [error, setError] = useState('');
@@ -134,7 +135,7 @@ export default function DriverPage() {
                 s.driverName,
                 s.runId,
                 <Badge key={s.id} status={s.status} />,
-                new Date(s.startTime).toLocaleString(),
+                fmtDateTime(s.startTime),
                 s.lastLat && s.lastLng ? `${s.lastLat.toFixed(4)}, ${s.lastLng.toFixed(4)}` : '–',
                 <div key={s.id + 'a'} className="flex gap-2">
                   <button onClick={() => openManifest(s)} className="text-blue-600 hover:underline text-sm">{t('driver.manifest')}</button>
@@ -170,7 +171,7 @@ export default function DriverPage() {
                 p.driverId,
                 p.allConfirmed ? '✅' : '❌',
                 p.discrepancies || '–',
-                new Date(p.confirmedAt).toLocaleString(),
+                fmtDateTime(p.confirmedAt),
               ])}
               empty={t('driver.noPackaging')}
             />
@@ -193,7 +194,7 @@ export default function DriverPage() {
                 p.amount?.toFixed(2),
                 p.paymentMethod,
                 p.reference || '–',
-                new Date(p.createdAt).toLocaleString(),
+                fmtDateTime(p.createdAt),
               ])}
               empty={t('driver.noPayments')}
             />

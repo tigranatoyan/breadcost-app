@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
-import { useT } from '@/lib/i18n';
+import { useT, useDateFmt } from '@/lib/i18n';
 import { Modal, Table, Spinner, Alert, Badge, Field, Success } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
 
@@ -38,6 +38,7 @@ interface CustomerOrder {
 /* ── page ──────────────────────────────────────────────── */
 export default function CustomersPage() {
   const t = useT();
+  const fmtDate = useDateFmt();
 
   const [tab, setTab] = useState<'customers' | 'catalog' | 'orders'>('customers');
 
@@ -168,7 +169,7 @@ export default function CustomersPage() {
                 c.email || '—',
                 c.phone || '—',
                 c.tier ? <Badge key={c.customerId} status={c.tier} /> : '—',
-                c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '—',
+                fmtDate(c.createdAt),
               ])}
               empty={t('customers.empty')}
             />
@@ -209,7 +210,7 @@ export default function CustomersPage() {
                 o.customerId.slice(0, 8),
                 <Badge key={`s-${o.orderId}`} status={o.status} />,
                 o.totalAmount !== null && o.totalAmount !== undefined ? `${o.totalAmount.toFixed(2)} ${o.currency || ''}` : '—',
-                o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '—',
+                fmtDate(o.createdAt),
               ])}
               empty={t('customers.noOrders')}
             />

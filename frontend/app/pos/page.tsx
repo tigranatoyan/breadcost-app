@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Alert } from '@/components/ui';
 import { SectionTitle, Button, InputField, SelectField } from '@/components/design-system';
-import { useT } from '@/lib/i18n';
+import { useT, useDateTimeFmt } from '@/lib/i18n';
 import { getUsername } from '@/lib/auth';
 import { Package } from 'lucide-react';
 
@@ -147,6 +147,7 @@ function QuickAdd({ product, deptName, onAdd, onCancel }: QuickAddProps) {
 
 export default function POSPage() {
   const t = useT();
+  const fmtDateTime = useDateTimeFmt();
   const [products, setProducts] = useState<Product[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
@@ -602,7 +603,7 @@ export default function POSPage() {
               <div style={{ textAlign: 'center', marginBottom: 16 }}>
                 <div style={{ fontWeight: 'bold', fontSize: 16 }}>BreadCost POS</div>
                 <div style={{ fontSize: 12 }}>{t('pos.receiptSaleId')}: #{receiptData.saleId.slice(0, 8).toUpperCase()}</div>
-                <div style={{ fontSize: 12 }}>{new Date(receiptData.completedAt).toLocaleString()}</div>
+                <div style={{ fontSize: 12 }}>{fmtDateTime(receiptData.completedAt)}</div>
                 <div style={{ fontSize: 12 }}>{t('pos.receiptCashier')}: {receiptData.cashierName || getUsername() || '—'}</div>
               </div>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>

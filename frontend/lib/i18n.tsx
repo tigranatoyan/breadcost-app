@@ -79,3 +79,36 @@ export function useI18n() {
 export function useT() {
   return useContext(I18nContext).t;
 }
+
+/* ── Locale-aware date formatters ──────────────────────────────────── */
+export const BCP47: Record<Locale, string> = { en: 'en-GB', hy: 'hy-AM' };
+
+/** Format a date string/Date as DD.MM.YYYY (or locale equiv.) */
+export function useDateFmt() {
+  const { locale } = useContext(I18nContext);
+  const bcp = BCP47[locale];
+  return useCallback(
+    (v: string | number | Date | null | undefined): string => {
+      if (!v) return '—';
+      try { return new Date(v).toLocaleDateString(bcp); }
+      catch { return String(v); }
+    },
+    [bcp],
+  );
+}
+
+/** Format a date string/Date as DD.MM.YYYY HH:mm */
+export function useDateTimeFmt() {
+  const { locale } = useContext(I18nContext);
+  const bcp = BCP47[locale];
+  return useCallback(
+    (v: string | number | Date | null | undefined): string => {
+      if (!v) return '—';
+      try {
+        const d = new Date(v);
+        return d.toLocaleDateString(bcp) + ' ' + d.toLocaleTimeString(bcp, { hour: '2-digit', minute: '2-digit' });
+      } catch { return String(v); }
+    },
+    [bcp],
+  );
+}

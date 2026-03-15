@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
-import { useT } from '@/lib/i18n';
+import { useT, useDateTimeFmt } from '@/lib/i18n';
 import { Modal, Table, Spinner, Alert, Badge, Field, Success, useConfirm } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
 
@@ -33,6 +33,7 @@ interface LoyaltyTx {
 /* ── page ──────────────────────────────────────────────── */
 export default function LoyaltyPage() {
   const t = useT();
+  const fmtDateTime = useDateTimeFmt();
   const [askConfirm, confirmModal] = useConfirm({ confirmLabel: t('common.confirm'), cancelLabel: t('common.cancel') });
 
   const [tab, setTab] = useState<'tiers' | 'balances' | 'history'>('tiers');
@@ -232,7 +233,7 @@ export default function LoyaltyPage() {
                 <Badge key={h.txId} status={h.type} />,
                 h.points.toString(),
                 h.reason || '—',
-                h.createdAt ? new Date(h.createdAt).toLocaleString() : '—',
+                fmtDateTime(h.createdAt),
               ])}
               empty={t('loyalty.noHistory')}
             />

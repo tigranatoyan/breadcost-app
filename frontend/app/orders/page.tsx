@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Modal, Alert, Badge, Field, PageSkeleton, Pagination, useToast } from '@/components/ui';
 import { SectionTitle, Button, InputField, SelectField } from '@/components/design-system';
-import { useT } from '@/lib/i18n';
+import { useT, useDateFmt, useDateTimeFmt } from '@/lib/i18n';
 import { Plus, Calendar, ChevronUp, ChevronDown } from 'lucide-react';
 
 // ─── types ────────────────────────────────────────────────────────────────────
@@ -83,21 +83,12 @@ function makeDefaultLine(products: Product[]): LineForm {
   };
 }
 
-function fmtDate(iso: string | null | undefined) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString();
-}
-
-function fmtDateTime(iso: string | null | undefined) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
-
 // ─── component ────────────────────────────────────────────────────────────────
 
 export default function OrdersPage() {
   const t = useT();
+  const fmtDate = useDateFmt();
+  const fmtDateTime = useDateTimeFmt();
   const { toastSuccess, toastError } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<Product[]>([]);

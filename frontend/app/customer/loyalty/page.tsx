@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { getCustomerToken, getCustomerInfo } from '@/lib/customer-auth';
 import { API_BASE } from '@/lib/api';
 import { Star, TrendingUp, Gift, ArrowUp, ArrowDown } from 'lucide-react';
+import { useDateFmt } from '@/lib/i18n';
 
 interface LoyaltyAccount {
   accountId: string;
@@ -32,6 +33,7 @@ async function custFetch<T>(path: string): Promise<T> {
 }
 
 export default function CustomerLoyaltyPage() {
+  const fmtDate = useDateFmt();
   const info = getCustomerInfo();
   const tenantId = info?.tenantId ?? 'tenant1';
   const customerId = info?.customerId ?? '';
@@ -150,7 +152,7 @@ export default function CustomerLoyaltyPage() {
                       {tx.description || (tx.type === 'AWARD' ? 'Points Earned' : 'Points Redeemed')}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {tx.orderId ? `Order ${tx.orderId}` : ''} · {new Date(tx.createdAt).toLocaleDateString()}
+                      {tx.orderId ? `Order ${tx.orderId}` : ''} · {fmtDate(tx.createdAt)}
                     </p>
                   </div>
                 </div>

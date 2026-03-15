@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
-import { useT } from '@/lib/i18n';
+import { useT, useDateTimeFmt } from '@/lib/i18n';
 import { Table, Spinner, Alert, Modal, Field, Success } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
 
@@ -27,6 +27,7 @@ interface PushNotification {
 /* ── page ──────────────────────────────────────────────── */
 export default function MobileAdminPage() {
   const t = useT();
+  const fmtDateTime = useDateTimeFmt();
 
   const [tab, setTab] = useState<'devices' | 'notifications'>('devices');
   const [error, setError] = useState('');
@@ -124,7 +125,7 @@ export default function MobileAdminPage() {
                 d.customerId,
                 d.deviceName,
                 d.platform,
-                new Date(d.registeredAt).toLocaleString(),
+                fmtDateTime(d.registeredAt),
                 <button key={d.id} onClick={() => removeDevice(d.id)} className="text-red-600 hover:underline text-sm">{t('mobileAdmin.remove')}</button>,
               ])}
               empty={t('mobileAdmin.noDevices')}
@@ -149,7 +150,7 @@ export default function MobileAdminPage() {
                 n.title,
                 <span key={n.id} className="max-w-xs truncate block text-sm">{n.body}</span>,
                 n.notificationType,
-                new Date(n.sentAt).toLocaleString(),
+                fmtDateTime(n.sentAt),
               ])}
               empty={t('mobileAdmin.noNotifications')}
             />
