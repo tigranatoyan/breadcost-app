@@ -65,6 +65,9 @@ export default function LoyaltyPage() {
   const [history, setHistory] = useState<LoyaltyTx[]>([]);
   const [histLoading, setHistLoading] = useState(false);
 
+  /* customers for dropdowns */
+  const [customers, setCustomers] = useState<{ customerId: string; name: string }[]>([]);
+
   /* loaders */
   const loadTiers = useCallback(async () => {
     try {
@@ -74,7 +77,14 @@ export default function LoyaltyPage() {
     } catch (e) { setError(String(e)); } finally { setTiersLoading(false); }
   }, []);
 
-  useEffect(() => { loadTiers(); }, [loadTiers]);
+  const loadCustomers = useCallback(async () => {
+    try {
+      const data = await apiFetch<{ customerId: string; name: string }[]>(`/v2/customers?tenantId=${TENANT_ID}`);
+      setCustomers(data);
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => { loadTiers(); loadCustomers(); }, [loadTiers, loadCustomers]);
 
   /* tier CRUD */
   const createTier = async (e: React.FormEvent) => {
@@ -204,7 +214,12 @@ export default function LoyaltyPage() {
       {tab === 'balances' && (
         <>
           <div className="flex gap-2 items-end mb-4">
-            <Field label={t('loyalty.customerId')}><input className="input" value={balanceCustId} onChange={e => setBalanceCustId(e.target.value)} /></Field>
+            <Field label={t('loyalty.customerId')}>
+              <select className="input" value={balanceCustId} onChange={e => setBalanceCustId(e.target.value)}>
+                <option value="">— {t('common.select')} —</option>
+                {customers.map(c => <option key={c.customerId} value={c.customerId}>{c.name}</option>)}
+              </select>
+            </Field>
             <Button variant="primary" size="sm" onClick={lookupBalance}>{t('common.load')}</Button>
             <Button variant="primary" size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => setShowAward(true)}>{t('loyalty.award')}</Button>
             <Button variant="secondary" size="sm" onClick={() => setShowRedeem(true)}>{t('loyalty.redeem')}</Button>
@@ -223,7 +238,12 @@ export default function LoyaltyPage() {
       {tab === 'history' && (
         <>
           <div className="flex gap-2 items-end mb-4">
-            <Field label={t('loyalty.customerId')}><input className="input" value={historyCustId} onChange={e => setHistoryCustId(e.target.value)} /></Field>
+            <Field label={t('loyalty.customerId')}>
+              <select className="input" value={historyCustId} onChange={e => setHistoryCustId(e.target.value)}>
+                <option value="">— {t('common.select')} —</option>
+                {customers.map(c => <option key={c.customerId} value={c.customerId}>{c.name}</option>)}
+              </select>
+            </Field>
             <Button variant="primary" size="sm" onClick={loadHistory}>{t('common.load')}</Button>
           </div>
           {histLoading ? <Spinner /> : (
@@ -277,7 +297,12 @@ export default function LoyaltyPage() {
       {showAward && (
         <Modal title={t('loyalty.awardPoints')} onClose={() => setShowAward(false)}>
           <form onSubmit={awardPoints} className="space-y-4">
-            <Field label={t('loyalty.customerId')}><input className="input w-full" required value={awardForm.customerId} onChange={e => setAwardForm({ ...awardForm, customerId: e.target.value })} /></Field>
+            <Field label={t('loyalty.customerId')}>
+              <select className="input w-full" required value={awardForm.customerId} onChange={e => setAwardForm({ ...awardForm, customerId: e.target.value })}>
+                <option value="">— {t('common.select')} —</option>
+                {customers.map(c => <option key={c.customerId} value={c.customerId}>{c.name}</option>)}
+              </select>
+            </Field>
             <Field label={t('loyalty.points')}><input className="input w-full" type="number" required value={awardForm.points} onChange={e => setAwardForm({ ...awardForm, points: e.target.value })} /></Field>
             <Field label={t('loyalty.reason')}><input className="input w-full" value={awardForm.reason} onChange={e => setAwardForm({ ...awardForm, reason: e.target.value })} /></Field>
             <div className="flex justify-end gap-2">
@@ -292,7 +317,12 @@ export default function LoyaltyPage() {
       {showRedeem && (
         <Modal title={t('loyalty.redeemPoints')} onClose={() => setShowRedeem(false)}>
           <form onSubmit={redeemPoints} className="space-y-4">
-            <Field label={t('loyalty.customerId')}><input className="input w-full" required value={redeemForm.customerId} onChange={e => setRedeemForm({ ...redeemForm, customerId: e.target.value })} /></Field>
+            <Field label={t('loyalty.customerId')}>
+              <select className="input w-full" required value={redeemForm.customerId} onChange={e => setRedeemForm({ ...redeemForm, customerId: e.target.value })}>
+                <option value="">— {t('common.select')} —</option>
+                {customers.map(c => <option key={c.customerId} value={c.customerId}>{c.name}</option>)}
+              </select>
+            </Field>
             <Field label={t('loyalty.points')}><input className="input w-full" type="number" required value={redeemForm.points} onChange={e => setRedeemForm({ ...redeemForm, points: e.target.value })} /></Field>
             <Field label={t('loyalty.reason')}><input className="input w-full" value={redeemForm.reason} onChange={e => setRedeemForm({ ...redeemForm, reason: e.target.value })} /></Field>
             <div className="flex justify-end gap-2">
