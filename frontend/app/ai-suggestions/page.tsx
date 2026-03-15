@@ -144,7 +144,7 @@ export default function AiSuggestionsPage() {
 
   return (
     <div className="space-y-6">
-      <SectionTitle eyebrow="AI Tools" title={t('aiSuggestions.title')} />
+      <SectionTitle eyebrow={t('aiSuggestions.eyebrow')} title={t('aiSuggestions.title')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}

@@ -230,7 +230,7 @@ export default function InvoicesPage() {
 
   return (
     <div className="max-w-[1800px]">
-      <SectionTitle eyebrow="Finance" title={t('invoices.title')} />
+      <SectionTitle eyebrow={t('invoices.eyebrow')} title={t('invoices.title')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}

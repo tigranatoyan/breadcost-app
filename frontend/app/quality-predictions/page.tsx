@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Alert, Success } from '@/components/ui';
 import { SectionTitle, Button, Card, StatCard, Table } from '@/components/design-system';
+import { useT } from '@/lib/i18n';
 import { ShieldAlert, TrendingDown, CheckCircle, RefreshCw } from 'lucide-react';
 
 interface QualityPrediction {
@@ -19,6 +20,7 @@ interface QualityPrediction {
 }
 
 export default function QualityPredictionsPage() {
+  const t = useT();
   const [predictions, setPredictions] = useState<QualityPrediction[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -73,7 +75,7 @@ export default function QualityPredictionsPage() {
   return (
     <div className="space-y-6">
       <SectionTitle
-        eyebrow="D3.4"
+        eyebrow={t('analytics.eyebrow')}
         title="Quality Predictions"
         subtitle="AI-powered quality risk assessment based on production history"
         action={

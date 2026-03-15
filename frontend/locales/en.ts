@@ -272,6 +272,7 @@ const en = {
   // ── Products ───────────────────────────────────────────────────────────────
   products: {
     title: 'Products',
+    eyebrow: 'Catalog',
     newProduct: '+ New Product',
     noProducts: 'No products yet.',
     newProductTitle: 'New Product',
@@ -367,6 +368,8 @@ const en = {
   // ── Departments ────────────────────────────────────────────────────────────
   departments: {
     title: 'Departments',
+    eyebrow: 'Operations',
+    subtitle: 'Lead times, warehouse mode, and status.',
     newDepartment: '+ New Department',
     noDepartments: 'No departments yet. Create one to get started.',
     newDepartmentTitle: 'New Department',
@@ -531,6 +534,7 @@ const en = {
   // ── Point of Sale ──────────────────────────────────────────────────────────
   pos: {
     title: 'Point of Sale',
+    eyebrow: 'Retail',
     subtitle: 'POS — walk-in & counter sales',
     searchProducts: 'Search products…',
     allDepartments: 'All Departments',
@@ -631,6 +635,7 @@ const en = {
   // ── Reports ────────────────────────────────────────────────────────────────
   reports: {
     title: 'Reports',
+    eyebrow: 'Insights',
     lastRefreshed: 'Last refreshed: {time}',
     ordersTab: '📦 Orders',
     inventoryTab: '🏬 Inventory',
@@ -722,6 +727,7 @@ const en = {
   // ── Admin ──────────────────────────────────────────────────────────────────
   admin: {
     title: 'Admin Panel',
+    eyebrow: 'Settings',
     subtitle: 'System configuration — master data, users, and operational settings.',
     masterData: 'Master Data',
     usersAndRoles: 'Users & Roles',
@@ -803,6 +809,7 @@ const en = {
   // ── Technologist ───────────────────────────────────────────────────────────
   technologist: {
     title: 'Technologist Analysis',
+    eyebrow: 'Quality',
     subtitle: 'Recipe health, lead times, and production statistics',
     withActiveRecipe: 'Products with active recipe',
     missingRecipe: 'Missing active recipe',
@@ -928,6 +935,7 @@ const en = {
   // ── Invoices ───────────────────────────────────────────────────────────────
   invoices: {
     title: 'Invoicing & Billing',
+    eyebrow: 'Finance',
     tab_invoices: 'Invoices',
     tab_discounts: 'Discount Rules',
     id: 'Invoice ID',
@@ -987,6 +995,7 @@ const en = {
   // ── Report Builder ─────────────────────────────────────────────────────────
   reportBuilder: {
     title: 'Report Builder',
+    eyebrow: 'Analytics',
     tab_reports: 'My Reports',
     tab_catalog: 'KPI Catalog',
     create: 'Create Report',
@@ -1012,6 +1021,7 @@ const en = {
   // ── Loyalty ────────────────────────────────────────────────────────────────
   loyalty: {
     title: 'Loyalty Program',
+    eyebrow: 'Engagement',
     tab_tiers: 'Tiers',
     tab_balances: 'Balance Lookup',
     tab_history: 'Transaction History',
@@ -1073,6 +1083,7 @@ const en = {
   // ── Subscriptions ──────────────────────────────────────────────────────────
   subscriptions: {
     title: 'Subscription Management',
+    eyebrow: 'Billing',
     tab_tiers: 'Available Plans',
     tab_assignment: 'Current Subscription',
     maxUsers: 'Max Users',
@@ -1100,6 +1111,7 @@ const en = {
   // ── Tenant Management ──────────────────────────────────────────────────────
   tenantMgmt: {
     title: 'Tenant Management',
+    eyebrow: 'Platform',
     subtitle: 'Multi-tenant administration',
     tabOverview: 'Platform Overview',
     tabOnboarding: 'Onboarding Requests',
@@ -1152,6 +1164,7 @@ const en = {
   // ── Exchange Rates ─────────────────────────────────────────────────────────
   exchangeRates: {
     title: 'Exchange Rates',
+    eyebrow: 'Currency',
     addRate: 'Add Rate',
     baseCurrency: 'Base Currency',
     targetCurrency: 'Target Currency',
@@ -1173,6 +1186,7 @@ const en = {
   // ── AI WhatsApp ────────────────────────────────────────────────────────────
   aiWhatsapp: {
     title: 'AI WhatsApp Conversations',
+    eyebrow: 'AI Tools',
     allConversations: 'All Conversations',
     escalated: 'Escalated',
     flows: 'Flows',
@@ -1200,6 +1214,7 @@ const en = {
   // ── AI Suggestions ─────────────────────────────────────────────────────────
   aiSuggestions: {
     title: 'AI Suggestions',
+    eyebrow: 'AI Tools',
     replenishment: 'Replenishment',
     forecast: 'Demand Forecast',
     production: 'Production',
@@ -1227,6 +1242,7 @@ const en = {
   // ── AI Pricing & Anomaly ───────────────────────────────────────────────────
   aiPricing: {
     title: 'AI Pricing & Anomaly Alerts',
+    eyebrow: 'AI Tools',
     pricingSuggestions: 'Pricing Suggestions',
     anomalyAlerts: 'Anomaly Alerts',
     generate: 'Generate',
@@ -1300,6 +1316,7 @@ const en = {
   // ── Mobile Admin ───────────────────────────────────────────────────────────
   mobileAdmin: {
     title: 'Mobile Admin',
+    eyebrow: 'Mobile',
     devices: 'Devices',
     notifications: 'Notifications',
     registerDevice: 'Register Device',
@@ -1342,6 +1359,7 @@ const en = {
   // ── Notification Templates ──────────────────────────────────────────────────
   notificationTemplates: {
     title: 'Notification Templates',
+    eyebrow: 'Communications',
     addTemplate: 'Add Template',
     editTemplate: 'Edit Template',
     saved: 'Template saved.',
@@ -1363,6 +1381,7 @@ const en = {
 
   // ── Analytics ──────────────────────────────────────────────────────────────
   analytics: {
+    eyebrow: 'Analytics',
     subtitle: 'Key performance indicators and business insights',
     financialOverview: 'Financial Overview',
     revenueMonth: 'Revenue (Month)',

@@ -147,7 +147,7 @@ export default function AiWhatsappPage() {
 
   return (
     <div className="space-y-6">
-      <SectionTitle eyebrow="AI Tools" title={t('aiWhatsapp.title')} />
+      <SectionTitle eyebrow={t('aiWhatsapp.eyebrow')} title={t('aiWhatsapp.title')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}

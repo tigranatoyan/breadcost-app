@@ -105,7 +105,7 @@ export default function MobileAdminPage() {
 
   return (
     <div className="space-y-6">
-      <SectionTitle eyebrow="Mobile" title={t('mobileAdmin.title')} />
+      <SectionTitle eyebrow={t('mobileAdmin.eyebrow')} title={t('mobileAdmin.title')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}

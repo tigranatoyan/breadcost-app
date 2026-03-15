@@ -147,7 +147,7 @@ export default function TechnologistPage() {
   return (
     <div className="max-w-[1800px] space-y-8">
       <SectionTitle
-        eyebrow="Quality"
+        eyebrow={t('technologist.eyebrow')}
         title={t('technologist.title')}
         subtitle={t('technologist.subtitle')}
         action={

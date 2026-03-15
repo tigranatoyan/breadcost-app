@@ -142,7 +142,7 @@ export default function ProductsPage() {
   return (
     <div className="max-w-[1800px]">
       <SectionTitle
-        eyebrow="Catalog"
+        eyebrow={t('products.eyebrow')}
         title={t('products.title')}
         subtitle="Manage products, sale units, VAT, and prices."
         action={

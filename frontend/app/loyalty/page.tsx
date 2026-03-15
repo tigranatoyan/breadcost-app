@@ -171,7 +171,7 @@ export default function LoyaltyPage() {
 
   return (
     <div className="max-w-[1800px]">
-      <SectionTitle eyebrow="Engagement" title={t('loyalty.title')} />
+      <SectionTitle eyebrow={t('loyalty.eyebrow')} title={t('loyalty.title')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}

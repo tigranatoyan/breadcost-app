@@ -96,9 +96,9 @@ export default function DepartmentsPage() {
   return (
     <div className="max-w-[1800px]">
       <SectionTitle
-        eyebrow="Operations"
+        eyebrow={t('departments.eyebrow')}
         title={t('departments.title')}
-        subtitle="Lead times, warehouse mode, and status."
+        subtitle={t('departments.subtitle')}
         action={
           <Button variant="primary" size="sm" onClick={() => setOpen(true)}>
             <Plus className="h-4 w-4" /> {t('departments.newDepartment')}

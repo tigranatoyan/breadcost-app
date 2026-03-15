@@ -123,7 +123,7 @@ export default function ExchangeRatesPage() {
 
   return (
     <div className="space-y-6">
-      <SectionTitle eyebrow="Currency" title={t('exchangeRates.title')} action={
+      <SectionTitle eyebrow={t('exchangeRates.eyebrow')} title={t('exchangeRates.title')} action={
         <div className="flex gap-2">
           <Button variant="primary" size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => setShowFetch(true)}>{t('exchangeRates.fetchApi')}</Button>
           <Button variant="primary" size="sm" onClick={() => setShowAdd(true)}>{t('exchangeRates.addRate')}</Button>

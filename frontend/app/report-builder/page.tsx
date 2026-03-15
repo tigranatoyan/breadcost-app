@@ -172,7 +172,7 @@ export default function ReportBuilderPage() {
 
   return (
     <div className="max-w-[1800px]">
-      <SectionTitle eyebrow="Analytics" title={t('reportBuilder.title')} />
+      <SectionTitle eyebrow={t('reportBuilder.eyebrow')} title={t('reportBuilder.title')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}

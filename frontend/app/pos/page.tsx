@@ -351,7 +351,7 @@ export default function POSPage() {
     <div className="h-[calc(100vh-64px)] flex flex-col">
       <div className="mb-3 shrink-0">
         <SectionTitle
-          eyebrow="Retail"
+          eyebrow={t('pos.eyebrow')}
           title={t('pos.title')}
           subtitle={t('pos.subtitle')}
           action={<Button variant="secondary" size="sm" disabled={eodLoading} onClick={runEod}>{eodLoading ? t('pos.processing') : t('pos.endOfDay')}</Button>}

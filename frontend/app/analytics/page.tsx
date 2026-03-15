@@ -80,7 +80,7 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-8">
       <SectionTitle
-        eyebrow="D1"
+        eyebrow={t('analytics.eyebrow')}
         title={t('nav.analytics')}
         subtitle={t('analytics.subtitle')}
         action={

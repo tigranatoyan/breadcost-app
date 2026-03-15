@@ -794,7 +794,7 @@ export default function ReportsPage() {
   return (
     <div className="max-w-[1800px]">
       <SectionTitle
-        eyebrow="Insights"
+        eyebrow={t('reports.eyebrow')}
         title={t('reports.title')}
         subtitle={t('reports.lastRefreshed', { time: lastRefresh.toLocaleTimeString() })}
         action={

@@ -201,7 +201,7 @@ export default function AdminPage() {
   return (
     <div className="max-w-[1800px]">
       <SectionTitle
-        eyebrow="Settings"
+        eyebrow={t('admin.eyebrow')}
         title={t('admin.title')}
         subtitle={t('admin.subtitle')}
       />

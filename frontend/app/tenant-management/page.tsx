@@ -152,7 +152,7 @@ export default function TenantManagementPage() {
 
   return (
     <div className="space-y-6">
-      <SectionTitle eyebrow="D4" title={t('tenantMgmt.title')} subtitle={t('tenantMgmt.subtitle')} />
+      <SectionTitle eyebrow={t('tenantMgmt.eyebrow')} title={t('tenantMgmt.title')} subtitle={t('tenantMgmt.subtitle')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}

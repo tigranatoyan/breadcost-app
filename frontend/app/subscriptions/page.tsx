@@ -124,7 +124,7 @@ export default function SubscriptionsPage() {
 
   return (
     <div className="max-w-[1800px]">
-      <SectionTitle eyebrow="Billing" title={t('subscriptions.title')} />
+      <SectionTitle eyebrow={t('subscriptions.eyebrow')} title={t('subscriptions.title')} />
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
       {success && <Success msg={success} onClose={() => setSuccess('')} />}

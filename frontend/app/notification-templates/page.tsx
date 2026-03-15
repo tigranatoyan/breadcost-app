@@ -133,7 +133,7 @@ export default function NotificationTemplatesPage() {
 
   return (
     <div className="space-y-6">
-      <SectionTitle eyebrow="Communications" title={t('notificationTemplates.title')} action={
+      <SectionTitle eyebrow={t('notificationTemplates.eyebrow')} title={t('notificationTemplates.title')} action={
         <Button variant="primary" size="sm" onClick={openNew}>{t('notificationTemplates.addTemplate')}</Button>
       } />
 
