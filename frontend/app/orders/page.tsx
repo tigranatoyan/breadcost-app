@@ -344,7 +344,7 @@ export default function OrdersPage() {
       {/* header */}
       <div className="mb-5">
         <SectionTitle
-          eyebrow="Operations"
+          eyebrow={t('nav.operations')}
           title={t('orders.title')}
           subtitle={t('orders.orderCount', { count: filtered.length })}
           action={<Button variant="primary" size="sm" onClick={openForm}><Plus className="h-4 w-4" /> {t('orders.newOrder')}</Button>}
@@ -473,7 +473,7 @@ export default function OrdersPage() {
                       );
                     })}
                     {o.status === 'CANCELLED' && (
-                      <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">CANCELLED</span>
+                      <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">{t('statusLabels.CANCELLED' as any)}</span>
                     )}
                   </div>
                   {/* lines table */}
