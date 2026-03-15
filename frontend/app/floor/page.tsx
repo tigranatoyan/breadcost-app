@@ -4,7 +4,7 @@ import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Badge, Alert } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
 import { useT, useI18n, BCP47 } from '@/lib/i18n';
-import { Clock3, Play, Check, X, Factory, ClipboardList, Wrench, Thermometer } from 'lucide-react';
+import { Clock3, Play, Check, X, Factory, ClipboardList, Wrench, Thermometer, AlertCircle, Zap } from 'lucide-react';
 
 // â”€â”€â”€ interfaces â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -504,6 +504,18 @@ export default function FloorPage() {
 
   const activePlan = plans.find((p) => p.status === 'IN_PROGRESS');
 
+  // Gather actionable WOs: STARTED first, then PENDING
+  const actionableWos: { wo: WorkOrder; planId: string; planShift: string }[] = [];
+  plans.forEach((plan) => {
+    (plan.workOrders ?? []).forEach((wo) => {
+      if (wo.status === 'STARTED' || wo.status === 'PENDING') {
+        actionableWos.push({ wo, planId: plan.planId, planShift: plan.shift });
+      }
+    });
+  });
+  const startedWos = actionableWos.filter((a) => a.wo.status === 'STARTED');
+  const pendingWos = actionableWos.filter((a) => a.wo.status === 'PENDING');
+
   return (
     <div className="max-w-[1800px] space-y-6">
       {/* Header */}
@@ -511,6 +523,67 @@ export default function FloorPage() {
         eyebrow={t('productionPlans.eyebrow')}
         title={t('floor.title')}
         subtitle={now.toLocaleDateString(BCP47[locale], { weekday: 'long', month: 'long', day: 'numeric' }) + (activePlan ? ` · ${t('floor.activeShift', {shift: activePlan.shift})}` : '')}
+      />
+
+      {/* ── Action Required Hero ─────────────────────────────────────────── */}
+      {actionableWos.length > 0 && (
+        <div className="rounded-2xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-blue-600" />
+            <span className="font-bold text-blue-800">{t('floor.actionRequired')}</span>
+            <span className="text-sm text-blue-500 ml-auto">{t('floor.actionCount', { started: startedWos.length, pending: pendingWos.length })}</span>
+          </div>
+
+          {/* In-progress work orders */}
+          {startedWos.map(({ wo, planId, planShift }) => (
+            <div key={wo.workOrderId} className="flex items-center gap-3 bg-blue-100 border border-blue-200 rounded-xl px-4 py-3">
+              <Play className="h-5 w-5 text-blue-600 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-blue-900">{wo.productName}</div>
+                <div className="text-xs text-blue-600">{t('floor.target')}: {wo.targetQty} {wo.targetUom} · {planShift}</div>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                className="bg-green-600 hover:bg-green-700 flex-shrink-0"
+                disabled={actionBusy}
+                onClick={() => handleWoAction(planId, wo.workOrderId, 'complete')}
+              >
+                {t('floor.completeWorkOrder')}
+              </Button>
+              <Button variant="secondary" size="xs" onClick={() => openWo(wo, planId)}>
+                {t('floor.details')}
+              </Button>
+            </div>
+          ))}
+
+          {/* Start Next CTA — first pending WO */}
+          {pendingWos.length > 0 && startedWos.length === 0 && (
+            <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+              <Zap className="h-5 w-5 text-amber-600 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-amber-900">{pendingWos[0].wo.productName}</div>
+                <div className="text-xs text-amber-600">{t('floor.target')}: {pendingWos[0].wo.targetQty} {pendingWos[0].wo.targetUom} · {pendingWos[0].planShift}</div>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={actionBusy}
+                onClick={() => handleWoAction(pendingWos[0].planId, pendingWos[0].wo.workOrderId, 'start')}
+              >
+                {t('floor.startNext')}
+              </Button>
+            </div>
+          )}
+
+          {/* Remaining pending summary */}
+          {pendingWos.length > (startedWos.length === 0 ? 1 : 0) && (
+            <div className="text-xs text-blue-500">
+              {t('floor.pendingRemaining', { count: pendingWos.length - (startedWos.length === 0 ? 1 : 0) })}
+            </div>
+          )}
+        </div>
+      )}
       />
 
       {/* Date navigation */}
@@ -616,8 +689,18 @@ export default function FloorPage() {
                           {wo.batchCount ? ` · ${t('floor.batches', {count: wo.batchCount})}` : ''}
                         </div>
                       </div>
+                      {/* Inline action buttons */}
+                      {wo.status === 'PENDING' && (
+                        <Button variant="primary" size="xs" disabled={actionBusy} onClick={(e) => { e.stopPropagation(); handleWoAction(plan.planId, wo.workOrderId, 'start'); }}>
+                          {t('floor.startBtn')}
+                        </Button>
+                      )}
+                      {wo.status === 'STARTED' && (
+                        <Button variant="primary" size="xs" className="bg-green-600 hover:bg-green-700" disabled={actionBusy} onClick={(e) => { e.stopPropagation(); openWo(wo, plan.planId); }}>
+                          {t('floor.completeBtn')}
+                        </Button>
+                      )}
                       <Badge status={wo.status} />
-                      <span className="text-xs text-blue-600 font-medium">View â†’</span>
                     </div>
                   ))}
                 </div>

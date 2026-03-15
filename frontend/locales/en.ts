@@ -439,6 +439,14 @@ const en = {
     wasteQty: 'Waste Qty',
     qualityScore: 'Quality Score',
     qualityNotes: 'Quality Notes',
+    // A2-14 - floor as primary worker page
+    actionRequired: 'Action Required',
+    actionCount: '{started} in progress · {pending} pending',
+    startNext: '▶ Start Next',
+    startBtn: '▶ Start',
+    completeBtn: '✓ Complete',
+    details: 'Details',
+    pendingRemaining: '+{count} more pending',
   },
 
   // ── Inventory ──────────────────────────────────────────────────────────────
