@@ -215,6 +215,17 @@ const en = {
     todayValue: 'total value',
     activePlansWidget: 'Active Production Plans',
     activePlansCount: 'active plans',
+    // A8-01 - widget config
+    configTitle: 'Customize Dashboard',
+    widget_kpi: 'KPI Cards',
+    widget_todayOrders: "Today's Orders",
+    widget_activePlans: 'Active Plans',
+    widget_nextEvent: 'Next Event Banner',
+    widget_deliveryTimeline: 'Delivery Timeline',
+    widget_issues: 'Issues Detected',
+    widget_stockAlerts: 'Stock Alerts',
+    widget_revenue: 'Revenue',
+    widget_productionFloor: 'Production Floor',
   },
 
   // ── Orders ─────────────────────────────────────────────────────────────────
