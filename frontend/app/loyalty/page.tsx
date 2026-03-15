@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
-import { Modal, Table, Spinner, Alert, Badge, Field, Success } from '@/components/ui';
+import { Modal, Table, Spinner, Alert, Badge, Field, Success, useConfirm } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
 
 /* ── types ─────────────────────────────────────────────── */
@@ -33,6 +33,7 @@ interface LoyaltyTx {
 /* ── page ──────────────────────────────────────────────── */
 export default function LoyaltyPage() {
   const t = useT();
+  const [askConfirm, confirmModal] = useConfirm({ confirmLabel: t('common.confirm'), cancelLabel: t('common.cancel') });
 
   const [tab, setTab] = useState<'tiers' | 'balances' | 'history'>('tiers');
 
@@ -106,7 +107,7 @@ export default function LoyaltyPage() {
   };
 
   const deleteTier = async (id: string) => {
-    if (!confirm(t('loyalty.confirmDelete'))) return;
+    if (!await askConfirm(t('loyalty.confirmDelete'))) return;
     try {
       await apiFetch(`/v2/loyalty/tiers/${id}?tenantId=${TENANT_ID}`, { method: 'DELETE' });
       setSuccess(t('loyalty.tierDeleted'));
@@ -300,6 +301,7 @@ export default function LoyaltyPage() {
           </form>
         </Modal>
       )}
+      {confirmModal}
     </div>
   );
 }

@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, API_BASE, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
-import { Modal, Table, Spinner, Alert, Badge, Field, Success } from '@/components/ui';
+import { Modal, Table, Spinner, Alert, Badge, Field, Success, useConfirm } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
 
 /* ── types ─────────────────────────────────────────────── */
@@ -60,6 +60,7 @@ interface SupplierApiConfig {
 /* ── page ──────────────────────────────────────────────── */
 export default function SuppliersPage() {
   const t = useT();
+  const [askConfirm, confirmModal] = useConfirm({ confirmLabel: t('common.confirm'), cancelLabel: t('common.cancel') });
 
   /* tabs */
   const [tab, setTab] = useState<'suppliers' | 'purchase-orders' | 'api-config'>('suppliers');
@@ -182,7 +183,7 @@ export default function SuppliersPage() {
   };
 
   const deleteSupplier = async (id: string) => {
-    if (!confirm(t('suppliers.confirmDelete'))) return;
+    if (!await askConfirm(t('suppliers.confirmDelete'))) return;
     try {
       await apiFetch(`/v2/suppliers/${id}?tenantId=${TENANT_ID}`, { method: 'DELETE' });
       setSuccess(t('suppliers.deleted'));
@@ -560,6 +561,7 @@ export default function SuppliersPage() {
           </form>
         </Modal>
       )}
+      {confirmModal}
     </div>
   );
 }

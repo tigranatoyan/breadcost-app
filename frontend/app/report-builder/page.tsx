@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, API_BASE, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
-import { Modal, Table, Spinner, Alert, Badge, Field, Success } from '@/components/ui';
+import { Modal, Table, Spinner, Alert, Badge, Field, Success, useConfirm } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
 
 /* ── types ─────────────────────────────────────────────── */
@@ -31,6 +31,7 @@ interface ReportResult {
 /* ── page ──────────────────────────────────────────────── */
 export default function ReportBuilderPage() {
   const t = useT();
+  const [askConfirm, confirmModal] = useConfirm({ confirmLabel: t('common.confirm'), cancelLabel: t('common.cancel') });
 
   const [tab, setTab] = useState<'catalog' | 'reports'>('reports');
 
@@ -118,7 +119,7 @@ export default function ReportBuilderPage() {
 
   /* delete */
   const deleteReport = async (id: string) => {
-    if (!confirm(t('reportBuilder.confirmDelete'))) return;
+    if (!await askConfirm(t('reportBuilder.confirmDelete'))) return;
     try {
       await apiFetch(`/v2/reports/${id}?tenantId=${TENANT_ID}`, { method: 'DELETE' });
       setSuccess(t('reportBuilder.deleted'));
@@ -279,6 +280,7 @@ export default function ReportBuilderPage() {
           {result.generatedAt && <p className="text-xs text-gray-400 mt-2">{t('reportBuilder.generatedAt')}: {new Date(result.generatedAt).toLocaleString()}</p>}
         </Modal>
       )}
+      {confirmModal}
     </div>
   );
 }

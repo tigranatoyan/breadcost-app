@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
-import { Modal, Spinner, Alert, Field } from '@/components/ui';
+import { Modal, Spinner, Alert, Field, useConfirm } from '@/components/ui';
 import { Badge, Button, SectionTitle } from '@/components/design-system';
 import { Plus, ChevronDown, ChevronUp, Clock3, Check } from 'lucide-react';
 import { useT } from '@/lib/i18n';
@@ -69,6 +69,7 @@ const newIng = () => ({
 
 export default function RecipesPage() {
   const t = useT();
+  const [askConfirm, confirmModal] = useConfirm({ confirmLabel: t('common.confirm'), cancelLabel: t('common.cancel') });
   const [products, setProducts] = useState<Product[]>([]);
   const [depts, setDepts] = useState<Dept[]>([]);
   const [selectedDeptId, setSelectedDeptId] = useState('');
@@ -260,7 +261,7 @@ export default function RecipesPage() {
   };
 
   const deleteStep = async (stepId: string, recipeId: string) => {
-    if (!confirm(t('recipes.deleteStep'))) return;
+    if (!await askConfirm(t('recipes.deleteStep'))) return;
     try {
       await apiFetch(`/v1/technology-steps/${stepId}?tenantId=${TENANT_ID}`, { method: 'DELETE' });
       loadSteps(recipeId, true);
@@ -270,7 +271,7 @@ export default function RecipesPage() {
   };
 
   const activate = async (recipeId: string) => {
-    if (!confirm(t('recipes.confirmActivate'))) return;
+    if (!await askConfirm(t('recipes.confirmActivate'))) return;
     try {
       setActivating(recipeId);
       await apiFetch(`/v1/recipes/${recipeId}/activate?tenantId=${TENANT_ID}`, {
@@ -907,6 +908,7 @@ export default function RecipesPage() {
           </form>
         </Modal>
       )}
+      {confirmModal}
     </div>
   );
 }

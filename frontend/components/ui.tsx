@@ -168,6 +168,84 @@ export function Modal({
   );
 }
 
+/* ── Confirm Modal ─────────────────────────────────────────────────── */
+export function ConfirmModal({
+  message,
+  confirmLabel = 'Confirm',
+  cancelLabel = 'Cancel',
+  onConfirm,
+  onCancel,
+}: {
+  message: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm">
+        <div className="p-5 text-sm text-gray-700">{message}</div>
+        <div className="flex justify-end gap-2 px-5 pb-4">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+          >
+            {cancelLabel}
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+          >
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Hook that replaces `window.confirm()` with a styled modal.
+ *  Returns `[askConfirm, ConfirmModalElement]`.
+ *  Call `const ok = await askConfirm(msg)` — it resolves `true`/`false`.
+ *  Render `{ConfirmModalElement}` once at the bottom of the page JSX. */
+export function useConfirm(opts?: { confirmLabel?: string; cancelLabel?: string }) {
+  const [state, setState] = useState<{
+    message: string;
+    resolve: (v: boolean) => void;
+  } | null>(null);
+
+  const ask = useCallback(
+    (message: string) =>
+      new Promise<boolean>((resolve) => {
+        setState({ message, resolve });
+      }),
+    [],
+  );
+
+  const handleConfirm = useCallback(() => {
+    state?.resolve(true);
+    setState(null);
+  }, [state]);
+
+  const handleCancel = useCallback(() => {
+    state?.resolve(false);
+    setState(null);
+  }, [state]);
+
+  const element = state ? (
+    <ConfirmModal
+      message={state.message}
+      confirmLabel={opts?.confirmLabel}
+      cancelLabel={opts?.cancelLabel}
+      onConfirm={handleConfirm}
+      onCancel={handleCancel}
+    />
+  ) : null;
+
+  return [ask, element] as const;
+}
+
 /* ── Spinner ───────────────────────────────────────────────────────── */
 export function Spinner() {
   return (
