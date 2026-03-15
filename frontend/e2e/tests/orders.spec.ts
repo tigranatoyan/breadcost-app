@@ -29,10 +29,10 @@ test.describe('Orders', () => {
     await page.waitForLoadState('load');
     await orders.openNewOrderModal();
 
-    // Modal should be visible with customer name field
+    // Modal should be visible with customer name dropdown
     const modal = page.locator('[class*="modal"], [role="dialog"], .fixed.inset-0').last();
     await expect(modal).toBeVisible();
-    await expect(modal.getByPlaceholder(/supermarket/i)).toBeVisible();
+    await expect(modal.locator('select').first()).toBeVisible();
   });
 
   test('create a new order', async ({ page }) => {
