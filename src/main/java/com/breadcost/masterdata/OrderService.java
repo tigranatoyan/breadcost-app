@@ -194,6 +194,100 @@ public class OrderService {
         return saved;
     }
 
+    // ─── UPDATE DRAFT ────────────────────────────────────────────────────────────
+
+    @Transactional
+    public OrderEntity updateDraftOrder(String tenantId, String orderId,
+                                        String customerName, String customerId,
+                                        Instant requestedDeliveryTime,
+                                        boolean forceRush, BigDecimal customRushPremiumPct,
+                                        String notes, List<CreateOrderLineRequest> lineRequests) {
+
+        OrderEntity order = findByTenantAndId(tenantId, orderId);
+
+        if (!"DRAFT".equals(order.getStatus())) {
+            throw new IllegalStateException("Only DRAFT orders can be edited");
+        }
+
+        // Default customerId from name when not provided
+        String cid = (customerId != null && !customerId.isBlank()) ? customerId
+                : (customerName != null ? customerName.toLowerCase().replaceAll("[^a-z0-9]", "-") : order.getCustomerId());
+
+        // Rush logic
+        Instant now = Instant.now();
+        boolean rushOrder = forceRush || isAfterCutoff(now);
+        BigDecimal rushPremiumPct = BigDecimal.ZERO;
+        if (rushOrder) {
+            rushPremiumPct = customRushPremiumPct != null
+                    ? customRushPremiumPct : BigDecimal.valueOf(defaultRushPremiumPct);
+        }
+
+        // Update fields
+        order.setCustomerName(customerName);
+        order.setCustomerId(cid);
+        order.setRequestedDeliveryTime(requestedDeliveryTime);
+        order.setRushOrder(rushOrder);
+        order.setRushPremiumPct(rushPremiumPct);
+        order.setNotes(notes);
+
+        // Replace lines (orphanRemoval handles deletion)
+        order.getLines().clear();
+
+        BigDecimal finalMultiplier = BigDecimal.ONE.add(rushPremiumPct.divide(BigDecimal.valueOf(100)));
+        BigDecimal total = BigDecimal.ZERO;
+
+        for (CreateOrderLineRequest req : lineRequests) {
+            String lineId = UUID.randomUUID().toString();
+
+            boolean leadTimeConflict = false;
+            Instant earliestReadyAt = null;
+
+            Optional<RecipeEntity> activeRecipe = (req.getProductId() != null)
+                    ? recipeRepository.findByTenantIdAndProductIdAndStatus(tenantId, req.getProductId(), Recipe.RecipeStatus.ACTIVE).stream().findFirst()
+                    : Optional.empty();
+            Optional<DepartmentEntity> dept = (req.getDepartmentId() != null)
+                    ? departmentRepository.findById(req.getDepartmentId())
+                    : Optional.empty();
+
+            if (requestedDeliveryTime != null) {
+                int leadHours = activeRecipe
+                        .map(RecipeEntity::getLeadTimeHours)
+                        .filter(h -> h != null && h > 0)
+                        .orElseGet(() -> dept.map(DepartmentEntity::getLeadTimeHours).orElse(0));
+                if (leadHours > 0) {
+                    earliestReadyAt = now.plusSeconds(leadHours * 3600L);
+                    leadTimeConflict = earliestReadyAt.isAfter(requestedDeliveryTime);
+                }
+            }
+
+            OrderLineEntity lineEntity = OrderLineEntity.builder()
+                    .orderLineId(lineId)
+                    .productId(req.getProductId())
+                    .productName(req.getProductName())
+                    .departmentId(req.getDepartmentId())
+                    .departmentName(dept.map(DepartmentEntity::getName).orElse(req.getDepartmentName()))
+                    .qty(req.getQty())
+                    .uom(req.getUom())
+                    .unitPrice(req.getUnitPrice())
+                    .leadTimeConflict(leadTimeConflict)
+                    .earliestReadyAt(earliestReadyAt)
+                    .notes(req.getLineNotes())
+                    .build();
+            lineEntity.setOrder(order);
+            order.getLines().add(lineEntity);
+
+            BigDecimal lineTotal = (req.getUnitPrice() != null ? req.getUnitPrice() : BigDecimal.ZERO)
+                    .multiply(BigDecimal.valueOf(req.getQty())).multiply(finalMultiplier);
+            total = total.add(lineTotal);
+        }
+
+        order.setTotalAmount(total);
+
+        OrderEntity saved = orderRepository.save(order);
+        recordHistory(tenantId, orderId, "DRAFT", "Order edited");
+        return saved;
+    }
+
     // ─── CONFIRM ─────────────────────────────────────────────────────────────────
 
     @Transactional

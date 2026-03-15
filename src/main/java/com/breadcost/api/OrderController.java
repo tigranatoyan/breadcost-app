@@ -6,6 +6,7 @@ import com.breadcost.masterdata.OrderService;
 import com.breadcost.masterdata.OrderService.CreateOrderLineRequest;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import java.util.NoSuchElementException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -98,6 +99,29 @@ public class OrderController {
     }
 
     // ─── CONFIRM ─────────────────────────────────────────────────────────────────
+
+    @Operation(summary = "Update draft order", description = "Update customer, lines, delivery and notes on a DRAFT order")
+    @ApiResponse(responseCode = "200", description = "Draft order updated")
+    @PutMapping("/{orderId}")
+    @PreAuthorize("hasAnyRole('Admin','ProductionUser')")
+    public ResponseEntity<OrderEntity> updateDraftOrder(
+            @PathVariable String orderId,
+            @RequestBody CreateOrderRequest req) {
+
+        try {
+            OrderEntity updated = orderService.updateDraftOrder(
+                    req.getTenantId(), orderId,
+                    req.getCustomerName(), req.getCustomerId(),
+                    req.getRequestedDeliveryTime(),
+                    req.isForceRush(), req.getCustomRushPremiumPct(),
+                    req.getNotes(), req.getLines());
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException | NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+    }
 
     @Operation(summary = "Confirm order", description = "Transition order from DRAFT to CONFIRMED")
     @PostMapping("/{orderId}/confirm")

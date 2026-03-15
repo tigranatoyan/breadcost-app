@@ -222,6 +222,9 @@ const en = {
     rushPremiumHint: 'Leave blank to use system default',
     noProducts: 'No products available. Add products first.',
     orderCreated: 'Order created successfully',
+    editBtn: 'Edit',
+    editOrderTitle: 'Edit Order',
+    orderUpdated: 'Order updated successfully',
   },
 
   // ── Products ───────────────────────────────────────────────────────────────
