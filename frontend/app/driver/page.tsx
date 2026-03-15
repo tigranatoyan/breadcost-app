@@ -4,6 +4,7 @@ import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT, useDateTimeFmt } from '@/lib/i18n';
 import { Table, Spinner, Alert, Badge, Modal, Field, Success } from '@/components/ui';
 import { SectionTitle, Button } from '@/components/design-system';
+import { getUsername } from '@/lib/auth';
 
 /* ── types ─────────────────────────────────────────────── */
 interface DriverSession {
@@ -76,6 +77,8 @@ export default function DriverPage() {
   const [allSessions, setAllSessions] = useState<DriverSession[]>([]);
 
   /* ── loaders ─────────────────────────────────────────── */
+  const currentUser = getUsername();
+
   const loadSessions = useCallback(async () => {
     setSessionsLoading(true);
     try {
@@ -83,6 +86,9 @@ export default function DriverPage() {
     } catch (e) { setError(String(e)); }
     finally { setSessionsLoading(false); }
   }, []);
+
+  const mySession = sessions.find(s => s.driverName?.toLowerCase() === currentUser.toLowerCase() || s.driverId === currentUser);
+  const otherSessions = sessions.filter(s => s !== mySession);
 
   const openManifest = async (s: DriverSession) => {
     setManifestModal(s);
@@ -146,22 +152,50 @@ export default function DriverPage() {
       {tab === 'sessions' && (
         <div className="space-y-4">
           <Button variant="primary" size="sm" onClick={loadSessions}>{t('driver.refresh')}</Button>
+
           {sessionsLoading ? <Spinner /> : (
-            <Table
-              cols={[t('driver.driverName'), t('driver.runId'), t('driver.status'), t('driver.startTime'), t('driver.location'), '']}
-              rows={sessions.map(s => [
-                s.driverName,
-                s.runId,
-                <Badge key={s.id} status={s.status} />,
-                fmtDateTime(s.startTime),
-                s.lastLat && s.lastLng ? `${s.lastLat.toFixed(4)}, ${s.lastLng.toFixed(4)}` : '–',
-                <div key={s.id + 'a'} className="flex gap-2">
-                  <button onClick={() => openManifest(s)} className="text-blue-600 hover:underline text-sm">{t('driver.manifest')}</button>
-                  <button onClick={() => endSession(s.id)} className="text-red-600 hover:underline text-sm">{t('driver.endSession')}</button>
-                </div>,
-              ])}
-              empty={t('driver.noSessions')}
-            />
+            <>
+              {/* Your Active Run hero card */}
+              {mySession && (
+                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 mb-4">
+                  <div className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">{t('driver.yourActiveRun')}</div>
+                  <div className="flex flex-wrap gap-6 items-center">
+                    <div><span className="text-sm text-gray-500">{t('driver.runId')}:</span> <span className="font-semibold">{mySession.runId}</span></div>
+                    <div><Badge status={mySession.status} /></div>
+                    <div><span className="text-sm text-gray-500">{t('driver.startTime')}:</span> {fmtDateTime(mySession.startTime)}</div>
+                    <div className="flex gap-2 ml-auto">
+                      <button onClick={() => openManifest(mySession)} className="btn-xs bg-blue-600 text-white hover:bg-blue-700">{t('driver.manifest')}</button>
+                      <button onClick={() => endSession(mySession.id)} className="btn-xs bg-red-600 text-white hover:bg-red-700">{t('driver.endSession')}</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Other sessions table */}
+              {otherSessions.length > 0 && (
+                <>
+                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-4 mb-2">{t('driver.allSessions')}</div>
+                  <Table
+                    cols={[t('driver.driverName'), t('driver.runId'), t('driver.status'), t('driver.startTime'), t('driver.location'), '']}
+                    rows={otherSessions.map(s => [
+                      s.driverName,
+                      s.runId,
+                      <Badge key={s.id} status={s.status} />,
+                      fmtDateTime(s.startTime),
+                      s.lastLat && s.lastLng ? `${s.lastLat.toFixed(4)}, ${s.lastLng.toFixed(4)}` : '–',
+                      <div key={s.id + 'a'} className="flex gap-2">
+                        <button onClick={() => openManifest(s)} className="text-blue-600 hover:underline text-sm">{t('driver.manifest')}</button>
+                        <button onClick={() => endSession(s.id)} className="text-red-600 hover:underline text-sm">{t('driver.endSession')}</button>
+                      </div>,
+                    ])}
+                    empty={t('driver.noSessions')}
+                  />
+                </>
+              )}
+              {!mySession && otherSessions.length === 0 && (
+                <div className="text-sm text-gray-400 py-4 text-center">{t('driver.noSessions')}</div>
+              )}
+            </>
           )}
         </div>
       )}

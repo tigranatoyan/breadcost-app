@@ -1302,6 +1302,8 @@ const en = {
     status: 'Status',
     startedAt: 'Started At',
     noSessions: 'No active sessions.',
+    yourActiveRun: 'Your Active Run',
+    allSessions: 'All Active Sessions',
     manifest: 'Delivery Manifest',
     stopUpdates: 'Stop Updates',
     action: 'Action',
