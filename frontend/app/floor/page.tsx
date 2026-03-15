@@ -284,10 +284,10 @@ function WOPanel({
                         </thead>
                         <tbody className="divide-y">
                           {recipe.ingredients.map((ing, i) => {
-                            const perBatch = ing.unitMode === 'PIECE' ? `${ing.pieceQty} pcs` : `${ing.recipeQty} ${ing.recipeUom}`;
+                            const perBatch = ing.unitMode === 'PIECE' ? `${ing.pieceQty} ${t('units.PCS')}` : `${ing.recipeQty} ${t(`units.${ing.recipeUom}` as any) || ing.recipeUom}`;
                             const totalAmt = ing.unitMode === 'PIECE'
-                              ? `${(ing.pieceQty * wo.batchCount).toFixed(0)} pcs`
-                              : `${(ing.recipeQty * wo.batchCount).toFixed(1)} ${ing.recipeUom}`;
+                              ? `${(ing.pieceQty * wo.batchCount).toFixed(0)} ${t('units.PCS')}`
+                              : `${(ing.recipeQty * wo.batchCount).toFixed(1)} ${t(`units.${ing.recipeUom}` as any) || ing.recipeUom}`;
                             return (
                               <tr key={i}>
                                 <td className="py-2 font-medium">{ing.itemName || 'â€”'}</td>
@@ -508,7 +508,7 @@ export default function FloorPage() {
     <div className="max-w-[1800px] space-y-6">
       {/* Header */}
       <SectionTitle
-        eyebrow="Production"
+        eyebrow={t('productionPlans.eyebrow')}
         title={t('floor.title')}
         subtitle={now.toLocaleDateString(BCP47[locale], { weekday: 'long', month: 'long', day: 'numeric' }) + (activePlan ? ` · ${t('floor.activeShift', {shift: activePlan.shift})}` : '')}
       />
