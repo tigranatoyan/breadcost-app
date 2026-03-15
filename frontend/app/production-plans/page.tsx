@@ -329,6 +329,20 @@ export default function ProductionPlansPage() {
     return true;
   });
 
+  const [autoPlanLoading, setAutoPlanLoading] = useState(false);
+  const autoCreatePlan = async () => {
+    try {
+      setAutoPlanLoading(true);
+      await apiFetch(`/v1/inventory/auto-plan?tenantId=${TENANT_ID}`, { method: 'POST' });
+      setInfo(t('productionPlans.autoPlanCreated'));
+      load();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setAutoPlanLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-[1800px]">
       <div className="mb-4">
@@ -336,7 +350,14 @@ export default function ProductionPlansPage() {
           eyebrow={t('productionPlans.eyebrow')}
           title={t('productionPlans.title')}
           subtitle={t('productionPlans.subtitle')}
-          action={<Button variant="primary" size="sm" onClick={() => setOpen(true)}><Plus className="h-4 w-4" /> {t('productionPlans.newPlan')}</Button>}
+          action={
+            <div className="flex gap-2">
+              <Button variant="secondary" size="sm" disabled={autoPlanLoading} onClick={autoCreatePlan}>
+                {autoPlanLoading ? t('common.loading') : t('productionPlans.autoPlan')}
+              </Button>
+              <Button variant="primary" size="sm" onClick={() => setOpen(true)}><Plus className="h-4 w-4" /> {t('productionPlans.newPlan')}</Button>
+            </div>
+          }
         />
       </div>
 
