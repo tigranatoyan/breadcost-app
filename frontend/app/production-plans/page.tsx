@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
-import { Modal, Spinner, Alert, Badge, Field, useConfirm } from '@/components/ui';
+import { Modal, Spinner, Alert, Success, Badge, Field, useConfirm } from '@/components/ui';
 import { SectionTitle, Button, SelectField, InputField } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
 import { Plus } from 'lucide-react';
@@ -67,6 +67,7 @@ export default function ProductionPlansPage() {
   const [dateFilter, setDateFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [actionId, setActionId] = useState('');
@@ -118,10 +119,18 @@ export default function ProductionPlansPage() {
     if (action === 'approve' && !await askConfirm(t('productionPlans.confirmApprove'))) return;
     try {
       setActionId(`${planId}-${action}`);
-      await apiFetch(
+      const result = await apiFetch<Plan>(
         `/v1/production-plans/${planId}/${action}?tenantId=${TENANT_ID}`,
         { method: 'POST' }
       );
+      if (action === 'generate') {
+        const count = result.workOrders?.length ?? 0;
+        if (count === 0) {
+          setInfo(t('productionPlans.zeroWorkOrders'));
+        } else {
+          setInfo(t('productionPlans.workOrdersGenerated').replace('{count}', String(count)));
+        }
+      }
       await reloadPlan(planId);
     } catch (e) {
       setError(String(e));
@@ -332,6 +341,7 @@ export default function ProductionPlansPage() {
       </div>
 
       {error && <Alert msg={error} onClose={() => setError('')} />}
+      {info && <Success msg={info} onClose={() => setInfo('')} />}
 
       {loading ? (
         <Spinner />
