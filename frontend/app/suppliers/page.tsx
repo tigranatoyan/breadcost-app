@@ -343,10 +343,11 @@ export default function SuppliersPage() {
         ))}
       </div>
 
-      {/* ───────── SUPPLIERS TAB ───────── */}
+      {/* ───────── SUPPLIERS TAB (Admin) ───────── */}
       {tab === 'suppliers' && (
         <>
-          <div className="flex justify-end mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t('suppliers.adminSection')}</div>
             <Button variant="primary" size="sm" onClick={() => setShowCreate(true)}>+ {t('suppliers.add')}</Button>
           </div>
           {loading ? <Spinner /> : (
@@ -368,15 +369,19 @@ export default function SuppliersPage() {
         </>
       )}
 
-      {/* ───────── PURCHASE ORDERS TAB ───────── */}
+      {/* ───────── PURCHASE ORDERS TAB (Operations) ───────── */}
       {tab === 'purchase-orders' && (
         <>
+          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">{t('suppliers.operationsSection')}</div>
           <div className="flex justify-end gap-2 mb-4">
             <Button variant="secondary" size="sm" onClick={suggestPOs} disabled={poSaving}>{t('suppliers.suggest')}</Button>
             <Button variant="success" size="sm" onClick={generateFromPlan} disabled={genSaving}>{genSaving ? t('common.saving') : t('suppliers.generateFromPlan')}</Button>
             <Button variant="primary" size="sm" onClick={() => { setShowCreatePO(true); addPOLine(); }}>+ {t('suppliers.createPO')}</Button>
           </div>
-          {/* A1.5 — ingredient → supplier lookup */}
+          {/* Supplier lookup tool */}
+          <div className="mt-6 mb-3 border-t pt-4">
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">{t('suppliers.lookupSection')}</div>
+          </div>
           <div className="mb-4 p-3 bg-gray-50 rounded-lg flex items-end gap-3">
             <Field label={t('suppliers.ingredientLookup')}>
               <select className="input" value={lookupId} onChange={e => setLookupId(e.target.value)}>
