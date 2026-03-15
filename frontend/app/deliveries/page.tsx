@@ -53,7 +53,9 @@ export default function DeliveriesPage() {
 
   /* assign */
   const [showAssign, setShowAssign] = useState<string | null>(null);
-  const [assignOrderIds, setAssignOrderIds] = useState('');
+  const [readyOrders, setReadyOrders] = useState<{ orderId: string; customerName: string; totalAmount: number; requestedDeliveryTime: string }[]>([]);
+  const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(new Set());
+  const [loadingReady, setLoadingReady] = useState(false);
 
   /* loaders */
   const loadRuns = useCallback(async () => {
@@ -96,12 +98,17 @@ export default function DeliveriesPage() {
   /* assign orders */
   const assignOrders = async (runId: string) => {
     try {
-      const ids = assignOrderIds.split(',').map(s => s.trim()).filter(Boolean);
+      const ids = Array.from(selectedOrderIds);
       if (!ids.length) return;
-      await apiFetch(`/v2/delivery-runs/${runId}/assign?tenantId=${TENANT_ID}`, { method: 'POST', body: JSON.stringify({ orderIds: ids }) });
+      for (const orderId of ids) {
+        await apiFetch(`/v2/delivery-runs/${runId}/orders`, {
+          method: 'POST',
+          body: JSON.stringify({ tenantId: TENANT_ID, orderId }),
+        });
+      }
       setSuccess(t('deliveries.assigned'));
       setShowAssign(null);
-      setAssignOrderIds('');
+      setSelectedOrderIds(new Set());
       if (detailRun) openDetail(detailRun);
     } catch (e) { setError(String(e)); }
   };
@@ -160,7 +167,16 @@ export default function DeliveriesPage() {
             r.scheduledDate || '—',
             <Badge key={`s-${r.runId}`} status={r.status} />,
             <div key={`a-${r.runId}`} className="flex gap-1 flex-wrap">
-              <Button variant="secondary" size="xs" onClick={() => { setShowAssign(r.runId); setAssignOrderIds(''); }}>{t('deliveries.assign')}</Button>
+              <Button variant="secondary" size="xs" onClick={async () => {
+                setShowAssign(r.runId);
+                setSelectedOrderIds(new Set());
+                setLoadingReady(true);
+                try {
+                  const orders = await apiFetch<{ orderId: string; customerName: string; totalAmount: number; requestedDeliveryTime: string }[]>(`/v1/orders?tenantId=${TENANT_ID}&status=READY`);
+                  setReadyOrders(orders);
+                } catch { setReadyOrders([]); }
+                finally { setLoadingReady(false); }
+              }}>{t('deliveries.assign')}</Button>
               {(r.status === 'PLANNED' || r.status === 'IN_PROGRESS') && (
                 <Button variant="primary" size="xs" className="bg-green-600 hover:bg-green-700" onClick={() => completeRun(r.runId)}>{t('deliveries.complete')}</Button>
               )}
@@ -190,10 +206,33 @@ export default function DeliveriesPage() {
       {showAssign && (
         <Modal title={t('deliveries.assignOrders')} onClose={() => setShowAssign(null)}>
           <p className="text-sm text-gray-500 mb-3">{t('deliveries.assignHint')}</p>
-          <textarea className="input w-full" rows={3} placeholder="order-id-1, order-id-2, ..." value={assignOrderIds} onChange={e => setAssignOrderIds(e.target.value)} />
+          {loadingReady ? <Spinner /> : readyOrders.length === 0 ? (
+            <p className="text-sm text-gray-400 italic">{t('deliveries.noReadyOrders')}</p>
+          ) : (
+            <div className="max-h-64 overflow-y-auto border rounded divide-y">
+              {readyOrders.map(o => (
+                <label key={o.orderId} className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                  <input
+                    type="checkbox"
+                    checked={selectedOrderIds.has(o.orderId)}
+                    onChange={() => {
+                      setSelectedOrderIds(prev => {
+                        const next = new Set(prev);
+                        if (next.has(o.orderId)) next.delete(o.orderId); else next.add(o.orderId);
+                        return next;
+                      });
+                    }}
+                  />
+                  <span className="font-mono text-xs text-gray-500">{o.orderId.slice(0, 8)}</span>
+                  <span className="flex-1">{o.customerName}</span>
+                  <span className="text-gray-500">{o.totalAmount?.toLocaleString()}</span>
+                </label>
+              ))}
+            </div>
+          )}
           <div className="flex justify-end gap-2 mt-4">
             <Button variant="secondary" size="sm" onClick={() => setShowAssign(null)}>{t('common.cancel')}</Button>
-            <Button variant="primary" size="sm" onClick={() => assignOrders(showAssign)}>{t('deliveries.assign')}</Button>
+            <Button variant="primary" size="sm" disabled={selectedOrderIds.size === 0} onClick={() => assignOrders(showAssign)}>{t('deliveries.assign')}</Button>
           </div>
         </Modal>
       )}
