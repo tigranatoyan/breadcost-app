@@ -29,7 +29,7 @@ const CHANNEL_ICON: Record<string, typeof Bell> = {
 
 const VARIABLES = ['{{orderNumber}}', '{{customerName}}', '{{status}}'];
 
-const typeLabel = (t: string) => t.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+const typeLabel = (t: string) => t.replaceAll('_', ' ').replaceAll(/\b\w/g, c => c.toUpperCase());
 
 export default function NotificationTemplatesPage() {
   const t = useT();

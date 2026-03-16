@@ -3,7 +3,6 @@ package com.breadcost.masterdata;
 import com.breadcost.domain.ProductionPlan;
 import com.breadcost.domain.Recipe;
 import com.breadcost.domain.WorkOrder;
-import com.breadcost.projections.InventoryProjection;
 import com.breadcost.purchaseorder.PurchaseOrderEntity;
 import com.breadcost.purchaseorder.PurchaseOrderService;
 import com.breadcost.supplier.SupplierCatalogItemEntity;
@@ -30,12 +29,10 @@ import java.util.stream.Collectors;
 public class StockAlertService {
 
     private final ItemRepository itemRepository;
-    private final InventoryProjection inventoryProjection;
     private final RecipeRepository recipeRepository;
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final ProductionPlanRepository planRepository;
-    private final WorkOrderRepository workOrderRepository;
     private final InventoryService inventoryService;
     private final PurchaseOrderService purchaseOrderService;
     private final SupplierCatalogItemRepository catalogItemRepo;
@@ -83,16 +80,7 @@ public class StockAlertService {
             return new AutoPlanResult(null, List.of(), "No confirmed orders to plan");
         }
 
-        // Aggregate demand by productId
-        Map<String, Double> demandByProduct = new LinkedHashMap<>();
-        for (OrderEntity order : confirmedOrders) {
-            for (OrderLineEntity line : order.getLines()) {
-                if (line.getProductId() != null) {
-                    demandByProduct.merge(line.getProductId(), line.getQty(), Double::sum);
-                }
-            }
-        }
-
+        Map<String, Double> demandByProduct = aggregateDemandByProduct(confirmedOrders);
         if (demandByProduct.isEmpty()) {
             return new AutoPlanResult(null, List.of(), "No product lines in confirmed orders");
         }
@@ -111,62 +99,13 @@ public class StockAlertService {
                 .build();
 
         List<String> warnings = new ArrayList<>();
-        int woCount = 0;
 
         for (Map.Entry<String, Double> entry : demandByProduct.entrySet()) {
-            String productId = entry.getKey();
-            double totalQty = entry.getValue();
-
-            // Find active recipe
-            Optional<ProductEntity> productOpt = productRepository.findById(productId)
-                    .filter(p -> tenantId.equals(p.getTenantId()));
-            if (productOpt.isEmpty()) continue;
-
-            ProductEntity product = productOpt.get();
-            var recipes = recipeRepository.findByTenantIdAndProductIdAndStatus(
-                    tenantId, productId, Recipe.RecipeStatus.ACTIVE);
-            if (recipes.isEmpty()) {
-                warnings.add("No active recipe for " + product.getName());
-                continue;
-            }
-
-            RecipeEntity recipe = recipes.get(0);
-            int batchCount = BigDecimal.valueOf(totalQty)
-                    .divide(recipe.getBatchSize(), 0, RoundingMode.CEILING)
-                    .intValue();
-            if (batchCount < 1) batchCount = 1;
-
-            // Check if materials are available
-            var shortages = inventoryService.checkMaterialAvailability(
-                    tenantId, recipe.getRecipeId(), batchCount);
-            if (!shortages.isEmpty()) {
-                String shortageDesc = shortages.stream()
-                        .map(s -> s.itemName() + " (need " + s.required() + ", have " + s.onHand() + " " + s.uom() + ")")
-                        .collect(Collectors.joining(", "));
-                warnings.add(product.getName() + ": material shortage — " + shortageDesc);
-            }
-
-            WorkOrderEntity wo = WorkOrderEntity.builder()
-                    .workOrderId(UUID.randomUUID().toString())
-                    .plan(plan)
-                    .tenantId(tenantId)
-                    .departmentId(product.getDepartmentId())
-                    .productId(productId)
-                    .productName(product.getName())
-                    .recipeId(recipe.getRecipeId())
-                    .targetQty(totalQty)
-                    .uom(recipe.getBatchSizeUom())
-                    .batchCount(batchCount)
-                    .status(WorkOrder.Status.PENDING)
-                    .startOffsetHours(0)
-                    .durationHours(recipe.getLeadTimeHours())
-                    .build();
-
-            plan.getWorkOrders().add(wo);
-            woCount++;
+            buildWorkOrder(tenantId, plan, entry.getKey(), entry.getValue(), warnings)
+                    .ifPresent(wo -> plan.getWorkOrders().add(wo));
         }
 
-        if (woCount == 0) {
+        if (plan.getWorkOrders().isEmpty()) {
             return new AutoPlanResult(null, warnings, "No work orders could be generated");
         }
 
@@ -174,10 +113,72 @@ public class StockAlertService {
         ProductionPlanEntity saved = planRepository.save(plan);
 
         log.info("Auto-created production plan {} with {} work orders for tenant {}",
-                saved.getPlanId(), woCount, tenantId);
+                saved.getPlanId(), plan.getWorkOrders().size(), tenantId);
 
         return new AutoPlanResult(saved, warnings,
-                "Plan created with " + woCount + " work orders");
+                "Plan created with " + plan.getWorkOrders().size() + " work orders");
+    }
+
+    private Map<String, Double> aggregateDemandByProduct(List<OrderEntity> orders) {
+        Map<String, Double> demandByProduct = new LinkedHashMap<>();
+        for (OrderEntity order : orders) {
+            for (OrderLineEntity line : order.getLines()) {
+                if (line.getProductId() != null) {
+                    demandByProduct.merge(line.getProductId(), line.getQty(), Double::sum);
+                }
+            }
+        }
+        return demandByProduct;
+    }
+
+    private Optional<WorkOrderEntity> buildWorkOrder(String tenantId, ProductionPlanEntity plan,
+                                                      String productId, double totalQty,
+                                                      List<String> warnings) {
+        Optional<ProductEntity> productOpt = productRepository.findById(productId)
+                .filter(p -> tenantId.equals(p.getTenantId()));
+        if (productOpt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        ProductEntity product = productOpt.get();
+        var recipes = recipeRepository.findByTenantIdAndProductIdAndStatus(
+                tenantId, productId, Recipe.RecipeStatus.ACTIVE);
+        if (recipes.isEmpty()) {
+            warnings.add("No active recipe for " + product.getName());
+            return Optional.empty();
+        }
+
+        RecipeEntity recipe = recipes.get(0);
+        int batchCount = BigDecimal.valueOf(totalQty)
+                .divide(recipe.getBatchSize(), 0, RoundingMode.CEILING)
+                .intValue();
+        if (batchCount < 1) batchCount = 1;
+
+        // Check if materials are available
+        var shortages = inventoryService.checkMaterialAvailability(
+                tenantId, recipe.getRecipeId(), batchCount);
+        if (!shortages.isEmpty()) {
+            String shortageDesc = shortages.stream()
+                    .map(s -> s.itemName() + " (need " + s.required() + ", have " + s.onHand() + " " + s.uom() + ")")
+                    .collect(Collectors.joining(", "));
+            warnings.add(product.getName() + ": material shortage — " + shortageDesc);
+        }
+
+        return Optional.of(WorkOrderEntity.builder()
+                .workOrderId(UUID.randomUUID().toString())
+                .plan(plan)
+                .tenantId(tenantId)
+                .departmentId(product.getDepartmentId())
+                .productId(productId)
+                .productName(product.getName())
+                .recipeId(recipe.getRecipeId())
+                .targetQty(totalQty)
+                .uom(recipe.getBatchSizeUom())
+                .batchCount(batchCount)
+                .status(WorkOrder.Status.PENDING)
+                .startOffsetHours(0)
+                .durationHours(recipe.getLeadTimeHours())
+                .build());
     }
 
     private List<String> findProductsUsingIngredient(String tenantId, String itemId) {

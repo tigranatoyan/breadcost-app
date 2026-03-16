@@ -1,0 +1,543 @@
+﻿typescript:S6759|breadcost-app:frontend/components/ui.tsx|6|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/ui.tsx|57|Mark the props of the component as read-only.
+typescript:S2004|breadcost-app:frontend/components/ui.tsx|64|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S6481|breadcost-app:frontend/components/ui.tsx|87|The object passed as the value prop to the Context provider changes every render. To fix this consider wrapping it in a useMemo hook.
+typescript:S6759|breadcost-app:frontend/components/ui.tsx|113|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/ui.tsx|139|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/ui.tsx|173|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/ui.tsx|260|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/ui.tsx|275|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/ui.tsx|308|Mark the props of the component as read-only.
+typescript:S7735|breadcost-app:frontend/components/ui.tsx|313|Unexpected negated condition.
+typescript:S7781|breadcost-app:frontend/components/ui.tsx|313|Prefer `String#replaceAll()` over `String#replace()`.
+typescript:S6759|breadcost-app:frontend/components/ui.tsx|322|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/ui.tsx|341|Mark the props of the component as read-only.
+typescript:S6479|breadcost-app:frontend/components/ui.tsx|374|Do not use Array index in keys
+typescript:S6479|breadcost-app:frontend/components/ui.tsx|376|Do not use Array index in keys
+typescript:S7781|breadcost-app:frontend/e2e/tests/obs-validate.spec.ts|119|Prefer `String#replaceAll()` over `String#replace()`.
+typescript:S7780|breadcost-app:frontend/middleware.ts|31|`String.raw` should be used to avoid escaping `\`.
+typescript:S1128|breadcost-app:frontend/app/subscriptions/page.tsx|6|Remove this unused import of 'Card'.
+typescript:S6479|breadcost-app:frontend/app/subscriptions/page.tsx|177|Do not use Array index in keys
+typescript:S1128|breadcost-app:frontend/app/dashboard/page.tsx|6|Remove this unused import of 'Package'.
+typescript:S6551|breadcost-app:frontend/app/dashboard/page.tsx|185|'val.value' will use Object's default stringification format ('[object Object]') when stringified.
+typescript:S7735|breadcost-app:frontend/app/dashboard/page.tsx|185|Unexpected negated condition.
+typescript:S6551|breadcost-app:frontend/app/dashboard/page.tsx|590|'p.name || p.productName || ''' will use Object's default stringification format ('[object Object]') when stringified.
+typescript:S6551|breadcost-app:frontend/app/dashboard/page.tsx|591|'p.totalQty ?? 0' will use Object's default stringification format ('[object Object]') when stringified.
+typescript:S6551|breadcost-app:frontend/app/dashboard/page.tsx|593|'p.orderCount ?? 0' will use Object's default stringification format ('[object Object]') when stringified.
+typescript:S6759|breadcost-app:frontend/components/design-system.tsx|238|Mark the props of the component as read-only.
+typescript:S3358|breadcost-app:frontend/components/design-system.tsx|245|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/components/design-system.tsx|246|Extract this nested ternary operation into an independent statement.
+typescript:S7764|breadcost-app:frontend/app/dashboard/page.tsx|126|Prefer `globalThis.window` over `window`.
+typescript:S3776|breadcost-app:frontend/app/dashboard/page.tsx|139|Refactor this function to reduce its Cognitive Complexity from 24 to the 15 allowed.
+typescript:S7778|breadcost-app:frontend/app/production-plans/page.tsx|294|Do not call `Array#push()` multiple times.
+typescript:S7735|breadcost-app:frontend/app/customers/page.tsx|214|Unexpected negated condition.
+typescript:S3358|breadcost-app:frontend/app/customers/page.tsx|216|Extract this nested ternary operation into an independent statement.
+typescript:S3776|breadcost-app:frontend/app/recipes/page.tsx|86|Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+typescript:S3358|breadcost-app:frontend/app/recipes/page.tsx|520|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/orders/page.tsx|385|Extract this nested ternary operation into an independent statement.
+typescript:S1854|breadcost-app:frontend/app/customer/orders/page.tsx|67|Remove this useless assignment to variable "t".
+typescript:S7735|breadcost-app:frontend/components/design-system.tsx|221|Unexpected negated condition.
+typescript:S7781|breadcost-app:frontend/components/design-system.tsx|221|Prefer `String#replaceAll()` over `String#replace()`.
+typescript:S6551|breadcost-app:frontend/app/tenant-management/page.tsx|324|'(exportData as Record<string, unknown>).productsCount || 0' will use Object's default stringification format ('[object Object]') when stringified.
+typescript:S4325|breadcost-app:frontend/app/tenant-management/page.tsx|324|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S6551|breadcost-app:frontend/app/tenant-management/page.tsx|325|'(exportData as Record<string, unknown>).customersCount || 0' will use Object's default stringification format ('[object Object]') when stringified.
+typescript:S4325|breadcost-app:frontend/app/tenant-management/page.tsx|325|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S6551|breadcost-app:frontend/app/tenant-management/page.tsx|326|'(exportData as Record<string, unknown>).ordersCount || 0' will use Object's default stringification format ('[object Object]') when stringified.
+typescript:S4325|breadcost-app:frontend/app/tenant-management/page.tsx|326|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S2004|breadcost-app:frontend/app/recipes/page.tsx|636|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S2004|breadcost-app:frontend/app/recipes/page.tsx|637|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S4624|breadcost-app:frontend/app/customers/page.tsx|282|Refactor this code to not use nested template literals.
+typescript:S3358|breadcost-app:frontend/app/deliveries/page.tsx|212|Extract this nested ternary operation into an independent statement.
+typescript:S3776|breadcost-app:frontend/app/inventory/page.tsx|72|Refactor this function to reduce its Cognitive Complexity from 27 to the 15 allowed.
+java:S3776|breadcost-app:src/main/java/com/breadcost/masterdata/ItemService.java|75|Refactor this method to reduce its Cognitive Complexity from 25 to the 15 allowed.
+java:S6541|breadcost-app:src/main/java/com/breadcost/masterdata/ItemService.java|75|A "Brain Method" was detected. Refactor it to reduce at least one of the following metrics: LOC from 69 to 64, Complexity from 24 to 14, Nesting Level from 4 to 2, Number of Variables from 26 to 6.
+java:S1192|breadcost-app:src/main/java/com/breadcost/masterdata/ItemService.java|82|Define a constant instead of duplicating this literal "errors" 4 times.
+java:S1192|breadcost-app:src/main/java/com/breadcost/masterdata/ItemService.java|82|Define a constant instead of duplicating this literal "error" 5 times.
+java:S1192|breadcost-app:src/main/java/com/breadcost/masterdata/ItemService.java|82|Define a constant instead of duplicating this literal "created" 4 times.
+java:S1659|breadcost-app:src/main/java/com/breadcost/masterdata/ItemService.java|87|Declare "typeIdx" and all following declarations on a separate line.
+java:S131|breadcost-app:src/main/java/com/breadcost/masterdata/ItemService.java|90|Add a default case to this switch.
+java:S135|breadcost-app:src/main/java/com/breadcost/masterdata/ItemService.java|104|Reduce the total number of break and continue statements in this loop to use at most one.
+java:S1141|breadcost-app:src/main/java/com/breadcost/masterdata/ItemService.java|108|Extract this nested try block into a separate method.
+typescript:S6479|breadcost-app:frontend/app/suppliers/page.tsx|530|Do not use Array index in keys
+typescript:S3358|breadcost-app:frontend/app/orders/page.tsx|671|Extract this nested ternary operation into an independent statement.
+java:S1192|breadcost-app:src/main/java/com/breadcost/masterdata/OrderService.java|180|Define a constant instead of duplicating this literal "DRAFT" 3 times.
+java:S3776|breadcost-app:src/main/java/com/breadcost/masterdata/OrderService.java|205|Refactor this method to reduce its Cognitive Complexity from 22 to the 15 allowed.
+java:S3358|breadcost-app:src/main/java/com/breadcost/masterdata/OrderService.java|219|Extract this nested ternary operation into an independent statement.
+typescript:S1854|breadcost-app:frontend/app/customer/orders/page.tsx|68|Remove this useless assignment to variable "formatDate".
+typescript:S1854|breadcost-app:frontend/app/customer/orders/page.tsx|69|Remove this useless assignment to variable "formatDateTime".
+typescript:S1854|breadcost-app:frontend/e2e/tests/arc-2-production-planning.spec.ts|25|Remove this useless assignment to variable "initialCount".
+typescript:S6594|breadcost-app:frontend/e2e/tests/i18n-sweep.spec.ts|59|Use the "RegExp.exec()" method instead.
+java:S1854|breadcost-app:src/test/java/com/breadcost/functional/GapClosureTest.java|152|Remove this useless assignment to local variable "orderService".
+typescript:S3776|breadcost-app:frontend/app/admin/page.tsx|49|Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+typescript:S6754|breadcost-app:frontend/app/customer/orders/page.tsx|75|useState call is not destructured into value + setter pair
+typescript:S6759|breadcost-app:frontend/app/dashboard/page.tsx|108|Mark the props of the component as read-only.
+typescript:S6754|breadcost-app:frontend/app/dashboard/page.tsx|144|useState call is not destructured into value + setter pair
+typescript:S6606|breadcost-app:frontend/app/recipes/page.tsx|310|Prefer using nullish coalescing operator (`??`) instead of a ternary expression, as it is simpler to read.
+typescript:S3358|breadcost-app:frontend/app/recipes/page.tsx|748|Extract this nested ternary operation into an independent statement.
+typescript:S6478|breadcost-app:frontend/app/report-builder/page.tsx|159|Move this component definition out of the parent component and pass data as props.
+typescript:S6754|breadcost-app:frontend/lib/i18n.tsx|44|useState call is not destructured into value + setter pair
+typescript:S7764|breadcost-app:frontend/lib/i18n.tsx|45|Prefer `globalThis.window` over `window`.
+typescript:S7735|breadcost-app:frontend/e2e/playwright.config.ts|30|Unexpected negated condition.
+typescript:S7780|breadcost-app:frontend/e2e/playwright.config.ts|34|`String.raw` should be used to avoid escaping `\`.
+typescript:S3358|breadcost-app:frontend/app/ai-pricing/page.tsx|225|Extract this nested ternary operation into an independent statement.
+typescript:S6759|breadcost-app:frontend/app/ai-suggestions/page.tsx|38|Mark the props of the component as read-only.
+typescript:S6479|breadcost-app:frontend/app/ai-suggestions/page.tsx|43|Do not use Array index in keys
+typescript:S3358|breadcost-app:frontend/app/ai-suggestions/page.tsx|178|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/ai-suggestions/page.tsx|232|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/ai-suggestions/page.tsx|251|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/ai-suggestions/page.tsx|281|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/ai-whatsapp/page.tsx|167|Extract this nested ternary operation into an independent statement.
+java:S3776|breadcost-app:src/main/java/com/breadcost/masterdata/SaleService.java|28|Refactor this method to reduce its Cognitive Complexity from 17 to the 15 allowed.
+java:S3776|breadcost-app:src/main/java/com/breadcost/multitenancy/TenantManagementService.java|166|Refactor this method to reduce its Cognitive Complexity from 32 to the 15 allowed.
+java:S1192|breadcost-app:src/main/java/com/breadcost/multitenancy/TenantManagementService.java|208|Define a constant instead of duplicating this literal "status" 4 times.
+typescript:S6759|breadcost-app:frontend/app/error.tsx|3|Mark the props of the component as read-only.
+typescript:S3776|breadcost-app:frontend/app/technologist/page.tsx|59|Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+typescript:S6759|breadcost-app:frontend/components/design-system.tsx|125|Mark the props of the component as read-only.
+typescript:S6479|breadcost-app:frontend/components/design-system.tsx|297|Do not use Array index in keys
+typescript:S6479|breadcost-app:frontend/components/design-system.tsx|299|Do not use Array index in keys
+typescript:S4325|breadcost-app:frontend/app/quality-predictions/page.tsx|34|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S4325|breadcost-app:frontend/app/quality-predictions/page.tsx|53|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S4325|breadcost-app:frontend/app/tenant-management/page.tsx|61|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S4325|breadcost-app:frontend/app/tenant-management/page.tsx|75|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S4325|breadcost-app:frontend/app/tenant-management/page.tsx|106|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S4325|breadcost-app:frontend/app/tenant-management/page.tsx|130|This assertion is unnecessary since it does not change the type of the expression.
+java:S3776|breadcost-app:src/main/java/com/breadcost/ai/AiAdvancedForecastService.java|38|Refactor this method to reduce its Cognitive Complexity from 35 to the 15 allowed.
+java:S6541|breadcost-app:src/main/java/com/breadcost/ai/AiAdvancedForecastService.java|38|A "Brain Method" was detected. Refactor it to reduce at least one of the following metrics: LOC from 86 to 64, Complexity from 21 to 14, Nesting Level from 3 to 2, Number of Variables from 49 to 6.
+java:S135|breadcost-app:src/main/java/com/breadcost/ai/AiAdvancedForecastService.java|47|Reduce the total number of break and continue statements in this loop to use at most one.
+java:S1450|breadcost-app:src/main/java/com/breadcost/ai/AiQualityPredictionEntity.java|52|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S6541|breadcost-app:src/main/java/com/breadcost/ai/DynamicPricingService.java|44|A "Brain Method" was detected. Refactor it to reduce at least one of the following metrics: LOC from 86 to 64, Complexity from 21 to 14, Nesting Level from 3 to 2, Number of Variables from 38 to 6.
+java:S3776|breadcost-app:src/main/java/com/breadcost/ai/DynamicPricingService.java|44|Refactor this method to reduce its Cognitive Complexity from 38 to the 15 allowed.
+java:S135|breadcost-app:src/main/java/com/breadcost/ai/DynamicPricingService.java|70|Reduce the total number of break and continue statements in this loop to use at most one.
+java:S135|breadcost-app:src/main/java/com/breadcost/ai/DynamicPricingService.java|91|Reduce the total number of break and continue statements in this loop to use at most one.
+java:S6885|breadcost-app:src/main/java/com/breadcost/ai/DynamicPricingService.java|104|Use "Math.clamp" instead of "Math.min" or "Math.max".
+java:S3358|breadcost-app:src/main/java/com/breadcost/ai/DynamicPricingService.java|120|Extract this nested ternary operation into an independent statement.
+java:S1172|breadcost-app:src/main/java/com/breadcost/ai/QualityPredictionService.java|163|Remove this unused method parameter "factors".
+java:S3457|breadcost-app:src/main/java/com/breadcost/ai/QualityPredictionService.java|169|String contains no format specifiers.
+java:S1450|breadcost-app:src/main/java/com/breadcost/multitenancy/TenantBrandingEntity.java|48|Remove the "updatedAt" field and declare it as a local variable in the relevant methods.
+java:S1192|breadcost-app:src/main/java/com/breadcost/multitenancy/TenantManagementService.java|79|Define a constant instead of duplicating this literal "PENDING" 3 times.
+java:S1450|breadcost-app:src/main/java/com/breadcost/multitenancy/TenantOnboardingEntity.java|47|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1192|breadcost-app:src/main/java/com/breadcost/config/RabbitMQConfig.java|46|Define a constant instead of duplicating this literal "x-dead-letter-exchange" 3 times.
+java:S117|breadcost-app:src/main/java/com/breadcost/finance/FinanceService.java|205|Rename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.
+java:S117|breadcost-app:src/main/java/com/breadcost/finance/FinanceService.java|205|Rename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.
+java:S117|breadcost-app:src/main/java/com/breadcost/finance/FinanceService.java|205|Rename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.
+java:S1659|breadcost-app:src/main/java/com/breadcost/finance/FinanceService.java|205|Declare "b31_60" and all following declarations on a separate line.
+java:S1192|breadcost-app:src/main/java/com/breadcost/reporting/ReportService.java|50|Define a constant instead of duplicating this literal "count" 4 times.
+java:S5976|breadcost-app:src/test/java/com/breadcost/functional/OrderApiErrorTest.java|23|Replace these 4 tests with a single Parameterized one.
+java:S1128|breadcost-app:src/test/java/com/breadcost/unit/projection/ProjectionEngineTest.java|6|Remove this unused import 'com.breadcost.eventstore.StoredEvent'.
+java:S1128|breadcost-app:src/test/java/com/breadcost/unit/service/AiConversationServiceTest.java|7|Remove this unused import 'com.breadcost.masterdata.ProductEntity'.
+java:S1488|breadcost-app:src/test/java/com/breadcost/unit/service/DeliveryServiceTest.java|102|Immediately return this expression instead of assigning it to the temporary variable "e".
+java:S5778|breadcost-app:src/test/java/com/breadcost/unit/service/DepartmentServiceTest.java|68|Refactor the code of the lambda to have only one invocation possibly throwing a runtime exception.
+java:S1854|breadcost-app:src/test/java/com/breadcost/unit/service/LoyaltyServiceTest.java|149|Remove this useless assignment to local variable "result".
+java:S1481|breadcost-app:src/test/java/com/breadcost/unit/service/LoyaltyServiceTest.java|149|Remove this unused "result" local variable.
+java:S5778|breadcost-app:src/test/java/com/breadcost/unit/service/ProductServiceTest.java|110|Refactor the code of the lambda to have only one invocation possibly throwing a runtime exception.
+java:S1128|breadcost-app:src/test/java/com/breadcost/unit/service/ProductionPlanServiceTest.java|12|Remove this unused import 'java.time.Instant'.
+java:S5778|breadcost-app:src/test/java/com/breadcost/unit/service/RecipeServiceTest.java|158|Refactor the code of the lambda to have only one invocation possibly throwing a runtime exception.
+java:S1128|breadcost-app:src/test/java/com/breadcost/unit/service/SupplierApiServiceTest.java|12|Remove this unused import 'java.math.BigDecimal'.
+java:S1128|breadcost-app:src/test/java/com/breadcost/unit/service/InvoiceServiceTest.java|4|Remove this unused import 'com.breadcost.customers.CustomerDiscountRuleEntity'.
+java:S1128|breadcost-app:src/test/java/com/breadcost/unit/service/OrderServiceTest.java|14|Remove this unused import 'java.math.BigDecimal'.
+java:S1192|breadcost-app:src/main/java/com/breadcost/api/InvoiceController.java|42|Define a constant instead of duplicating this literal "tenantId" 7 times.
+java:S3776|breadcost-app:src/main/java/com/breadcost/masterdata/ProductionPlanService.java|298|Refactor this method to reduce its Cognitive Complexity from 26 to the 15 allowed.
+java:S1192|breadcost-app:src/main/java/com/breadcost/subscription/SubscriptionService.java|151|Define a constant instead of duplicating this literal "features" 3 times.
+java:S1192|breadcost-app:src/main/java/com/breadcost/subscription/SubscriptionService.java|152|Define a constant instead of duplicating this literal "maxUsers" 3 times.
+java:S1192|breadcost-app:src/main/java/com/breadcost/subscription/SubscriptionService.java|153|Define a constant instead of duplicating this literal "maxProducts" 3 times.
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/GapClosureTest.java|22|Remove this unused import 'org.hamcrest.Matchers'.
+java:S1481|breadcost-app:src/test/java/com/breadcost/functional/GapClosureTest.java|152|Remove this unused "orderService" local variable.
+java:S5785|breadcost-app:src/test/java/com/breadcost/functional/GapClosureTest.java|321|Use assertEquals instead.
+java:S1068|breadcost-app:src/main/java/com/breadcost/masterdata/StockAlertService.java|33|Remove this unused "inventoryProjection" private field.
+java:S1068|breadcost-app:src/main/java/com/breadcost/masterdata/StockAlertService.java|38|Remove this unused "workOrderRepository" private field.
+java:S3776|breadcost-app:src/main/java/com/breadcost/masterdata/StockAlertService.java|79|Refactor this method to reduce its Cognitive Complexity from 20 to the 15 allowed.
+java:S135|breadcost-app:src/main/java/com/breadcost/masterdata/StockAlertService.java|116|Reduce the total number of break and continue statements in this loop to use at most one.
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/ProactiveAlertsTest.java|5|Remove this unused import 'com.breadcost.mobile.MobileAppService'.
+java:S125|breadcost-app:src/main/java/com/breadcost/masterdata/SaleService.java|103|This block of commented-out lines of code should be removed.
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/OperationalIntegrityTest.java|20|Remove this unused import 'org.hamcrest.Matchers'.
+typescript:S4325|breadcost-app:frontend/app/deliveries/page.tsx|263|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S4325|breadcost-app:frontend/app/deliveries/page.tsx|264|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S4325|breadcost-app:frontend/app/deliveries/page.tsx|265|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S4325|breadcost-app:frontend/app/reports/page.tsx|803|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S3358|breadcost-app:frontend/app/subscriptions/page.tsx|208|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/orders/page.tsx|476|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/pos/page.tsx|394|Extract this nested ternary operation into an independent statement.
+java:S2699|breadcost-app:src/test/java/com/breadcost/functional/SubscriptionEnforcementTest.java|57|Add at least one assertion to this test case.
+java:S2699|breadcost-app:src/test/java/com/breadcost/functional/SubscriptionEnforcementTest.java|79|Add at least one assertion to this test case.
+java:S2699|breadcost-app:src/test/java/com/breadcost/functional/SubscriptionEnforcementTest.java|111|Add at least one assertion to this test case.
+typescript:S6479|breadcost-app:frontend/app/ai-whatsapp/page.tsx|73|Do not use Array index in keys
+typescript:S7744|breadcost-app:frontend/app/customer/profile/page.tsx|36|The empty object is useless.
+typescript:S6853|breadcost-app:frontend/app/customer/profile/page.tsx|168|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/profile/page.tsx|173|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/profile/page.tsx|178|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/profile/page.tsx|183|A form label must be associated with a control.
+typescript:S6479|breadcost-app:frontend/app/customer/profile/page.tsx|209|Do not use Array index in keys
+typescript:S6853|breadcost-app:frontend/app/customer/profile/page.tsx|275|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/profile/page.tsx|280|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/profile/page.tsx|285|A form label must be associated with a control.
+typescript:S7781|breadcost-app:frontend/app/notification-templates/page.tsx|32|Prefer `String#replaceAll()` over `String#replace()`.
+typescript:S7781|breadcost-app:frontend/app/notification-templates/page.tsx|32|Prefer `String#replaceAll()` over `String#replace()`.
+java:S1192|breadcost-app:src/main/java/com/breadcost/api/NotificationTemplateController.java|76|Define a constant instead of duplicating this literal "Template not found: " 4 times.
+java:S1450|breadcost-app:src/main/java/com/breadcost/notifications/NotificationTemplateEntity.java|41|Remove the "createdAtEpochMs" field and declare it as a local variable in the relevant methods.
+typescript:S7764|breadcost-app:frontend/app/customer/catalog/page.tsx|45|Prefer `globalThis.window` over `window`.
+typescript:S7764|breadcost-app:frontend/app/customer/checkout/page.tsx|36|Prefer `globalThis.window` over `window`.
+typescript:S6479|breadcost-app:frontend/app/customer/order-confirmation/[orderId]/page.tsx|70|Do not use Array index in keys
+typescript:S3358|breadcost-app:frontend/app/customer/orders/page.tsx|144|Extract this nested ternary operation into an independent statement.
+typescript:S6759|breadcost-app:frontend/app/customer/orders/page.tsx|202|Mark the props of the component as read-only.
+typescript:S7735|breadcost-app:frontend/app/customer/orders/page.tsx|232|Unexpected negated condition.
+typescript:S6479|breadcost-app:frontend/app/customer/orders/page.tsx|282|Do not use Array index in keys
+typescript:S6479|breadcost-app:frontend/app/customer/orders/page.tsx|299|Do not use Array index in keys
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/CustomerDiscountTest.java|3|Remove this unused import 'com.breadcost.customers.CustomerDiscountRuleEntity'.
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/CustomerDiscountTest.java|7|Remove this unused import 'com.fasterxml.jackson.databind.JsonNode'.
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/CustomerDiscountTest.java|12|Remove this unused import 'org.springframework.security.crypto.password.PasswordEncoder'.
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/CustomerDiscountTest.java|14|Remove this unused import 'java.math.BigDecimal'.
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/OrderTimelineTest.java|6|Remove this unused import 'com.fasterxml.jackson.databind.JsonNode'.
+typescript:S7735|breadcost-app:frontend/app/customer/catalog/page.tsx|231|Unexpected negated condition.
+typescript:S6759|breadcost-app:frontend/app/customer/layout.tsx|17|Mark the props of the component as read-only.
+typescript:S6853|breadcost-app:frontend/app/customer/login/page.tsx|188|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/login/page.tsx|193|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/login/page.tsx|211|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/login/page.tsx|216|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/login/page.tsx|221|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/login/page.tsx|238|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/login/page.tsx|259|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/login/page.tsx|264|A form label must be associated with a control.
+typescript:S7764|breadcost-app:frontend/lib/customer-auth.ts|11|Prefer `globalThis.window` over `window`.
+typescript:S7764|breadcost-app:frontend/lib/customer-auth.ts|16|Prefer `globalThis.window` over `window`.
+typescript:S7764|breadcost-app:frontend/lib/customer-auth.ts|33|Prefer `globalThis.window` over `window`.
+typescript:S6767|breadcost-app:frontend/app/dashboard/page.tsx|104|'accent' PropType is defined but prop is never used
+typescript:S6759|breadcost-app:frontend/app/dashboard/page.tsx|116|Mark the props of the component as read-only.
+typescript:S3358|breadcost-app:frontend/app/dashboard/page.tsx|490|Extract this nested ternary operation into an independent statement.
+typescript:S6479|breadcost-app:frontend/app/dashboard/page.tsx|492|Do not use Array index in keys
+typescript:S3358|breadcost-app:frontend/app/inventory/page.tsx|556|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/inventory/page.tsx|558|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/inventory/page.tsx|665|Extract this nested ternary operation into an independent statement.
+typescript:S6848|breadcost-app:frontend/app/recipes/page.tsx|532|Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.
+typescript:S1082|breadcost-app:frontend/app/recipes/page.tsx|532|Visible, non-interactive elements with click handlers must have at least one keyboard listener.
+typescript:S1128|breadcost-app:frontend/FIGMA_TRIAL.tsx|20|Remove this unused import of 'Truck'.
+typescript:S1128|breadcost-app:frontend/FIGMA_TRIAL.tsx|21|Remove this unused import of 'FileText'.
+typescript:S1128|breadcost-app:frontend/FIGMA_TRIAL.tsx|22|Remove this unused import of 'Users'.
+typescript:S1128|breadcost-app:frontend/FIGMA_TRIAL.tsx|25|Remove this unused import of 'Settings'.
+typescript:S1128|breadcost-app:frontend/FIGMA_TRIAL.tsx|30|Remove this unused import of 'Smartphone'.
+typescript:S1128|breadcost-app:frontend/FIGMA_TRIAL.tsx|32|Remove this unused import of 'Crown'.
+typescript:S1128|breadcost-app:frontend/FIGMA_TRIAL.tsx|37|Remove this unused import of 'Pencil'.
+typescript:S1128|breadcost-app:frontend/FIGMA_TRIAL.tsx|39|Remove this unused import of 'X'.
+typescript:S1128|breadcost-app:frontend/FIGMA_TRIAL.tsx|42|Remove this unused import of 'Info'.
+typescript:S1128|breadcost-app:frontend/FIGMA_TRIAL.tsx|47|Remove this unused import of 'ChevronDown'.
+typescript:S1128|breadcost-app:frontend/FIGMA_TRIAL.tsx|48|Remove this unused import of 'Bot'.
+typescript:S1128|breadcost-app:frontend/FIGMA_TRIAL.tsx|51|Remove this unused import of 'Receipt'.
+typescript:S1128|breadcost-app:frontend/FIGMA_TRIAL.tsx|53|Remove this unused import of 'Boxes'.
+typescript:S1128|breadcost-app:frontend/FIGMA_TRIAL.tsx|55|Remove this unused import of 'CalendarRange'.
+typescript:S1534|breadcost-app:frontend/FIGMA_TRIAL.tsx|363|Duplicate name 'Change'.
+typescript:S6479|breadcost-app:frontend/FIGMA_TRIAL.tsx|599|Do not use Array index in keys
+typescript:S6479|breadcost-app:frontend/FIGMA_TRIAL.tsx|601|Do not use Array index in keys
+typescript:S6479|breadcost-app:frontend/FIGMA_TRIAL.tsx|642|Do not use Array index in keys
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|777|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|777|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|778|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|778|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|779|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|779|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|970|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|970|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|971|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|971|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|972|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|972|Missing "key" prop for element in array
+typescript:S7735|breadcost-app:frontend/FIGMA_TRIAL.tsx|1059|Unexpected negated condition.
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1118|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1119|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1120|Missing "key" prop for element in array
+typescript:S6479|breadcost-app:frontend/FIGMA_TRIAL.tsx|1199|Do not use Array index in keys
+typescript:S3358|breadcost-app:frontend/FIGMA_TRIAL.tsx|1310|Extract this nested ternary operation into an independent statement.
+typescript:S6479|breadcost-app:frontend/FIGMA_TRIAL.tsx|1485|Do not use Array index in keys
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1551|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1551|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1552|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1552|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1606|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1606|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1607|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1607|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1631|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1631|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1632|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1632|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1671|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1672|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1699|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1700|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1701|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1725|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1725|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1726|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1726|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1727|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1727|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1750|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1751|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1783|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1783|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1784|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1784|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1825|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1825|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1826|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1826|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1849|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1850|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1873|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1874|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1932|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|1933|Missing "key" prop for element in array
+typescript:S3923|breadcost-app:frontend/FIGMA_TRIAL.tsx|2055|This conditional operation returns the same value whether the condition is "true" or "false".
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|2057|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|2058|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|2067|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|2068|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|2184|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|2184|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|2185|Missing "key" prop for element in array
+typescript:S6477|breadcost-app:frontend/FIGMA_TRIAL.tsx|2185|Missing "key" prop for element in array
+typescript:S3776|breadcost-app:frontend/FIGMA_TRIAL.tsx|2424|Refactor this function to reduce its Cognitive Complexity from 37 to the 15 allowed.
+typescript:S7735|breadcost-app:frontend/FIGMA_TRIAL.tsx|2482|Unexpected negated condition.
+typescript:S1082|breadcost-app:frontend/components/AuthShell.tsx|371|Visible, non-interactive elements with click handlers must have at least one keyboard listener.
+typescript:S6848|breadcost-app:frontend/components/AuthShell.tsx|371|Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.
+typescript:S6759|breadcost-app:frontend/components/design-system.tsx|33|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/design-system.tsx|57|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/design-system.tsx|79|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/design-system.tsx|104|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/design-system.tsx|154|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/design-system.tsx|179|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/design-system.tsx|216|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/design-system.tsx|262|Mark the props of the component as read-only.
+typescript:S6479|breadcost-app:frontend/components/design-system.tsx|282|Do not use Array index in keys
+typescript:S6479|breadcost-app:frontend/components/design-system.tsx|284|Do not use Array index in keys
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/ConfigFunctionalTest.java|8|Remove this unused import 'org.hamcrest.Matchers'.
+typescript:S7773|breadcost-app:frontend/app/exchange-rates/page.tsx|79|Prefer `Number.parseFloat` over `parseFloat`.
+java:S1450|breadcost-app:src/main/java/com/breadcost/ai/AiAnomalyAlertEntity.java|48|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S3776|breadcost-app:src/main/java/com/breadcost/ai/AiPricingAnomalyService.java|32|Refactor this method to reduce its Cognitive Complexity from 18 to the 15 allowed.
+java:S135|breadcost-app:src/main/java/com/breadcost/ai/AiPricingAnomalyService.java|49|Reduce the total number of break and continue statements in this loop to use at most one.
+java:S135|breadcost-app:src/main/java/com/breadcost/ai/AiPricingAnomalyService.java|62|Reduce the total number of break and continue statements in this loop to use at most one.
+java:S3776|breadcost-app:src/main/java/com/breadcost/ai/AiPricingAnomalyService.java|141|Refactor this method to reduce its Cognitive Complexity from 43 to the 15 allowed.
+java:S3358|breadcost-app:src/main/java/com/breadcost/ai/AiPricingAnomalyService.java|222|Extract this nested ternary operation into an independent statement.
+java:S3358|breadcost-app:src/main/java/com/breadcost/ai/AiPricingAnomalyService.java|226|Extract this nested ternary operation into an independent statement.
+java:S1450|breadcost-app:src/main/java/com/breadcost/ai/AiPricingSuggestionEntity.java|40|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1450|breadcost-app:src/main/java/com/breadcost/mobile/MobileDeviceRegistrationEntity.java|33|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1450|breadcost-app:src/main/java/com/breadcost/mobile/PushNotificationEntity.java|37|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/AiPricingAnomalyTest.java|11|Remove this unused import 'org.hamcrest.Matchers'.
+java:S1450|breadcost-app:src/main/java/com/breadcost/ai/AiDemandForecastEntity.java|41|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1450|breadcost-app:src/main/java/com/breadcost/ai/AiProductionSuggestionEntity.java|42|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1450|breadcost-app:src/main/java/com/breadcost/ai/AiReplenishmentHintEntity.java|49|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S6204|breadcost-app:src/main/java/com/breadcost/ai/AiSuggestionService.java|49|Replace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()' and ensure that the list is unmodified.
+java:S1481|breadcost-app:src/main/java/com/breadcost/ai/AiSuggestionService.java|121|Remove this unused "products" local variable.
+java:S1854|breadcost-app:src/main/java/com/breadcost/ai/AiSuggestionService.java|121|Remove this useless assignment to local variable "products".
+java:S135|breadcost-app:src/main/java/com/breadcost/ai/AiSuggestionService.java|129|Reduce the total number of break and continue statements in this loop to use at most one.
+java:S135|breadcost-app:src/main/java/com/breadcost/ai/AiSuggestionService.java|236|Reduce the total number of break and continue statements in this loop to use at most one.
+java:S1450|breadcost-app:src/main/java/com/breadcost/driver/DriverPaymentEntity.java|39|Remove the "collectedAt" field and declare it as a local variable in the relevant methods.
+java:S1192|breadcost-app:src/main/java/com/breadcost/driver/DriverService.java|67|Define a constant instead of duplicating this literal "Session not found: " 4 times.
+java:S1854|breadcost-app:src/main/java/com/breadcost/driver/DriverService.java|100|Remove this useless assignment to local variable "session".
+java:S1481|breadcost-app:src/main/java/com/breadcost/driver/DriverService.java|100|Remove this unused "session" local variable.
+java:S1450|breadcost-app:src/main/java/com/breadcost/driver/DriverSessionEntity.java|33|Remove the "startedAt" field and declare it as a local variable in the relevant methods.
+java:S1450|breadcost-app:src/main/java/com/breadcost/driver/DriverStopUpdateEntity.java|38|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1450|breadcost-app:src/main/java/com/breadcost/driver/PackagingConfirmationEntity.java|35|Remove the "confirmedAt" field and declare it as a local variable in the relevant methods.
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/AiSuggestionTest.java|10|Remove this unused import 'org.hamcrest.Matchers'.
+java:S1450|breadcost-app:src/main/java/com/breadcost/ai/AiConversationEntity.java|43|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S5843|breadcost-app:src/main/java/com/breadcost/ai/AiConversationService.java|46|Simplify this regular expression to reduce its complexity from 23 to the 20 allowed.
+java:S5843|breadcost-app:src/main/java/com/breadcost/ai/AiConversationService.java|48|Simplify this regular expression to reduce its complexity from 23 to the 20 allowed.
+java:S135|breadcost-app:src/main/java/com/breadcost/ai/AiConversationService.java|117|Reduce the total number of break and continue statements in this loop to use at most one.
+java:S1854|breadcost-app:src/main/java/com/breadcost/ai/AiConversationService.java|290|Remove this useless assignment to local variable "first".
+java:S1481|breadcost-app:src/main/java/com/breadcost/ai/AiConversationService.java|290|Remove this unused "first" local variable.
+java:S1172|breadcost-app:src/main/java/com/breadcost/ai/AiConversationService.java|310|Remove this unused method parameter "tenantId".
+java:S6126|breadcost-app:src/main/java/com/breadcost/ai/AiConversationService.java|325|Replace this String concatenation with Text block.
+java:S1450|breadcost-app:src/main/java/com/breadcost/ai/AiDraftOrderEntity.java|41|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1450|breadcost-app:src/main/java/com/breadcost/ai/AiMessageEntity.java|42|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1450|breadcost-app:src/main/java/com/breadcost/exchangerate/ExchangeRateEntity.java|45|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S112|breadcost-app:src/main/java/com/breadcost/exchangerate/ExchangeRateService.java|110|Replace generic exceptions with specific library exceptions or a custom exception.
+java:S112|breadcost-app:src/main/java/com/breadcost/exchangerate/ExchangeRateService.java|114|Replace generic exceptions with specific library exceptions or a custom exception.
+java:S112|breadcost-app:src/main/java/com/breadcost/exchangerate/ExchangeRateService.java|119|Replace generic exceptions with specific library exceptions or a custom exception.
+java:S1450|breadcost-app:src/main/java/com/breadcost/supplier/SupplierApiConfigEntity.java|44|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/ExchangeRateTest.java|7|Remove this unused import 'java.util.List'.
+typescript:S6479|breadcost-app:frontend/app/customers/page.tsx|259|Do not use Array index in keys
+typescript:S6479|breadcost-app:frontend/app/report-builder/page.tsx|274|Do not use Array index in keys
+typescript:S6479|breadcost-app:frontend/app/report-builder/page.tsx|275|Do not use Array index in keys
+typescript:S6551|breadcost-app:frontend/app/report-builder/page.tsx|275|'v ?? 'â'' will use Object's default stringification format ('[object Object]') when stringified.
+typescript:S6582|breadcost-app:frontend/app/dashboard/page.tsx|238|Prefer using an optional chain expression instead, as it's more concise and easier to read.
+typescript:S7773|breadcost-app:frontend/app/production-plans/page.tsx|181|Prefer `Number.parseFloat` over `parseFloat`.
+typescript:S2004|breadcost-app:frontend/app/production-plans/page.tsx|554|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S7781|breadcost-app:frontend/app/reports/page.tsx|100|Prefer `String#replaceAll()` over `String#replace()`.
+typescript:S6479|breadcost-app:frontend/app/reports/page.tsx|882|Do not use Array index in keys
+typescript:S6479|breadcost-app:frontend/app/reports/page.tsx|914|Do not use Array index in keys
+typescript:S7735|breadcost-app:frontend/app/admin/page.tsx|182|Unexpected negated condition.
+typescript:S3358|breadcost-app:frontend/app/admin/page.tsx|288|Extract this nested ternary operation into an independent statement.
+typescript:S1874|breadcost-app:frontend/app/pos/page.tsx|313|The signature '(...text: string[]): void' of 'win.document.write' is deprecated.
+typescript:S1874|breadcost-app:frontend/app/pos/page.tsx|314|The signature '(...text: string[]): void' of 'win.document.write' is deprecated.
+typescript:S1874|breadcost-app:frontend/app/pos/page.tsx|315|The signature '(...text: string[]): void' of 'win.document.write' is deprecated.
+typescript:S1874|breadcost-app:frontend/app/pos/page.tsx|341|The signature '(...text: string[]): void' of 'win.document.write' is deprecated.
+typescript:S1874|breadcost-app:frontend/app/pos/page.tsx|342|The signature '(...text: string[]): void' of 'win.document.write' is deprecated.
+typescript:S1874|breadcost-app:frontend/app/pos/page.tsx|343|The signature '(...text: string[]): void' of 'win.document.write' is deprecated.
+typescript:S6479|breadcost-app:frontend/app/pos/page.tsx|620|Do not use Array index in keys
+typescript:S5256|breadcost-app:frontend/app/pos/page.tsx|666|Add a valid header row or column to this "<table>".
+typescript:S7773|breadcost-app:frontend/app/inventory/page.tsx|334|Prefer `Number.parseFloat` over `parseFloat`.
+typescript:S6479|breadcost-app:frontend/app/inventory/page.tsx|570|Do not use Array index in keys
+typescript:S7773|breadcost-app:frontend/app/inventory/page.tsx|1031|Prefer `Number.parseFloat` over `parseFloat`.
+typescript:S3358|breadcost-app:frontend/app/inventory/page.tsx|948|Extract this nested ternary operation into an independent statement.
+typescript:S7773|breadcost-app:frontend/app/pos/page.tsx|135|Prefer `Number.parseFloat` over `parseFloat`.
+typescript:S7773|breadcost-app:frontend/app/pos/page.tsx|135|Prefer `Number.parseFloat` over `parseFloat`.
+typescript:S3358|breadcost-app:frontend/app/production-plans/page.tsx|628|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/production-plans/page.tsx|728|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/production-plans/page.tsx|729|Extract this nested ternary operation into an independent statement.
+typescript:S2004|breadcost-app:frontend/app/recipes/page.tsx|587|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S3358|breadcost-app:frontend/app/recipes/page.tsx|1059|Extract this nested ternary operation into an independent statement.
+typescript:S6759|breadcost-app:frontend/lib/i18n.tsx|43|Mark the props of the component as read-only.
+typescript:S6481|breadcost-app:frontend/lib/i18n.tsx|69|The object passed as the value prop to the Context provider changes every render. To fix this consider wrapping it in a useMemo hook.
+java:S5786|breadcost-app:src/test/java/com/breadcost/functional/FeatureAccessTest.java|13|Remove this 'public' modifier.
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/SubscriptionTierTest.java|4|Remove this unused import 'org.springframework.test.web.servlet.ResultActions'.
+java:S5786|breadcost-app:src/test/java/com/breadcost/functional/SubscriptionTierTest.java|14|Remove this 'public' modifier.
+java:S5786|breadcost-app:src/test/java/com/breadcost/functional/ReportExportTest.java|15|Remove this 'public' modifier.
+java:S5786|breadcost-app:src/test/java/com/breadcost/functional/FinancialKpiTest.java|15|Remove this 'public' modifier.
+java:S5786|breadcost-app:src/test/java/com/breadcost/functional/CustomReportBuilderTest.java|15|Remove this 'public' modifier.
+java:S1172|breadcost-app:src/main/java/com/breadcost/finance/FinanceService.java|167|Remove these unused method parameters "tenantId", "dateFrom", "dateTo".
+java:S1172|breadcost-app:src/main/java/com/breadcost/finance/FinanceService.java|172|Remove these unused method parameters "tenantId", "dateFrom", "dateTo".
+java:S1172|breadcost-app:src/main/java/com/breadcost/finance/FinanceService.java|177|Remove these unused method parameters "tenantId", "dateFrom", "dateTo".
+java:S1450|breadcost-app:src/main/java/com/breadcost/reporting/CustomReportEntity.java|40|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1192|breadcost-app:src/main/java/com/breadcost/reporting/ReportService.java|193|Define a constant instead of duplicating this literal "blockKey" 4 times.
+java:S1192|breadcost-app:src/main/java/com/breadcost/reporting/ReportService.java|195|Define a constant instead of duplicating this literal "value" 3 times.
+java:S1192|breadcost-app:src/main/java/com/breadcost/reporting/ReportService.java|197|Define a constant instead of duplicating this literal "dateFrom" 3 times.
+java:S1192|breadcost-app:src/main/java/com/breadcost/reporting/ReportService.java|198|Define a constant instead of duplicating this literal "dateTo" 3 times.
+java:S6201|breadcost-app:src/main/java/com/breadcost/reporting/ReportService.java|258|Replace this instanceof check and cast with 'instanceof Number number'
+java:S125|breadcost-app:src/main/java/com/breadcost/reporting/ReportService.java|308|This block of commented-out lines of code should be removed.
+java:S1450|breadcost-app:src/main/java/com/breadcost/subscription/SubscriptionTierEntity.java|48|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1450|breadcost-app:src/main/java/com/breadcost/subscription/TenantSubscriptionEntity.java|39|Remove the "assignedAt" field and declare it as a local variable in the relevant methods.
+java:S5786|breadcost-app:src/test/java/com/breadcost/functional/KpiBlockCatalogTest.java|14|Remove this 'public' modifier.
+java:S5786|breadcost-app:src/test/java/com/breadcost/functional/CustomerPricingTest.java|14|Remove this 'public' modifier.
+java:S5786|breadcost-app:src/test/java/com/breadcost/functional/CreditLimitTest.java|14|Remove this 'public' modifier.
+java:S5786|breadcost-app:src/test/java/com/breadcost/functional/InvoicePaymentTest.java|14|Remove this 'public' modifier.
+java:S5786|breadcost-app:src/test/java/com/breadcost/functional/PaymentTermsTest.java|14|Remove this 'public' modifier.
+java:S1192|breadcost-app:src/main/java/com/breadcost/api/InvoiceController.java|43|Define a constant instead of duplicating this literal "customerId" 3 times.
+java:S1192|breadcost-app:src/main/java/com/breadcost/api/InvoiceController.java|47|Define a constant instead of duplicating this literal "lines" 3 times.
+java:S1450|breadcost-app:src/main/java/com/breadcost/customers/CustomerDiscountRuleEntity.java|54|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1450|breadcost-app:src/main/java/com/breadcost/invoice/InvoiceEntity.java|78|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1192|breadcost-app:src/main/java/com/breadcost/invoice/InvoiceService.java|64|Define a constant instead of duplicating this literal "Customer not found: " 3 times.
+java:S107|breadcost-app:src/main/java/com/breadcost/invoice/InvoiceService.java|280|Method has 8 parameters, which is greater than 7 authorized.
+java:S6201|breadcost-app:src/main/java/com/breadcost/invoice/InvoiceService.java|445|Replace this instanceof check and cast with 'instanceof BigDecimal bigdecimal'
+java:S5786|breadcost-app:src/test/java/com/breadcost/functional/GenerateInvoiceTest.java|16|Remove this 'public' modifier.
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/DeliveryFailRedeliverTest.java|9|Remove this unused import 'org.hamcrest.Matchers'.
+java:S1144|breadcost-app:src/test/java/com/breadcost/functional/DeliveryFailRedeliverTest.java|18|Remove this unused private "createRunWithOrder" method.
+java:S1450|breadcost-app:src/main/java/com/breadcost/delivery/DeliveryRunEntity.java|44|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1450|breadcost-app:src/main/java/com/breadcost/delivery/DeliveryRunOrderEntity.java|53|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/DeliveryMatchingTest.java|10|Remove this unused import 'org.hamcrest.Matchers'.
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/POApprovalTest.java|10|Remove this unused import 'org.hamcrest.Matchers'.
+java:S1450|breadcost-app:src/main/java/com/breadcost/purchaseorder/PurchaseOrderEntity.java|51|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S112|breadcost-app:src/main/java/com/breadcost/purchaseorder/PurchaseOrderService.java|244|Replace generic exceptions with specific library exceptions or a custom exception.
+java:S1450|breadcost-app:src/main/java/com/breadcost/purchaseorder/SupplierDeliveryEntity.java|41|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1450|breadcost-app:src/main/java/com/breadcost/supplier/SupplierCatalogItemEntity.java|53|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1450|breadcost-app:src/main/java/com/breadcost/supplier/SupplierEntity.java|35|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1192|breadcost-app:src/main/java/com/breadcost/supplier/SupplierService.java|53|Define a constant instead of duplicating this literal "Supplier not found: " 3 times.
+java:S1450|breadcost-app:src/main/java/com/breadcost/loyalty/LoyaltyAccountEntity.java|47|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1450|breadcost-app:src/main/java/com/breadcost/loyalty/LoyaltyTierEntity.java|48|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1450|breadcost-app:src/main/java/com/breadcost/loyalty/LoyaltyTransactionEntity.java|41|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/CustomerOrderTest.java|21|Remove this unused import 'org.hamcrest.Matchers'.
+java:S1450|breadcost-app:src/main/java/com/breadcost/customers/CustomerEntity.java|88|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/CustomerRegistrationTest.java|9|Remove this unused import 'org.hamcrest.Matchers'.
+java:S1192|breadcost-app:src/main/java/com/breadcost/DevDataSeeder.java|72|Define a constant instead of duplicating this literal "DEPT-BREAD" 4 times.
+java:S1192|breadcost-app:src/main/java/com/breadcost/DevDataSeeder.java|77|Define a constant instead of duplicating this literal "INGREDIENT" 7 times.
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/AuthFunctionalTest.java|8|Remove this unused import 'org.hamcrest.Matchers'.
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/FunctionalTestBase.java|20|Remove this unused import 'java.util.List'.
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/FunctionalTestBase.java|23|Remove this unused import 'org.springframework.test.web.servlet.result.MockMvcResultMatchers'.
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/InventoryFunctionalTest.java|14|Remove this unused import 'org.hamcrest.Matchers'.
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/PosFunctionalTest.java|11|Remove this unused import 'org.hamcrest.Matchers'.
+java:S1128|breadcost-app:src/test/java/com/breadcost/functional/UserManagementFunctionalTest.java|3|Remove this unused import 'com.fasterxml.jackson.databind.JsonNode'.
+typescript:S7773|breadcost-app:frontend/app/pos/page.tsx|254|Prefer `Number.parseFloat` over `parseFloat`.
+typescript:S7773|breadcost-app:frontend/app/pos/page.tsx|279|Prefer `Number.parseFloat` over `parseFloat`.
+typescript:S6479|breadcost-app:frontend/app/recipes/page.tsx|632|Do not use Array index in keys
+typescript:S2004|breadcost-app:frontend/app/recipes/page.tsx|648|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S2004|breadcost-app:frontend/app/recipes/page.tsx|652|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S2004|breadcost-app:frontend/app/recipes/page.tsx|656|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S2004|breadcost-app:frontend/app/recipes/page.tsx|660|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S2004|breadcost-app:frontend/app/recipes/page.tsx|664|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S2004|breadcost-app:frontend/app/recipes/page.tsx|668|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S7764|breadcost-app:frontend/lib/auth.ts|19|Prefer `globalThis.window` over `window`.
+typescript:S7764|breadcost-app:frontend/lib/auth.ts|29|Prefer `globalThis.window` over `window`.
+java:S1192|breadcost-app:src/main/java/com/breadcost/api/AuthController.java|68|Define a constant instead of duplicating this literal "message" 5 times.
+java:S1068|breadcost-app:src/main/java/com/breadcost/api/ReportsController.java|32|Remove this unused "saleRepository" private field.
+java:S1068|breadcost-app:src/main/java/com/breadcost/api/ReportsController.java|33|Remove this unused "productRepository" private field.
+java:S1192|breadcost-app:src/main/java/com/breadcost/api/ReportsController.java|45|Define a constant instead of duplicating this literal "CANCELLED" 3 times.
+java:S1192|breadcost-app:src/main/java/com/breadcost/api/UserController.java|62|Define a constant instead of duplicating this literal "[protected]" 4 times.
+java:S6204|breadcost-app:src/main/java/com/breadcost/masterdata/RecipeService.java|331|Replace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()' and ensure that the list is unmodified.
+java:S1450|breadcost-app:src/main/java/com/breadcost/masterdata/SaleEntity.java|57|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1450|breadcost-app:src/main/java/com/breadcost/masterdata/TenantConfigEntity.java|40|Remove the "updatedAt" field and declare it as a local variable in the relevant methods.
+java:S1450|breadcost-app:src/main/java/com/breadcost/masterdata/UserEntity.java|43|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+typescript:S3358|breadcost-app:frontend/app/dashboard/page.tsx|22|Extract this nested ternary operation into an independent statement.
+typescript:S3735|breadcost-app:frontend/app/dashboard/page.tsx|449|Remove this use of the "void" operator.
+typescript:S3358|breadcost-app:frontend/app/dashboard/page.tsx|451|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/dashboard/page.tsx|452|Extract this nested ternary operation into an independent statement.
+typescript:S7773|breadcost-app:frontend/app/inventory/page.tsx|253|Prefer `Number.parseFloat` over `parseFloat`.
+typescript:S7773|breadcost-app:frontend/app/inventory/page.tsx|255|Prefer `Number.parseFloat` over `parseFloat`.
+typescript:S7773|breadcost-app:frontend/app/inventory/page.tsx|295|Prefer `Number.parseFloat` over `parseFloat`.
+typescript:S7773|breadcost-app:frontend/app/inventory/page.tsx|378|Prefer `Number.parseFloat` over `parseFloat`.
+typescript:S6759|breadcost-app:frontend/app/layout.tsx|12|Mark the props of the component as read-only.
+typescript:S2004|breadcost-app:frontend/app/orders/page.tsx|227|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S7773|breadcost-app:frontend/app/orders/page.tsx|252|Prefer `Number.parseFloat` over `parseFloat`.
+typescript:S7773|breadcost-app:frontend/app/orders/page.tsx|260|Prefer `Number.parseFloat` over `parseFloat`.
+typescript:S4624|breadcost-app:frontend/app/orders/page.tsx|313|Refactor this code to not use nested template literals.
+typescript:S1082|breadcost-app:frontend/app/orders/page.tsx|394|Visible, non-interactive elements with click handlers must have at least one keyboard listener.
+typescript:S6848|breadcost-app:frontend/app/orders/page.tsx|394|Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.
+typescript:S1082|breadcost-app:frontend/app/orders/page.tsx|424|Visible, non-interactive elements with click handlers must have at least one keyboard listener.
+typescript:S6848|breadcost-app:frontend/app/orders/page.tsx|424|Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.
+typescript:S6479|breadcost-app:frontend/app/orders/page.tsx|616|Do not use Array index in keys
+typescript:S6759|breadcost-app:frontend/app/pos/page.tsx|86|Mark the props of the component as read-only.
+typescript:S7773|breadcost-app:frontend/app/pos/page.tsx|93|Prefer `Number.parseFloat` over `parseFloat`.
+typescript:S7773|breadcost-app:frontend/app/pos/page.tsx|94|Prefer `Number.parseFloat` over `parseFloat`.
+typescript:S7773|breadcost-app:frontend/app/pos/page.tsx|490|Prefer `Number.parseFloat` over `parseFloat`.
+typescript:S7773|breadcost-app:frontend/app/pos/page.tsx|491|Prefer `Number.isNaN` over `isNaN`.
+typescript:S6848|breadcost-app:frontend/app/production-plans/page.tsx|468|Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.
+typescript:S1082|breadcost-app:frontend/app/production-plans/page.tsx|468|Visible, non-interactive elements with click handlers must have at least one keyboard listener.
+typescript:S6848|breadcost-app:frontend/app/production-plans/page.tsx|485|Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.
+typescript:S1082|breadcost-app:frontend/app/production-plans/page.tsx|485|Visible, non-interactive elements with click handlers must have at least one keyboard listener.
+typescript:S3358|breadcost-app:frontend/app/production-plans/page.tsx|655|Extract this nested ternary operation into an independent statement.
+typescript:S6853|breadcost-app:frontend/app/production-plans/page.tsx|684|A form label must be associated with a control.
+typescript:S2004|breadcost-app:frontend/app/production-plans/page.tsx|691|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S7773|breadcost-app:frontend/app/production-plans/page.tsx|692|Prefer `Number.parseInt` over `parseInt`.
+typescript:S7773|breadcost-app:frontend/app/production-plans/page.tsx|693|Prefer `Number.isNaN` over `isNaN`.
+typescript:S6479|breadcost-app:frontend/app/production-plans/page.tsx|737|Do not use Array index in keys
+typescript:S7735|breadcost-app:frontend/app/recipes/page.tsx|325|Unexpected negated condition.
+typescript:S6479|breadcost-app:frontend/app/recipes/page.tsx|888|Do not use Array index in keys
+typescript:S6759|breadcost-app:frontend/app/reports/page.tsx|124|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/app/reports/page.tsx|136|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/app/reports/page.tsx|278|Mark the props of the component as read-only.
+typescript:S7735|breadcost-app:frontend/app/reports/page.tsx|325|Unexpected negated condition.
+typescript:S6759|breadcost-app:frontend/app/reports/page.tsx|425|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/app/technologist/page.tsx|52|Mark the props of the component as read-only.
+typescript:S6479|breadcost-app:frontend/app/technologist/page.tsx|237|Do not use Array index in keys
+typescript:S6759|breadcost-app:frontend/components/AuthShell.tsx|164|Mark the props of the component as read-only.
+typescript:S6479|breadcost-app:frontend/components/AuthShell.tsx|244|Do not use Array index in keys
+typescript:S7744|breadcost-app:frontend/lib/api.ts|16|The empty object is useless.
+typescript:S7764|breadcost-app:frontend/lib/api.ts|22|Prefer `globalThis` over `window`.
+typescript:S7764|breadcost-app:frontend/lib/api.ts|22|Prefer `globalThis.window` over `window`.
+typescript:S7764|breadcost-app:frontend/lib/auth.ts|62|Prefer `globalThis.window` over `window`.
+java:S1192|breadcost-app:src/main/java/com/breadcost/api/ViewController.java|39|Define a constant instead of duplicating this literal "message" 4 times.
+java:S125|breadcost-app:src/main/java/com/breadcost/domain/Recipe.java|27|This block of commented-out lines of code should be removed.
+java:S1068|breadcost-app:src/main/java/com/breadcost/eventstore/EventStore.java|24|Remove this unused "objectMapper" private field.
+java:S6213|breadcost-app:src/main/java/com/breadcost/eventstore/IdempotencyService.java|26|Rename this variable to not match a restricted identifier.
+java:S6213|breadcost-app:src/main/java/com/breadcost/eventstore/IdempotencyService.java|35|Rename this variable to not match a restricted identifier.
+java:S1104|breadcost-app:src/main/java/com/breadcost/finance/FinanceService.java|80|Make debitAccount a static final constant or non-public and provide accessors if needed.
+java:S1104|breadcost-app:src/main/java/com/breadcost/finance/FinanceService.java|81|Make creditAccount a static final constant or non-public and provide accessors if needed.
+java:S1104|breadcost-app:src/main/java/com/breadcost/finance/FinanceService.java|82|Make operational a static final constant or non-public and provide accessors if needed.
+java:S1450|breadcost-app:src/main/java/com/breadcost/masterdata/ItemEntity.java|46|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1450|breadcost-app:src/main/java/com/breadcost/masterdata/OrderEntity.java|57|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S1068|breadcost-app:src/main/java/com/breadcost/masterdata/OrderService.java|37|Remove this unused "productRepository" private field.
+java:S3776|breadcost-app:src/main/java/com/breadcost/masterdata/OrderService.java|62|Refactor this method to reduce its Cognitive Complexity from 25 to the 15 allowed.
+java:S6541|breadcost-app:src/main/java/com/breadcost/masterdata/OrderService.java|62|A "Brain Method" was detected. Refactor it to reduce at least one of the following metrics: LOC from 109 to 64, Complexity from 16 to 14, Nesting Level from 3 to 2, Number of Variables from 32 to 6.
+java:S1192|breadcost-app:src/main/java/com/breadcost/masterdata/OrderService.java|69|Define a constant instead of duplicating this literal "default" 4 times.
+java:S1192|breadcost-app:src/main/java/com/breadcost/masterdata/ProductService.java|103|Define a constant instead of duplicating this literal "Product not found: " 3 times.
+java:S1450|breadcost-app:src/main/java/com/breadcost/masterdata/ProductionPlanEntity.java|44|Remove the "createdAt" field and declare it as a local variable in the relevant methods.
+java:S3776|breadcost-app:src/main/java/com/breadcost/masterdata/ProductionPlanService.java|62|Refactor this method to reduce its Cognitive Complexity from 20 to the 15 allowed.
+java:S6204|breadcost-app:src/main/java/com/breadcost/masterdata/ProductionPlanService.java|80|Replace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()' and ensure that the list is unmodified.
+java:S6204|breadcost-app:src/main/java/com/breadcost/masterdata/ProductionPlanService.java|90|Replace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()' and ensure that the list is unmodified.
+java:S2111|breadcost-app:src/main/java/com/breadcost/masterdata/ProductionPlanService.java|135|Use "BigDecimal.valueOf" instead.
+java:S6204|breadcost-app:src/main/java/com/breadcost/masterdata/ProductionPlanService.java|394|Replace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()' and ensure that the list is unmodified.
+java:S6204|breadcost-app:src/main/java/com/breadcost/masterdata/ProductionPlanService.java|424|Replace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()' and ensure that the list is unmodified.
+java:S3776|breadcost-app:src/main/java/com/breadcost/masterdata/ProductionPlanService.java|446|Refactor this method to reduce its Cognitive Complexity from 23 to the 15 allowed.
+java:S135|breadcost-app:src/main/java/com/breadcost/masterdata/ProductionPlanService.java|451|Reduce the total number of break and continue statements in this loop to use at most one.
+java:S2111|breadcost-app:src/main/java/com/breadcost/masterdata/ProductionPlanService.java|493|Use "BigDecimal.valueOf" instead.
+java:S1659|breadcost-app:src/main/java/com/breadcost/masterdata/ProductionPlanService.java|534|Declare "departmentName" and all following declarations on a separate line.
+java:S6204|breadcost-app:src/main/java/com/breadcost/masterdata/RecipeService.java|82|Replace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()' and ensure that the list is unmodified.
+java:S6916|breadcost-app:src/main/java/com/breadcost/masterdata/RecipeService.java|346|Replace this "if" statement with a pattern match guard.
+java:S1192|breadcost-app:src/main/java/com/breadcost/projections/InventoryProjection.java|87|Define a constant instead of duplicating this literal "RECEIVING" 3 times.
+java:S1172|breadcost-app:src/main/java/com/breadcost/projections/ProjectionEngine.java|54|Remove this unused method parameter "ledgerEntry".

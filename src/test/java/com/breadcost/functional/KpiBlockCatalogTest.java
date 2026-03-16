@@ -11,7 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * BC-1601: KPI block catalog.
  * Tests: list active blocks, filter by category, add custom block, duplicate key fails.
  */
-public class KpiBlockCatalogTest extends FunctionalTestBase {
+class KpiBlockCatalogTest extends FunctionalTestBase {
 
     String adminToken() { return bearer("admin1"); }
 

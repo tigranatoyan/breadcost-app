@@ -320,6 +320,7 @@ const en = {
   // ── Recipes ────────────────────────────────────────────────────────────────
   recipes: {
     title: 'Recipes',
+    subtitle: 'Select a product above to view its recipes.',
     newRecipe: '+ New Recipe',
     selectProduct: 'Select Product',
     chooseProduct: '-- choose a product --',

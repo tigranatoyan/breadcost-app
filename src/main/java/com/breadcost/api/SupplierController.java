@@ -118,10 +118,11 @@ public class SupplierController {
             @PathVariable("id") String supplierId,
             @Valid @RequestBody AddCatalogItemRequest req) {
         SupplierCatalogItemEntity item = supplierService.addCatalogItem(
-                req.getTenantId(), supplierId,
-                req.getIngredientId(), req.getIngredientName(),
-                req.getUnitPrice(), req.getCurrency(),
-                req.getLeadTimeDays(), req.getMoq(), req.getUnit());
+                new SupplierService.CatalogItemRequest(
+                        req.getTenantId(), supplierId,
+                        req.getIngredientId(), req.getIngredientName(),
+                        req.getUnitPrice(), req.getCurrency(),
+                        req.getLeadTimeDays(), req.getMoq(), req.getUnit()));
         return ResponseEntity.status(HttpStatus.CREATED).body(item);
     }
 

@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useReducer, useCallback, useMemo, type ReactNode } from 'react';
 import en from '@/locales/en';
 import hy from '@/locales/hy';
 
@@ -20,7 +20,7 @@ function getNestedValue(obj: unknown, path: string): string {
   const keys = path.split('.');
   let current: unknown = obj;
   for (const key of keys) {
-    if ((current === null || current === undefined) || typeof current !== 'object') return path;
+    if (current == null || typeof current !== 'object') return path;
     current = (current as Record<string, unknown>)[key];
   }
   return typeof current === 'string' ? current : path;
@@ -40,15 +40,15 @@ const I18nContext = createContext<I18nContextValue>({
 
 const STORAGE_KEY = 'breadcost_locale';
 
-export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(() => {
-    if (typeof window === 'undefined') return 'en';
+export function I18nProvider({ children }: Readonly<{ children: ReactNode }>) {
+  const [locale, dispatchLocale] = useReducer((_: Locale, next: Locale) => next, 'en', () => {
+    if (globalThis.window === undefined) return 'en';
     const stored = localStorage.getItem(STORAGE_KEY) as Locale | null;
     return stored && dictionaries[stored] ? stored : 'en';
   });
 
   const setLocale = useCallback((l: Locale) => {
-    setLocaleState(l);
+    dispatchLocale(l);
     localStorage.setItem(STORAGE_KEY, l);
   }, []);
 
@@ -65,8 +65,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     [locale],
   );
 
+  const contextValue = useMemo(() => ({ locale, setLocale, t }), [locale, setLocale, t]);
+
   return (
-    <I18nContext.Provider value={{ locale, setLocale, t }}>
+    <I18nContext.Provider value={contextValue}>
       {children}
     </I18nContext.Provider>
   );

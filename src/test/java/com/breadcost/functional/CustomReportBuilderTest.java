@@ -12,7 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * BC-1602: Custom report builder.
  * Tests: create report, list reports, get report, delete report.
  */
-public class CustomReportBuilderTest extends FunctionalTestBase {
+class CustomReportBuilderTest extends FunctionalTestBase {
 
     String adminToken() { return bearer("admin1"); }
 

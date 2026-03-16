@@ -16,6 +16,10 @@ import java.util.*;
 @Transactional
 public class SubscriptionService {
 
+    private static final String FEATURES_KEY = "features";
+    private static final String MAX_USERS_KEY = "maxUsers";
+    private static final String MAX_PRODUCTS_KEY = "maxProducts";
+
     private final SubscriptionTierRepository tierRepo;
     private final TenantSubscriptionRepository tenantSubRepo;
 
@@ -148,9 +152,9 @@ public class SubscriptionService {
         result.put("tenantId", tenantId);
         if (sub.isEmpty()) {
             result.put("tier", "NONE");
-            result.put("features", List.of());
-            result.put("maxUsers", 0);
-            result.put("maxProducts", 0);
+            result.put(FEATURES_KEY, List.of());
+            result.put(MAX_USERS_KEY, 0);
+            result.put(MAX_PRODUCTS_KEY, 0);
             result.put("expired", false);
             return result;
         }
@@ -162,16 +166,16 @@ public class SubscriptionService {
         result.put("expired", expired);
 
         if (expired) {
-            result.put("features", List.of());
-            result.put("maxUsers", 0);
-            result.put("maxProducts", 0);
+            result.put(FEATURES_KEY, List.of());
+            result.put(MAX_USERS_KEY, 0);
+            result.put(MAX_PRODUCTS_KEY, 0);
             return result;
         }
 
         Optional<SubscriptionTierEntity> tier = tierRepo.findByLevel(s.getTierLevel());
-        result.put("features", tier.map(SubscriptionTierEntity::featureList).orElse(List.of()));
-        result.put("maxUsers", tier.map(SubscriptionTierEntity::getMaxUsers).orElse(0));
-        result.put("maxProducts", tier.map(SubscriptionTierEntity::getMaxProducts).orElse(0));
+        result.put(FEATURES_KEY, tier.map(SubscriptionTierEntity::featureList).orElse(List.of()));
+        result.put(MAX_USERS_KEY, tier.map(SubscriptionTierEntity::getMaxUsers).orElse(0));
+        result.put(MAX_PRODUCTS_KEY, tier.map(SubscriptionTierEntity::getMaxProducts).orElse(0));
         return result;
     }
 

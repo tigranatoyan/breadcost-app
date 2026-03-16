@@ -100,17 +100,18 @@ public class CustomerOrderController {
                 .toList();
 
         OrderEntity order = orderService.createOrder(
-                req.getTenantId(),
-                null,                      // siteId — default
-                req.getCustomerId(),
-                req.getCustomerName(),
-                req.getCustomerId(),       // createdByUserId = customer
-                req.getRequestedDeliveryTime(),
-                false,                     // forceRush = false
-                null,                      // customRushPremiumPct
-                req.getNotes(),
-                lines,
-                null                       // idempotencyKey
+                new OrderService.CreateOrderRequest(
+                        req.getTenantId(),
+                        null,                      // siteId — default
+                        req.getCustomerId(),
+                        req.getCustomerName(),
+                        req.getCustomerId(),       // createdByUserId = customer
+                        req.getRequestedDeliveryTime(),
+                        false,                     // forceRush = false
+                        null,                      // customRushPremiumPct
+                        req.getNotes(),
+                        lines,
+                        null)                      // idempotencyKey
         );
 
         log.info("Customer order placed: tenantId={} customerId={} orderId={}",

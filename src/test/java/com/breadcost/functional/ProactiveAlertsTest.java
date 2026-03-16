@@ -2,7 +2,6 @@ package com.breadcost.functional;
 
 import com.breadcost.domain.*;
 import com.breadcost.masterdata.*;
-import com.breadcost.mobile.MobileAppService;
 import com.breadcost.mobile.PushNotificationRepository;
 import com.breadcost.projections.InventoryProjection;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,9 +30,7 @@ class ProactiveAlertsTest extends FunctionalTestBase {
     @Autowired private ProductRepository productRepository;
     @Autowired private RecipeRepository recipeRepository;
     @Autowired private DepartmentRepository departmentRepository;
-    @Autowired private OrderRepository orderRepository;
     @Autowired private InventoryProjection inventoryProjection;
-    @Autowired private InventoryService inventoryService;
     @Autowired private OrderService orderService;
     @Autowired private StockAlertService stockAlertService;
     @Autowired private PushNotificationRepository pushNotificationRepository;
@@ -131,15 +128,16 @@ class ProactiveAlertsTest extends FunctionalTestBase {
     void orderStatusChange_triggersNotification() {
         // Create and confirm an order
         OrderEntity order = orderService.createOrder(
-                TENANT, "MAIN", "cust-r5s2", "Test Customer",
-                "admin1", Instant.now().plusSeconds(86400), false, null,
-                "test order",
-                List.of(OrderService.CreateOrderLineRequest.builder()
-                        .productId(productId).productName("Test Bread S2")
-                        .departmentId(deptId).departmentName("R5S2 Dept")
-                        .qty(5).uom("pcs").unitPrice(new BigDecimal("8000"))
-                        .build()),
-                UUID.randomUUID().toString());
+                new OrderService.CreateOrderRequest(
+                        TENANT, "MAIN", "cust-r5s2", "Test Customer",
+                        "admin1", Instant.now().plusSeconds(86400), false, null,
+                        "test order",
+                        List.of(OrderService.CreateOrderLineRequest.builder()
+                                .productId(productId).productName("Test Bread S2")
+                                .departmentId(deptId).departmentName("R5S2 Dept")
+                                .qty(5).uom("pcs").unitPrice(new BigDecimal("8000"))
+                                .build()),
+                        UUID.randomUUID().toString()));
 
         orderService.confirmOrder(TENANT, order.getOrderId(), "admin1");
 
@@ -231,15 +229,16 @@ class ProactiveAlertsTest extends FunctionalTestBase {
     void autoPlan_createsFromConfirmedOrders() {
         // Create and confirm an order for our product
         OrderEntity order = orderService.createOrder(
-                TENANT, "MAIN", "cust-auto-plan", "Auto Plan Customer",
-                "admin1", Instant.now().plusSeconds(86400), false, null,
-                "auto plan test",
-                List.of(OrderService.CreateOrderLineRequest.builder()
-                        .productId(productId).productName("Test Bread S2")
-                        .departmentId(deptId).departmentName("R5S2 Dept")
-                        .qty(20).uom("pcs").unitPrice(new BigDecimal("8000"))
-                        .build()),
-                UUID.randomUUID().toString());
+                new OrderService.CreateOrderRequest(
+                        TENANT, "MAIN", "cust-auto-plan", "Auto Plan Customer",
+                        "admin1", Instant.now().plusSeconds(86400), false, null,
+                        "auto plan test",
+                        List.of(OrderService.CreateOrderLineRequest.builder()
+                                .productId(productId).productName("Test Bread S2")
+                                .departmentId(deptId).departmentName("R5S2 Dept")
+                                .qty(20).uom("pcs").unitPrice(new BigDecimal("8000"))
+                                .build()),
+                        UUID.randomUUID().toString()));
 
         orderService.confirmOrder(TENANT, order.getOrderId(), "admin1");
 

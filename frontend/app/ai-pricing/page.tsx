@@ -222,9 +222,11 @@ export default function AiPricingPage() {
                 {t('aiPricing.active')}
               </label>
             </div>
-            {alertsLoading ? <Spinner /> : alerts.length === 0 ? (
+            {alertsLoading && <Spinner />}
+            {!alertsLoading && alerts.length === 0 && (
               <p className="text-center text-sm text-gray-400 py-8">{t('aiPricing.noAlerts')}</p>
-            ) : (
+            )}
+            {!alertsLoading && alerts.length > 0 && (
               <div className="space-y-3 max-h-[60vh] overflow-y-auto">
                 {alerts.map(a => {
                   const colors = SEVERITY_COLORS[a.severity] || 'bg-gray-100 text-gray-800 border-gray-200';

@@ -24,6 +24,9 @@ import java.util.UUID;
 @Slf4j
 public class DevDataSeeder implements CommandLineRunner {
 
+    private static final String DEPT_BREAD = "DEPT-BREAD";
+    private static final String INGREDIENT_TYPE = "INGREDIENT";
+
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
     private final DepartmentRepository departmentRepository;
@@ -69,23 +72,23 @@ public class DevDataSeeder implements CommandLineRunner {
         seedUser("cashier",     "Cashier User",     "Cashier");
 
         // ── Departments ──────────────────────────────────────────────
-        seedDept("DEPT-BREAD",   "Bread Department",    6);
+        seedDept(DEPT_BREAD,       "Bread Department",    6);
         seedDept("DEPT-PASTRY",  "Pastry Department",   8);
         seedDept("DEPT-CONFECT", "Confectionery Dept", 12);
 
         // ── Items (ingredients) ──────────────────────────────────────
-        seedItem("ITEM-FLOUR",  "Wheat Flour",    "INGREDIENT", "KG", 50);
-        seedItem("ITEM-SUGAR",  "White Sugar",    "INGREDIENT", "KG", 30);
-        seedItem("ITEM-BUTTER", "Butter",         "INGREDIENT", "KG", 20);
-        seedItem("ITEM-YEAST",  "Dry Yeast",      "INGREDIENT", "KG",  5);
-        seedItem("ITEM-SALT",   "Table Salt",     "INGREDIENT", "KG", 10);
-        seedItem("ITEM-EGGS",   "Eggs",           "INGREDIENT", "PCS", 100);
-        seedItem("ITEM-MILK",   "Whole Milk",     "INGREDIENT", "L",  25);
+        seedItem("ITEM-FLOUR",  "Wheat Flour",    INGREDIENT_TYPE, "KG", 50);
+        seedItem("ITEM-SUGAR",  "White Sugar",    INGREDIENT_TYPE, "KG", 30);
+        seedItem("ITEM-BUTTER", "Butter",         INGREDIENT_TYPE, "KG", 20);
+        seedItem("ITEM-YEAST",  "Dry Yeast",      INGREDIENT_TYPE, "KG",  5);
+        seedItem("ITEM-SALT",   "Table Salt",     INGREDIENT_TYPE, "KG", 10);
+        seedItem("ITEM-EGGS",   "Eggs",           INGREDIENT_TYPE, "PCS", 100);
+        seedItem("ITEM-MILK",   "Whole Milk",     INGREDIENT_TYPE, "L",  25);
 
         // ── Products ─────────────────────────────────────────────────
-        seedProduct("PROD-WHITE",    "White Bread",     "DEPT-BREAD",  Product.SaleUnit.PIECE, 8000);
-        seedProduct("PROD-SOUR",     "Sourdough Bread", "DEPT-BREAD",  Product.SaleUnit.PIECE, 15000);
-        seedProduct("PROD-BAGUETTE", "Baguette",        "DEPT-BREAD",  Product.SaleUnit.PIECE, 12000);
+        seedProduct("PROD-WHITE",    "White Bread",     DEPT_BREAD,     Product.SaleUnit.PIECE, 8000);
+        seedProduct("PROD-SOUR",     "Sourdough Bread", DEPT_BREAD,     Product.SaleUnit.PIECE, 15000);
+        seedProduct("PROD-BAGUETTE", "Baguette",        DEPT_BREAD,     Product.SaleUnit.PIECE, 12000);
         seedProduct("PROD-CROISS",   "Croissant",       "DEPT-PASTRY", Product.SaleUnit.PIECE, 10000);
         seedProduct("PROD-CAKE",     "Birthday Cake",   "DEPT-CONFECT",Product.SaleUnit.PIECE, 85000);
 

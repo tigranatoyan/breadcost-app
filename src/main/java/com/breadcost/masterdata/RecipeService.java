@@ -12,13 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class RecipeService {
 
+    private static final String RECIPE_NOT_FOUND = "Recipe not found: ";
     private final RecipeRepository recipeRepository;
     private final ProductRepository productRepository;
     private final RecipeTemplateRepository templateRepository;
@@ -79,7 +79,7 @@ public class RecipeService {
 
         List<RecipeIngredientEntity> ingredientEntities = req.ingredients().stream()
                 .map(i -> buildIngredientEntity(i, null)) // recipeId set after save not needed — we set it below
-                .collect(Collectors.toList());
+                .toList();
 
         String recipeId = UUID.randomUUID().toString();
 
@@ -118,7 +118,7 @@ public class RecipeService {
     public RecipeEntity activate(String tenantId, String recipeId) {
         RecipeEntity target = recipeRepository.findById(recipeId)
                 .filter(r -> r.getTenantId().equals(tenantId))
-                .orElseThrow(() -> new IllegalArgumentException("Recipe not found: " + recipeId));
+                .orElseThrow(() -> new IllegalArgumentException(RECIPE_NOT_FOUND + recipeId));
 
         if (target.getStatus() == Recipe.RecipeStatus.ACTIVE) {
             return target; // Already active — idempotent
@@ -179,7 +179,7 @@ public class RecipeService {
     public RecipeEntity getById(String tenantId, String recipeId) {
         return recipeRepository.findById(recipeId)
                 .filter(r -> r.getTenantId().equals(tenantId))
-                .orElseThrow(() -> new IllegalArgumentException("Recipe not found: " + recipeId));
+                .orElseThrow(() -> new IllegalArgumentException(RECIPE_NOT_FOUND + recipeId));
     }
 
     /**
@@ -190,7 +190,9 @@ public class RecipeService {
     @Transactional(readOnly = true)
     public List<MaterialRequirement> calculateMaterialRequirements(
             String tenantId, String recipeId, BigDecimal batchMultiplier) {
-        RecipeEntity recipe = getById(tenantId, recipeId);
+        RecipeEntity recipe = recipeRepository.findById(recipeId)
+                .filter(r -> r.getTenantId().equals(tenantId))
+                .orElseThrow(() -> new IllegalArgumentException(RECIPE_NOT_FOUND + recipeId));
         return recipe.getIngredients().stream()
                 .map(ing -> new MaterialRequirement(
                         ing.getItemId(),
@@ -250,7 +252,7 @@ public class RecipeService {
                         .purchasingUom(i.getPurchasingUom())
                         .wasteFactor(i.getWasteFactor())
                         .build())
-                .collect(Collectors.toList());
+                .toList();
 
         RecipeEntity entity = RecipeEntity.builder()
                 .recipeId(recipeId)
@@ -321,14 +323,16 @@ public class RecipeService {
     @CacheEvict(value = {"recipes", "activeRecipe", "recipe", "recipeMaterials"}, allEntries = true)
     @Transactional
     public RecipeEntity updateIngredients(String tenantId, String recipeId, List<IngredientRequest> ingredientRequests) {
-        RecipeEntity recipe = getById(tenantId, recipeId);
+        RecipeEntity recipe = recipeRepository.findById(recipeId)
+                .filter(r -> r.getTenantId().equals(tenantId))
+                .orElseThrow(() -> new IllegalArgumentException(RECIPE_NOT_FOUND + recipeId));
         if (recipe.getStatus() != com.breadcost.domain.Recipe.RecipeStatus.DRAFT) {
             throw new IllegalStateException("Ingredients can only be updated on DRAFT recipes");
         }
         recipe.getIngredients().clear();
         List<RecipeIngredientEntity> newIngredients = ingredientRequests.stream()
                 .map(i -> buildIngredientEntity(i, recipeId))
-                .collect(Collectors.toList());
+                .toList();
         recipe.getIngredients().addAll(newIngredients);
         recipe.setUpdatedAtUtc(java.time.Instant.now());
         return recipeRepository.save(recipe);
@@ -342,16 +346,16 @@ public class RecipeService {
             throw new IllegalArgumentException("purchasingUnitSize must be positive for item: " + req.itemId());
         }
         switch (req.unitMode()) {
-            case WEIGHT -> {
-                if (req.recipeQty() == null || req.recipeQty().signum() <= 0)
-                    throw new IllegalArgumentException("recipeQty required for WEIGHT mode, item: " + req.itemId());
-            }
-            case PIECE, COMBO -> {
-                if (req.pieceQty() == null || req.pieceQty() <= 0)
-                    throw new IllegalArgumentException("pieceQty required for PIECE/COMBO mode, item: " + req.itemId());
-                if (req.weightPerPiece() == null || req.weightPerPiece().signum() <= 0)
-                    throw new IllegalArgumentException("weightPerPiece required for PIECE/COMBO mode, item: " + req.itemId());
-            }
+            case RecipeIngredient.UnitMode u when u == RecipeIngredient.UnitMode.WEIGHT
+                    && (req.recipeQty() == null || req.recipeQty().signum() <= 0) ->
+                throw new IllegalArgumentException("recipeQty required for WEIGHT mode, item: " + req.itemId());
+            case RecipeIngredient.UnitMode u when (u == RecipeIngredient.UnitMode.PIECE || u == RecipeIngredient.UnitMode.COMBO)
+                    && (req.pieceQty() == null || req.pieceQty() <= 0) ->
+                throw new IllegalArgumentException("pieceQty required for PIECE/COMBO mode, item: " + req.itemId());
+            case RecipeIngredient.UnitMode u when (u == RecipeIngredient.UnitMode.PIECE || u == RecipeIngredient.UnitMode.COMBO)
+                    && (req.weightPerPiece() == null || req.weightPerPiece().signum() <= 0) ->
+                throw new IllegalArgumentException("weightPerPiece required for PIECE/COMBO mode, item: " + req.itemId());
+            default -> { /* valid – no further checks */ }
         }
     }
 }

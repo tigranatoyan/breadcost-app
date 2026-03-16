@@ -3,7 +3,6 @@ package com.breadcost.functional;
 import com.breadcost.domain.Department;
 import com.breadcost.domain.Product;
 import com.breadcost.masterdata.*;
-import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,7 +30,6 @@ class OrderTimelineTest extends FunctionalTestBase {
 
     @Autowired private DepartmentRepository departmentRepository;
     @Autowired private ProductRepository productRepository;
-    @Autowired private OrderStatusHistoryRepository historyRepository;
 
     private String productId;
     private final String customerId = "tl-customer-" + UUID.randomUUID();

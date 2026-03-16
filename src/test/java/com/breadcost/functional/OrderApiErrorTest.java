@@ -2,6 +2,8 @@ package com.breadcost.functional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.List;
 import java.util.Map;
@@ -18,43 +20,13 @@ class OrderApiErrorTest extends FunctionalTestBase {
 
     // ── RBAC: write endpoints ─────────────────────────────────────────────────
 
-    @Test
-    @DisplayName("F2-ORD-1 ✓ Cashier cannot create order (403)")
-    void cashier_createOrder_forbidden() throws Exception {
+    @ParameterizedTest(name = "F2-ORD ✓ {0} cannot create order (403)")
+    @CsvSource({"cashier1", "finance1", "manager1", "warehouse1"})
+    void nonAdmin_createOrder_forbidden(String user) throws Exception {
         var body = Map.of(
                 "tenantId", TENANT, "siteId", "site1",
                 "customerName", "Test", "lines", List.of());
-        POST("/v1/orders", body, bearer("cashier1"))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @DisplayName("F2-ORD-2 ✓ Finance cannot create order (403)")
-    void finance_createOrder_forbidden() throws Exception {
-        var body = Map.of(
-                "tenantId", TENANT, "siteId", "site1",
-                "customerName", "Test", "lines", List.of());
-        POST("/v1/orders", body, bearer("finance1"))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @DisplayName("F2-ORD-3 ✓ Manager cannot create order (403)")
-    void manager_createOrder_forbidden() throws Exception {
-        var body = Map.of(
-                "tenantId", TENANT, "siteId", "site1",
-                "customerName", "Test", "lines", List.of());
-        POST("/v1/orders", body, bearer("manager1"))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @DisplayName("F2-ORD-4 ✓ Warehouse cannot create order (403)")
-    void warehouse_createOrder_forbidden() throws Exception {
-        var body = Map.of(
-                "tenantId", TENANT, "siteId", "site1",
-                "customerName", "Test", "lines", List.of());
-        POST("/v1/orders", body, bearer("warehouse1"))
+        POST("/v1/orders", body, bearer(user))
                 .andExpect(status().isForbidden());
     }
 

@@ -9,7 +9,6 @@ import com.breadcost.domain.LedgerEntry;
 import com.breadcost.eventstore.EventStore;
 import com.breadcost.mobile.MobileAppService;
 import com.breadcost.notifications.EmailNotificationService;
-import com.breadcost.delivery.DeliveryRunEntity;
 import com.breadcost.delivery.DeliveryRunOrderRepository;
 import com.breadcost.delivery.DeliveryRunRepository;
 import com.breadcost.driver.DriverService;
@@ -25,16 +24,17 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class OrderService {
 
+    private static final String STATUS_DRAFT = "DRAFT";
+    private static final String SITE_DEFAULT = "default";
+
     private final OrderRepository orderRepository;
     private final DepartmentRepository departmentRepository;
-    private final ProductRepository productRepository;
     private final RecipeRepository recipeRepository;
     private final EventStore eventStore;
     private final OrderStatusHistoryRepository orderStatusHistoryRepository;
@@ -56,144 +56,81 @@ public class OrderService {
     @Value("${breadcost.order.rush-premium-pct:15}")
     private int defaultRushPremiumPct;
 
+    // ─── REQUEST DTOs ─────────────────────────────────────────────────────────────
+
+    public record CreateOrderRequest(
+            String tenantId, String siteId, String customerId, String customerName,
+            String createdByUserId, Instant requestedDeliveryTime,
+            boolean forceRush, BigDecimal customRushPremiumPct,
+            String notes, List<CreateOrderLineRequest> lineRequests,
+            String idempotencyKey) {}
+
+    public record UpdateDraftOrderRequest(
+            String tenantId, String orderId,
+            String customerName, String customerId,
+            Instant requestedDeliveryTime,
+            boolean forceRush, BigDecimal customRushPremiumPct,
+            String notes, List<CreateOrderLineRequest> lineRequests) {}
+
     // ─── CREATE ─────────────────────────────────────────────────────────────────
 
     @Transactional
-    public OrderEntity createOrder(String tenantId, String siteId, String customerId, String customerName,
-                                   String createdByUserId, Instant requestedDeliveryTime,
-                                   boolean forceRush, BigDecimal customRushPremiumPct,
-                                   String notes, List<CreateOrderLineRequest> lineRequests,
-                                   String idempotencyKey) {
+    public OrderEntity createOrder(CreateOrderRequest req) {
 
-        // Default siteId and customerId when not provided (frontend may omit them)
-        if (siteId == null || siteId.isBlank()) siteId = "default";
-        if (customerId == null || customerId.isBlank())
-            customerId = customerName != null ? customerName.toLowerCase().replaceAll("[^a-z0-9]", "-") : "unknown";
+        String siteId = req.siteId();
+        if (siteId == null || siteId.isBlank()) siteId = SITE_DEFAULT;
+        String customerId = resolveCustomerId(req.customerId(), req.customerName(), "unknown");
 
         Instant now = Instant.now();
-        boolean afterCutoff = isAfterCutoff(now);
+        RushInfo rush = resolveRushInfo(req.forceRush(), now, req.customRushPremiumPct());
 
-        // Rush order logic
-        boolean rushOrder = forceRush || afterCutoff;
-        BigDecimal rushPremiumPct = BigDecimal.ZERO;
-        if (rushOrder) {
-            rushPremiumPct = customRushPremiumPct != null
-                    ? customRushPremiumPct
-                    : BigDecimal.valueOf(defaultRushPremiumPct);
-        }
-
-        // Build lines with lead time conflict detection
-        List<OrderLineEntity> lineEntities = new ArrayList<>();
-        List<OrderLine> domainLines = new ArrayList<>();
         String orderId = UUID.randomUUID().toString();
+        List<OrderLineEntity> lineEntities = buildLineEntities(req.tenantId(), req.lineRequests(), req.requestedDeliveryTime(), now);
+        BigDecimal total = computeTotal(lineEntities, rush.rushPremiumPct());
 
-        for (CreateOrderLineRequest req : lineRequests) {
-            String lineId = UUID.randomUUID().toString();
-
-            // Determine lead time conflict — use recipe lead time (falls back to department)
-            boolean leadTimeConflict = false;
-            Instant earliestReadyAt = null;
-
-            Optional<RecipeEntity> activeRecipe = (req.getProductId() != null)
-                    ? recipeRepository.findByTenantIdAndProductIdAndStatus(tenantId, req.getProductId(), Recipe.RecipeStatus.ACTIVE).stream().findFirst()
-                    : Optional.empty();
-            Optional<DepartmentEntity> dept = (req.getDepartmentId() != null)
-                    ? departmentRepository.findById(req.getDepartmentId())
-                    : Optional.empty();
-
-            if (requestedDeliveryTime != null) {
-                int leadHours = activeRecipe
-                        .map(RecipeEntity::getLeadTimeHours)
-                        .filter(h -> h != null && h > 0)
-                        .orElseGet(() -> dept.map(DepartmentEntity::getLeadTimeHours).orElse(0));
-                if (leadHours > 0) {
-                    earliestReadyAt = now.plusSeconds(leadHours * 3600L);
-                    leadTimeConflict = earliestReadyAt.isAfter(requestedDeliveryTime);
-                }
-            }
-
-            OrderLineEntity lineEntity = OrderLineEntity.builder()
-                    .orderLineId(lineId)
-                    .productId(req.getProductId())
-                    .productName(req.getProductName())
-                    .departmentId(req.getDepartmentId())
-                    .departmentName(dept.map(DepartmentEntity::getName).orElse(req.getDepartmentName()))
-                    .qty(req.getQty())
-                    .uom(req.getUom())
-                    .unitPrice(req.getUnitPrice())
-                    .leadTimeConflict(leadTimeConflict)
-                    .earliestReadyAt(earliestReadyAt)
-                    .notes(req.getLineNotes())
-                    .build();
-
-            domainLines.add(OrderLine.builder()
-                    .orderLineId(lineId)
-                    .productId(req.getProductId())
-                    .productName(req.getProductName())
-                    .departmentId(req.getDepartmentId())
-                    .qty(req.getQty())
-                    .uom(req.getUom())
-                    .unitPrice(req.getUnitPrice())
-                    .leadTimeConflict(leadTimeConflict)
-                    .earliestReadyAt(earliestReadyAt)
-                    .build());
-
-            lineEntities.add(lineEntity);
-        }
-
-        // Compute total
-        BigDecimal finalMultiplier = BigDecimal.ONE.add(rushPremiumPct.divide(BigDecimal.valueOf(100)));
-        BigDecimal total = domainLines.stream()
-                .map(l -> (l.getUnitPrice() != null ? l.getUnitPrice() : BigDecimal.ZERO)
-                        .multiply(BigDecimal.valueOf(l.getQty())).multiply(finalMultiplier))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        // Persist
-        int nextOrderNumber = orderRepository.findTopByTenantIdOrderByOrderNumberDesc(tenantId)
+        int nextOrderNumber = orderRepository.findTopByTenantIdOrderByOrderNumberDesc(req.tenantId())
                 .map(OrderEntity::getOrderNumber)
                 .map(n -> n + 1)
                 .orElse(1);
+
         OrderEntity entity = OrderEntity.builder()
                 .orderId(orderId)
                 .orderNumber(nextOrderNumber)
-                .tenantId(tenantId)
+                .tenantId(req.tenantId())
                 .siteId(siteId)
                 .customerId(customerId)
-                .customerName(customerName)
-                .createdByUserId(createdByUserId)
+                .customerName(req.customerName())
+                .createdByUserId(req.createdByUserId())
                 .status(Order.Status.DRAFT.name())
-                .requestedDeliveryTime(requestedDeliveryTime)
+                .requestedDeliveryTime(req.requestedDeliveryTime())
                 .orderPlacedAt(now)
-                .rushOrder(rushOrder)
-                .rushPremiumPct(rushPremiumPct)
-                .notes(notes)
+                .rushOrder(rush.rushOrder())
+                .rushPremiumPct(rush.rushPremiumPct())
+                .notes(req.notes())
                 .totalAmount(total)
                 .lines(new ArrayList<>())
                 .build();
 
-        // Link lines back to parent
         lineEntities.forEach(l -> l.setOrder(entity));
         entity.getLines().addAll(lineEntities);
 
         OrderEntity saved = orderRepository.save(entity);
+        recordHistory(req.tenantId(), orderId, STATUS_DRAFT, "Order placed");
 
-        recordHistory(tenantId, orderId, "DRAFT", "Order placed");
-
-        // Emit event
         eventStore.appendEvent(OrderCreatedEvent.builder()
                 .orderId(orderId)
-                .tenantId(tenantId)
-                .siteId(siteId != null ? siteId : "default")
+                .tenantId(req.tenantId())
+                .siteId(siteId)
                 .customerId(customerId)
-                .customerName(customerName)
-                .createdByUserId(createdByUserId)
-                .requestedDeliveryTime(requestedDeliveryTime)
-                .rushOrder(rushOrder)
-                .rushPremiumPct(rushPremiumPct)
-                .notes(notes)
-                .lines(domainLines)
+                .customerName(req.customerName())
+                .createdByUserId(req.createdByUserId())
+                .requestedDeliveryTime(req.requestedDeliveryTime())
+                .rushOrder(rush.rushOrder())
+                .rushPremiumPct(rush.rushPremiumPct())
+                .notes(req.notes())
+                .lines(toDomainLines(lineEntities))
                 .occurredAtUtc(now)
-                .idempotencyKey(idempotencyKey != null ? idempotencyKey : UUID.randomUUID().toString())
+                .idempotencyKey(req.idempotencyKey() != null ? req.idempotencyKey() : UUID.randomUUID().toString())
                 .build(), LedgerEntry.EntryClass.OPERATIONAL);
 
         return saved;
@@ -202,94 +139,35 @@ public class OrderService {
     // ─── UPDATE DRAFT ────────────────────────────────────────────────────────────
 
     @Transactional
-    public OrderEntity updateDraftOrder(String tenantId, String orderId,
-                                        String customerName, String customerId,
-                                        Instant requestedDeliveryTime,
-                                        boolean forceRush, BigDecimal customRushPremiumPct,
-                                        String notes, List<CreateOrderLineRequest> lineRequests) {
+    public OrderEntity updateDraftOrder(UpdateDraftOrderRequest req) {
 
-        OrderEntity order = findByTenantAndId(tenantId, orderId);
-
-        if (!"DRAFT".equals(order.getStatus())) {
+        OrderEntity order = findByTenantAndId(req.tenantId(), req.orderId());
+        if (!STATUS_DRAFT.equals(order.getStatus())) {
             throw new IllegalStateException("Only DRAFT orders can be edited");
         }
 
-        // Default customerId from name when not provided
-        String cid = (customerId != null && !customerId.isBlank()) ? customerId
-                : (customerName != null ? customerName.toLowerCase().replaceAll("[^a-z0-9]", "-") : order.getCustomerId());
+        String cid = resolveCustomerId(req.customerId(), req.customerName(), order.getCustomerId());
 
-        // Rush logic
         Instant now = Instant.now();
-        boolean rushOrder = forceRush || isAfterCutoff(now);
-        BigDecimal rushPremiumPct = BigDecimal.ZERO;
-        if (rushOrder) {
-            rushPremiumPct = customRushPremiumPct != null
-                    ? customRushPremiumPct : BigDecimal.valueOf(defaultRushPremiumPct);
-        }
+        RushInfo rush = resolveRushInfo(req.forceRush(), now, req.customRushPremiumPct());
 
-        // Update fields
-        order.setCustomerName(customerName);
+        order.setCustomerName(req.customerName());
         order.setCustomerId(cid);
-        order.setRequestedDeliveryTime(requestedDeliveryTime);
-        order.setRushOrder(rushOrder);
-        order.setRushPremiumPct(rushPremiumPct);
-        order.setNotes(notes);
+        order.setRequestedDeliveryTime(req.requestedDeliveryTime());
+        order.setRushOrder(rush.rushOrder());
+        order.setRushPremiumPct(rush.rushPremiumPct());
+        order.setNotes(req.notes());
 
-        // Replace lines (orphanRemoval handles deletion)
         order.getLines().clear();
 
-        BigDecimal finalMultiplier = BigDecimal.ONE.add(rushPremiumPct.divide(BigDecimal.valueOf(100)));
-        BigDecimal total = BigDecimal.ZERO;
+        List<OrderLineEntity> lineEntities = buildLineEntities(req.tenantId(), req.lineRequests(), req.requestedDeliveryTime(), now);
+        lineEntities.forEach(l -> l.setOrder(order));
+        order.getLines().addAll(lineEntities);
 
-        for (CreateOrderLineRequest req : lineRequests) {
-            String lineId = UUID.randomUUID().toString();
-
-            boolean leadTimeConflict = false;
-            Instant earliestReadyAt = null;
-
-            Optional<RecipeEntity> activeRecipe = (req.getProductId() != null)
-                    ? recipeRepository.findByTenantIdAndProductIdAndStatus(tenantId, req.getProductId(), Recipe.RecipeStatus.ACTIVE).stream().findFirst()
-                    : Optional.empty();
-            Optional<DepartmentEntity> dept = (req.getDepartmentId() != null)
-                    ? departmentRepository.findById(req.getDepartmentId())
-                    : Optional.empty();
-
-            if (requestedDeliveryTime != null) {
-                int leadHours = activeRecipe
-                        .map(RecipeEntity::getLeadTimeHours)
-                        .filter(h -> h != null && h > 0)
-                        .orElseGet(() -> dept.map(DepartmentEntity::getLeadTimeHours).orElse(0));
-                if (leadHours > 0) {
-                    earliestReadyAt = now.plusSeconds(leadHours * 3600L);
-                    leadTimeConflict = earliestReadyAt.isAfter(requestedDeliveryTime);
-                }
-            }
-
-            OrderLineEntity lineEntity = OrderLineEntity.builder()
-                    .orderLineId(lineId)
-                    .productId(req.getProductId())
-                    .productName(req.getProductName())
-                    .departmentId(req.getDepartmentId())
-                    .departmentName(dept.map(DepartmentEntity::getName).orElse(req.getDepartmentName()))
-                    .qty(req.getQty())
-                    .uom(req.getUom())
-                    .unitPrice(req.getUnitPrice())
-                    .leadTimeConflict(leadTimeConflict)
-                    .earliestReadyAt(earliestReadyAt)
-                    .notes(req.getLineNotes())
-                    .build();
-            lineEntity.setOrder(order);
-            order.getLines().add(lineEntity);
-
-            BigDecimal lineTotal = (req.getUnitPrice() != null ? req.getUnitPrice() : BigDecimal.ZERO)
-                    .multiply(BigDecimal.valueOf(req.getQty())).multiply(finalMultiplier);
-            total = total.add(lineTotal);
-        }
-
-        order.setTotalAmount(total);
+        order.setTotalAmount(computeTotal(lineEntities, rush.rushPremiumPct()));
 
         OrderEntity saved = orderRepository.save(order);
-        recordHistory(tenantId, orderId, "DRAFT", "Order edited");
+        recordHistory(req.tenantId(), req.orderId(), STATUS_DRAFT, "Order edited");
         return saved;
     }
 
@@ -312,7 +190,7 @@ public class OrderService {
         eventStore.appendEvent(OrderConfirmedEvent.builder()
                 .orderId(orderId)
                 .tenantId(tenantId)
-                .siteId(entity.getSiteId() != null ? entity.getSiteId() : "default")
+                .siteId(entity.getSiteId() != null ? entity.getSiteId() : SITE_DEFAULT)
                 .confirmedByUserId(confirmedByUserId)
                 .occurredAtUtc(now)
                 .idempotencyKey(UUID.randomUUID().toString())
@@ -342,7 +220,7 @@ public class OrderService {
         eventStore.appendEvent(OrderCancelledEvent.builder()
                 .orderId(orderId)
                 .tenantId(tenantId)
-                .siteId(entity.getSiteId() != null ? entity.getSiteId() : "default")
+                .siteId(entity.getSiteId() != null ? entity.getSiteId() : SITE_DEFAULT)
                 .cancelledByUserId(cancelledByUserId)
                 .reason(reason)
                 .occurredAtUtc(now)
@@ -464,6 +342,99 @@ public class OrderService {
     private boolean isAfterCutoff(Instant now) {
         ZonedDateTime local = now.atZone(ZoneId.of(orderTimezone));
         return local.getHour() >= cutoffHour;
+    }
+
+    // ─── ORDER LINE HELPERS ──────────────────────────────────────────────────────
+
+    private record RushInfo(boolean rushOrder, BigDecimal rushPremiumPct) {}
+
+    private String resolveCustomerId(String customerId, String customerName, String fallback) {
+        if (customerId != null && !customerId.isBlank()) return customerId;
+        if (customerName != null) return customerName.toLowerCase().replaceAll("[^a-z0-9]", "-");
+        return fallback;
+    }
+
+    private RushInfo resolveRushInfo(boolean forceRush, Instant now, BigDecimal customRushPremiumPct) {
+        boolean rush = forceRush || isAfterCutoff(now);
+        BigDecimal pct = BigDecimal.ZERO;
+        if (rush) {
+            pct = customRushPremiumPct != null ? customRushPremiumPct : BigDecimal.valueOf(defaultRushPremiumPct);
+        }
+        return new RushInfo(rush, pct);
+    }
+
+    private List<OrderLineEntity> buildLineEntities(String tenantId,
+                                                     List<CreateOrderLineRequest> lineRequests,
+                                                     Instant requestedDeliveryTime, Instant now) {
+        return lineRequests.stream()
+                .map(req -> buildSingleLineEntity(tenantId, req, requestedDeliveryTime, now))
+                .toList();
+    }
+
+    private OrderLineEntity buildSingleLineEntity(String tenantId, CreateOrderLineRequest req,
+                                                   Instant requestedDeliveryTime, Instant now) {
+        String lineId = UUID.randomUUID().toString();
+
+        Optional<RecipeEntity> activeRecipe = (req.getProductId() != null)
+                ? recipeRepository.findByTenantIdAndProductIdAndStatus(
+                        tenantId, req.getProductId(), Recipe.RecipeStatus.ACTIVE)
+                        .stream().findFirst()
+                : Optional.empty();
+        Optional<DepartmentEntity> dept = (req.getDepartmentId() != null)
+                ? departmentRepository.findById(req.getDepartmentId())
+                : Optional.empty();
+
+        boolean leadTimeConflict = false;
+        Instant earliestReadyAt = null;
+
+        if (requestedDeliveryTime != null) {
+            int leadHours = activeRecipe
+                    .map(RecipeEntity::getLeadTimeHours)
+                    .filter(h -> h != null && h > 0)
+                    .orElseGet(() -> dept.map(DepartmentEntity::getLeadTimeHours).orElse(0));
+            if (leadHours > 0) {
+                earliestReadyAt = now.plusSeconds(leadHours * 3600L);
+                leadTimeConflict = earliestReadyAt.isAfter(requestedDeliveryTime);
+            }
+        }
+
+        return OrderLineEntity.builder()
+                .orderLineId(lineId)
+                .productId(req.getProductId())
+                .productName(req.getProductName())
+                .departmentId(req.getDepartmentId())
+                .departmentName(dept.map(DepartmentEntity::getName).orElse(req.getDepartmentName()))
+                .qty(req.getQty())
+                .uom(req.getUom())
+                .unitPrice(req.getUnitPrice())
+                .leadTimeConflict(leadTimeConflict)
+                .earliestReadyAt(earliestReadyAt)
+                .notes(req.getLineNotes())
+                .build();
+    }
+
+    private List<OrderLine> toDomainLines(List<OrderLineEntity> entities) {
+        return entities.stream()
+                .map(e -> OrderLine.builder()
+                        .orderLineId(e.getOrderLineId())
+                        .productId(e.getProductId())
+                        .productName(e.getProductName())
+                        .departmentId(e.getDepartmentId())
+                        .qty(e.getQty())
+                        .uom(e.getUom())
+                        .unitPrice(e.getUnitPrice())
+                        .leadTimeConflict(e.isLeadTimeConflict())
+                        .earliestReadyAt(e.getEarliestReadyAt())
+                        .build())
+                .toList();
+    }
+
+    private BigDecimal computeTotal(List<OrderLineEntity> lines, BigDecimal rushPremiumPct) {
+        BigDecimal multiplier = BigDecimal.ONE.add(rushPremiumPct.divide(BigDecimal.valueOf(100)));
+        return lines.stream()
+                .map(l -> (l.getUnitPrice() != null ? l.getUnitPrice() : BigDecimal.ZERO)
+                        .multiply(BigDecimal.valueOf(l.getQty())).multiply(multiplier))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     // ─── REQUEST DTOs ─────────────────────────────────────────────────────────────

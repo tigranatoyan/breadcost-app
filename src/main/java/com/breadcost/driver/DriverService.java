@@ -1,6 +1,5 @@
 package com.breadcost.driver;
 
-import com.breadcost.delivery.DeliveryRunEntity;
 import com.breadcost.delivery.DeliveryRunOrderEntity;
 import com.breadcost.delivery.DeliveryRunOrderRepository;
 import com.breadcost.delivery.DeliveryRunRepository;
@@ -22,6 +21,8 @@ import java.util.*;
 @RequiredArgsConstructor
 @Slf4j
 public class DriverService {
+
+    private static final String SESSION_NOT_FOUND = "Session not found: ";
 
     private final DriverSessionRepository sessionRepo;
     private final DriverStopUpdateRepository stopUpdateRepo;
@@ -64,7 +65,7 @@ public class DriverService {
                                                double lat, double lng) {
         DriverSessionEntity session = sessionRepo.findById(sessionId)
                 .filter(s -> tenantId.equals(s.getTenantId()))
-                .orElseThrow(() -> new NoSuchElementException("Session not found: " + sessionId));
+                .orElseThrow(() -> new NoSuchElementException(SESSION_NOT_FOUND + sessionId));
         session.setLat(lat);
         session.setLng(lng);
         return sessionRepo.save(session);
@@ -74,7 +75,7 @@ public class DriverService {
     public DriverSessionEntity endSession(String tenantId, String sessionId) {
         DriverSessionEntity session = sessionRepo.findById(sessionId)
                 .filter(s -> tenantId.equals(s.getTenantId()))
-                .orElseThrow(() -> new NoSuchElementException("Session not found: " + sessionId));
+                .orElseThrow(() -> new NoSuchElementException(SESSION_NOT_FOUND + sessionId));
         session.setStatus("ENDED");
         session.setEndedAt(Instant.now());
         return sessionRepo.save(session);
@@ -86,7 +87,7 @@ public class DriverService {
     public List<DeliveryRunOrderEntity> getManifest(String tenantId, String sessionId) {
         DriverSessionEntity session = sessionRepo.findById(sessionId)
                 .filter(s -> tenantId.equals(s.getTenantId()))
-                .orElseThrow(() -> new NoSuchElementException("Session not found: " + sessionId));
+                .orElseThrow(() -> new NoSuchElementException(SESSION_NOT_FOUND + sessionId));
         return runOrderRepo.findByRunId(session.getRunId());
     }
 
@@ -97,9 +98,9 @@ public class DriverService {
     public DriverStopUpdateEntity updateStop(String tenantId, String sessionId,
                                               String runOrderId, String action,
                                               String notes, Double lat, Double lng) {
-        DriverSessionEntity session = sessionRepo.findById(sessionId)
+        sessionRepo.findById(sessionId)
                 .filter(s -> tenantId.equals(s.getTenantId()))
-                .orElseThrow(() -> new NoSuchElementException("Session not found: " + sessionId));
+                .orElseThrow(() -> new NoSuchElementException(SESSION_NOT_FOUND + sessionId));
 
         // Update the delivery run order status
         DeliveryRunOrderEntity runOrder = runOrderRepo.findById(runOrderId)

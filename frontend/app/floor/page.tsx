@@ -100,7 +100,7 @@ const woStatusIcon: Record<string, React.ReactNode> = {
 function WOPanel({
   wo, planId, recipe, techSteps, stepsLoading,
   onClose, onAction, actionBusy,
-}: {
+}: Readonly<{
   wo: WorkOrder;
   planId: string;
   recipe: RecipeDetail | null;
@@ -109,7 +109,7 @@ function WOPanel({
   onClose: () => void;
   onAction: (_planId: string, _woId: string, _action: string, _body?: Record<string, unknown>) => void;
   actionBusy: boolean;
-}) {
+}>) {
   const t = useT();
   const [tab, setTab] = useState<'steps' | 'recipe'>(techSteps.length > 0 ? 'steps' : 'recipe');
   const [confirmed, setConfirmed] = useState<Record<number, boolean>>(() => getConfirmed(wo.workOrderId, techSteps));
@@ -173,9 +173,10 @@ function WOPanel({
           {/* â”€â”€ Technology Steps â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {tab === 'steps' && (
             <>
-              {stepsLoading ? (
+              {stepsLoading && (
                 <div className="flex justify-center py-12"><Spinner /></div>
-              ) : techSteps.length === 0 ? (
+              )}
+              {!stepsLoading && techSteps.length === 0 && (
                 <div className="text-center py-12">
                   <div className="text-3xl mb-2">ðŸ“‹</div>
                   <div className="text-sm font-medium text-gray-600">{t('floor.noStepsDefined')}</div>
@@ -187,7 +188,8 @@ function WOPanel({
                     </div>
                   )}
                 </div>
-              ) : (
+              )}
+              {!stepsLoading && techSteps.length > 0 && (
                 <div className="space-y-3">
                   {allStepsDone && (
                     <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-2 text-sm text-green-700 font-medium">
@@ -233,7 +235,7 @@ function WOPanel({
                                   <Clock3 className="h-3.5 w-3.5" /> {step.durationMinutes} min
                                 </span>
                               )}
-                              {step.temperatureCelsius !== null && step.temperatureCelsius !== undefined && (
+                              {step.temperatureCelsius != null && (
                                 <span className="flex items-center gap-1">
                                   <Thermometer className="h-3.5 w-3.5" /> {step.temperatureCelsius}°C
                                 </span>
@@ -292,13 +294,13 @@ function WOPanel({
                           </tr>
                         </thead>
                         <tbody className="divide-y">
-                          {recipe.ingredients.map((ing, i) => {
+                          {recipe.ingredients.map((ing) => {
                             const perBatch = ing.unitMode === 'PIECE' ? `${ing.pieceQty} ${t('units.PCS')}` : `${ing.recipeQty} ${t(`units.${ing.recipeUom}` as any) || ing.recipeUom}`;
                             const totalAmt = ing.unitMode === 'PIECE'
                               ? `${(ing.pieceQty * wo.batchCount).toFixed(0)} ${t('units.PCS')}`
                               : `${(ing.recipeQty * wo.batchCount).toFixed(1)} ${t(`units.${ing.recipeUom}` as any) || ing.recipeUom}`;
                             return (
-                              <tr key={i}>
+                              <tr key={ing.itemName}>
                                 <td className="py-2 font-medium">{ing.itemName || 'â€”'}</td>
                                 <td className="py-2 text-right text-gray-500">{perBatch}</td>
                                 <td className="py-2 text-right font-semibold">{totalAmt}</td>

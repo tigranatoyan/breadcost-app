@@ -26,6 +26,8 @@ public class RabbitMQConfig {
     public static final String DLQ = "events.dlq";
     public static final String DLX = "breadcost.events.dlx";
 
+    private static final String DLX_HEADER = "x-dead-letter-exchange";
+
     // ── Exchange ──────────────────────────────────────────────────────────────
 
     @Bean
@@ -43,21 +45,21 @@ public class RabbitMQConfig {
     @Bean
     public Queue highPriorityQueue() {
         return QueueBuilder.durable(QUEUE_HIGH)
-                .withArgument("x-dead-letter-exchange", DLX)
+                .withArgument(DLX_HEADER, DLX)
                 .build();
     }
 
     @Bean
     public Queue normalPriorityQueue() {
         return QueueBuilder.durable(QUEUE_NORMAL)
-                .withArgument("x-dead-letter-exchange", DLX)
+                .withArgument(DLX_HEADER, DLX)
                 .build();
     }
 
     @Bean
     public Queue lowPriorityQueue() {
         return QueueBuilder.durable(QUEUE_LOW)
-                .withArgument("x-dead-letter-exchange", DLX)
+                .withArgument(DLX_HEADER, DLX)
                 .build();
     }
 

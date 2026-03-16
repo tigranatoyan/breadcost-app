@@ -12,7 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * BC-1604: Report export (Excel and CSV).
  * Tests: export Excel returns bytes, export CSV returns CSV bytes, content-disposition set.
  */
-public class ReportExportTest extends FunctionalTestBase {
+class ReportExportTest extends FunctionalTestBase {
 
     String adminToken() { return bearer("admin1"); }
 

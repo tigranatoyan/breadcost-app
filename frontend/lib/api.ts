@@ -13,13 +13,13 @@ export async function apiFetch<T = unknown>(
     headers: {
       'Content-Type': 'application/json',
       ...(auth ? { Authorization: auth } : {}),
-      ...(options?.headers ?? {}),
+      ...options?.headers,
     },
   });
 
   if (res.status === 401) {
     clearCredentials();
-    if (typeof window !== 'undefined') window.location.href = '/login';
+    if (globalThis.window !== undefined) globalThis.location.href = '/login';
     throw new Error('Unauthorized');
   }
 

@@ -155,8 +155,9 @@ class RecipeServiceTest {
                 .recipeId("r1").tenantId("t1").status(Recipe.RecipeStatus.ACTIVE).build();
         when(recipeRepo.findById("r1")).thenReturn(Optional.of(recipe));
 
+        List<RecipeService.IngredientRequest> emptyList = List.of();
         assertThrows(IllegalStateException.class,
-                () -> svc.updateIngredients("t1", "r1", List.of()));
+                () -> svc.updateIngredients("t1", "r1", emptyList));
     }
 
     // ── ingredient validation ────────────────────────────────────────────────

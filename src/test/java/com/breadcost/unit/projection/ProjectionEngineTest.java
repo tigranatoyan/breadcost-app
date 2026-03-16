@@ -3,7 +3,6 @@ package com.breadcost.unit.projection;
 import com.breadcost.domain.LedgerEntry;
 import com.breadcost.events.DomainEvent;
 import com.breadcost.eventstore.EventStore;
-import com.breadcost.eventstore.StoredEvent;
 import com.breadcost.projections.ProjectionEngine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +18,7 @@ class ProjectionEngineTest {
 
     @BeforeEach
     void setUp() {
-        eventStore = new EventStore(new com.fasterxml.jackson.databind.ObjectMapper());
+        eventStore = new EventStore();
         engine = new ProjectionEngine(eventStore);
         // Don't call initialize() to avoid @PostConstruct side effects; register manually
         eventStore.registerListener(engine);

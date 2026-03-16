@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -37,12 +36,9 @@ class GapClosureTest extends FunctionalTestBase {
     @Autowired private ProductRepository productRepository;
     @Autowired private RecipeRepository recipeRepository;
     @Autowired private DepartmentRepository departmentRepository;
-    @Autowired private OrderRepository orderRepository;
     @Autowired private InventoryProjection inventoryProjection;
-    @Autowired private InventoryService inventoryService;
     @Autowired private ProductionPlanService planService;
     @Autowired private InvoiceService invoiceService;
-    @Autowired private InvoiceRepository invoiceRepository;
     @Autowired private SubscriptionService subscriptionService;
     @Autowired private TenantSubscriptionRepository tenantSubRepo;
     @Autowired private PurchaseOrderService poService;
@@ -147,11 +143,6 @@ class GapClosureTest extends FunctionalTestBase {
         // Create plan → generate WOs → approve → start → start WO
         var plan = planService.createPlan(TENANT, "MAIN",
                 LocalDate.now(), ProductionPlan.Shift.MORNING, "yield test", "admin1");
-
-        // Create order so that generateWorkOrders picks it up
-        var orderService = new OrderService(orderRepository, departmentRepository,
-                productRepository, recipeRepository,
-                null, null, null, null, null, null, null);
 
         // Manually add a WO to the plan
         var wo = WorkOrderEntity.builder()
@@ -318,7 +309,7 @@ class GapClosureTest extends FunctionalTestBase {
 
         // Outstanding balance should decrease
         BigDecimal balanceAfter = customerRepository.findById(customerId).get().getOutstandingBalance();
-        assertTrue(balanceAfter.compareTo(balanceBefore.subtract(creditAmount)) == 0);
+        assertEquals(0, balanceAfter.compareTo(balanceBefore.subtract(creditAmount)));
     }
 
     // ═══════════════════════════════════════════════════════════════════════

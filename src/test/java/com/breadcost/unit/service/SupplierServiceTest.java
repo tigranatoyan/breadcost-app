@@ -95,8 +95,9 @@ class SupplierServiceTest {
                 .thenReturn(Optional.of(SupplierEntity.builder().supplierId("s1").tenantId("t1").build()));
         when(catalogRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        var item = svc.addCatalogItem("t1", "s1", "flour", "Flour",
-                null, null, 0, 0, "KG");
+        var item = svc.addCatalogItem(new SupplierService.CatalogItemRequest(
+                "t1", "s1", "flour", "Flour",
+                null, null, 0, 0, "KG"));
 
         assertEquals(BigDecimal.ZERO, item.getUnitPrice());
         assertEquals("USD", item.getCurrency());
@@ -110,8 +111,9 @@ class SupplierServiceTest {
                 .thenReturn(Optional.of(SupplierEntity.builder().supplierId("s1").tenantId("t1").build()));
         when(catalogRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        var item = svc.addCatalogItem("t1", "s1", "flour", "Flour",
-                new BigDecimal("2.50"), "AMD", 3, 50, "KG");
+        var item = svc.addCatalogItem(new SupplierService.CatalogItemRequest(
+                "t1", "s1", "flour", "Flour",
+                new BigDecimal("2.50"), "AMD", 3, 50, "KG"));
 
         assertEquals(new BigDecimal("2.50"), item.getUnitPrice());
         assertEquals("AMD", item.getCurrency());

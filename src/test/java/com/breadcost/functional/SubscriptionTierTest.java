@@ -1,7 +1,6 @@
 package com.breadcost.functional;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.Map;
 
@@ -11,7 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * BC-1701: Subscription tier assignment.
  * Tests: list tiers returns 3, assign tier to tenant, retrieve current sub, reassign updates tier.
  */
-public class SubscriptionTierTest extends FunctionalTestBase {
+class SubscriptionTierTest extends FunctionalTestBase {
 
     String adminToken() { return bearer("admin1"); }
 

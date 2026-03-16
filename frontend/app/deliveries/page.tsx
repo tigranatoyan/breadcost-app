@@ -209,9 +209,11 @@ export default function DeliveriesPage() {
       {showAssign && (
         <Modal title={t('deliveries.assignOrders')} onClose={() => setShowAssign(null)}>
           <p className="text-sm text-gray-500 mb-3">{t('deliveries.assignHint')}</p>
-          {loadingReady ? <Spinner /> : readyOrders.length === 0 ? (
+          {loadingReady && <Spinner />}
+          {!loadingReady && readyOrders.length === 0 && (
             <p className="text-sm text-gray-400 italic">{t('deliveries.noReadyOrders')}</p>
-          ) : (
+          )}
+          {!loadingReady && readyOrders.length > 0 && (
             <div className="max-h-64 overflow-y-auto border rounded divide-y">
               {readyOrders.map(o => (
                 <label key={o.orderId} className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
@@ -260,9 +262,9 @@ export default function DeliveriesPage() {
                   o.address || '—',
                   <Badge key={`os-${o.orderId}`} status={o.status || ''} />,
                   <div key={`oa-${o.orderId}`} className="flex gap-1">
-                    <Button variant="danger" size="xs" onClick={() => failDelivery(detailRun!.runId, o.orderId)}>{t('deliveries.fail')}</Button>
-                    <Button variant="secondary" size="xs" onClick={() => redelivery(detailRun!.runId, o.orderId)}>{t('deliveries.redeliver')}</Button>
-                    <Button variant="secondary" size="xs" onClick={() => waive(detailRun!.runId, o.orderId)}>{t('deliveries.waive')}</Button>
+                    <Button variant="danger" size="xs" onClick={() => { if (detailRun) failDelivery(detailRun.runId, o.orderId); }}>{t('deliveries.fail')}</Button>
+                    <Button variant="secondary" size="xs" onClick={() => { if (detailRun) redelivery(detailRun.runId, o.orderId); }}>{t('deliveries.redeliver')}</Button>
+                    <Button variant="secondary" size="xs" onClick={() => { if (detailRun) waive(detailRun.runId, o.orderId); }}>{t('deliveries.waive')}</Button>
                   </div>,
                 ])}
                 empty={t('deliveries.noOrders')}

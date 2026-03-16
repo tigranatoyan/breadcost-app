@@ -4,7 +4,6 @@ import com.breadcost.domain.LedgerEntry;
 import com.breadcost.events.DomainEvent;
 import com.breadcost.eventstore.EventStore;
 import com.breadcost.eventstore.StoredEvent;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +19,7 @@ class EventStoreTest {
 
     @BeforeEach
     void setUp() {
-        eventStore = new EventStore(new ObjectMapper());
+        eventStore = new EventStore();
     }
 
     private DomainEvent testEvent(String tenantId, String type) {

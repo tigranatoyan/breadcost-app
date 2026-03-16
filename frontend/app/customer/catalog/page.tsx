@@ -42,7 +42,7 @@ export default function CatalogPage() {
 
   // Load cart from sessionStorage on mount
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (globalThis.window === undefined) return;
     const raw = sessionStorage.getItem('bc_cart');
     if (raw) {
       try {
@@ -228,7 +228,7 @@ export default function CatalogPage() {
           {products.totalPages > 1 && (
             <div className="mt-6 flex items-center justify-between">
               <p className="text-sm text-gray-500">
-                {products.totalElements} product{products.totalElements !== 1 ? 's' : ''}
+                {products.totalElements} product{products.totalElements === 1 ? '' : 's'}
                 {' · '}Page {products.page + 1} of {products.totalPages}
               </p>
               <div className="flex items-center gap-1">

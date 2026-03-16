@@ -146,7 +146,7 @@ class LoyaltyServiceTest {
         when(tierRepo.findByTenantIdAndName("t1", "Gold")).thenReturn(Optional.empty());
         when(tierRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        var result = svc.saveTier("t1", "Gold", 1000L, 10.0, 3.0, "Free delivery");
+        svc.saveTier("t1", "Gold", 1000L, 10.0, 3.0, "Free delivery");
 
         verify(tierRepo).save(argThat(t -> "Gold".equals(t.getName()) && t.getMinPoints() == 1000L));
     }

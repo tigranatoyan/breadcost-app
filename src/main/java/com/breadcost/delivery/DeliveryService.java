@@ -52,6 +52,10 @@ public class DeliveryService {
 
     @Transactional
     public DeliveryRunOrderEntity assignOrder(String tenantId, String runId, String orderId) {
+        return doAssignOrder(tenantId, runId, orderId);
+    }
+
+    private DeliveryRunOrderEntity doAssignOrder(String tenantId, String runId, String orderId) {
         getRunOrThrow(tenantId, runId);  // verify run exists
 
         DeliveryRunOrderEntity dro = DeliveryRunOrderEntity.builder()
@@ -131,7 +135,7 @@ public class DeliveryService {
         orderRepository.save(original);
 
         // Assign to new run
-        return assignOrder(tenantId, newRunId, orderId);
+        return doAssignOrder(tenantId, newRunId, orderId);
     }
 
     // ── BC-1405: Split courier charge ─────────────────────────────────────────
@@ -139,7 +143,6 @@ public class DeliveryService {
     /**
      * Recalculate courier charge per order as equal split from run total.
      */
-    @Transactional
     public void recalculateCourierSplit(String tenantId, String runId) {
         DeliveryRunEntity run = getRunOrThrow(tenantId, runId);
         List<DeliveryRunOrderEntity> orders = orderRepository.findByRunId(runId);

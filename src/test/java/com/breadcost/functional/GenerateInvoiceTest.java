@@ -13,7 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * BC-1501: Generate invoice from delivered order.
  * Tests: invoice creation, line items, duplicate prevention, calculated totals.
  */
-public class GenerateInvoiceTest extends FunctionalTestBase {
+class GenerateInvoiceTest extends FunctionalTestBase {
 
     String adminToken() { return bearer("admin1"); }
 

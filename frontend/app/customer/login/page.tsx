@@ -185,13 +185,13 @@ export default function CustomerLoginPage() {
           {tab === 'login' && (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input className="input" type="email" required value={email}
+                <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input id="login-email" className="input" type="email" required value={email}
                        onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                <input className="input" type="password" required value={password}
+                <label htmlFor="login-password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input id="login-password" className="input" type="password" required value={password}
                        onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
               </div>
               <button type="submit" className="btn-primary w-full justify-center py-2.5" disabled={loading}>
@@ -208,18 +208,18 @@ export default function CustomerLoginPage() {
           {tab === 'register' && (
             <form onSubmit={handleRegister} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                <input className="input" type="text" required value={regName}
+                <label htmlFor="register-name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <input id="register-name" className="input" type="text" required value={regName}
                        onChange={(e) => setRegName(e.target.value)} autoComplete="name" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input className="input" type="email" required value={regEmail}
+                <label htmlFor="register-email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input id="register-email" className="input" type="email" required value={regEmail}
                        onChange={(e) => setRegEmail(e.target.value)} autoComplete="email" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                <input className="input" type="password" required minLength={6} value={regPassword}
+                <label htmlFor="register-password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input id="register-password" className="input" type="password" required minLength={6} value={regPassword}
                        onChange={(e) => setRegPassword(e.target.value)} autoComplete="new-password" />
               </div>
               <button type="submit" className="btn-primary w-full justify-center py-2.5" disabled={loading}>
@@ -235,8 +235,8 @@ export default function CustomerLoginPage() {
                 Enter your email and we&apos;ll send you a reset token.
               </p>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input className="input" type="email" required value={forgotEmail}
+                <label htmlFor="forgot-email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input id="forgot-email" className="input" type="email" required value={forgotEmail}
                        onChange={(e) => setForgotEmail(e.target.value)} autoComplete="email" />
               </div>
               <button type="submit" className="btn-primary w-full justify-center py-2.5" disabled={loading}>
@@ -256,13 +256,13 @@ export default function CustomerLoginPage() {
                 Enter the reset token and your new password.
               </p>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Reset Token</label>
-                <input className="input font-mono text-xs" type="text" required value={resetToken}
+                <label htmlFor="reset-token" className="block text-sm font-medium text-gray-700 mb-1">Reset Token</label>
+                <input id="reset-token" className="input font-mono text-xs" type="text" required value={resetToken}
                        onChange={(e) => setResetToken(e.target.value)} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-                <input className="input" type="password" required minLength={6} value={newPassword}
+                <label htmlFor="reset-new-password" className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                <input id="reset-new-password" className="input" type="password" required minLength={6} value={newPassword}
                        onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" />
               </div>
               <button type="submit" className="btn-primary w-full justify-center py-2.5" disabled={loading}>

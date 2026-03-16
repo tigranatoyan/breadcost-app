@@ -28,6 +28,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Slf4j
 public class UserController {
 
+    private static final String PROTECTED_HASH = "[protected]";
+
     private final UserService userService;
 
     @Data
@@ -59,7 +61,7 @@ public class UserController {
     public ResponseEntity<List<UserEntity>> getUsers(@RequestParam String tenantId) {
         List<UserEntity> users = userService.getUsers(tenantId);
         // Mask password hashes before returning
-        users.forEach(u -> u.setPasswordHash("[protected]"));
+        users.forEach(u -> u.setPasswordHash(PROTECTED_HASH));
         return ResponseEntity.ok(users);
     }
 
@@ -67,7 +69,7 @@ public class UserController {
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<UserEntity> getUser(@RequestParam String tenantId, @PathVariable String userId) {
         return userService.getUserById(tenantId, userId)
-                .map(u -> { u.setPasswordHash("[protected]"); return ResponseEntity.ok(u); })
+                .map(u -> { u.setPasswordHash(PROTECTED_HASH); return ResponseEntity.ok(u); })
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -78,7 +80,7 @@ public class UserController {
         UserEntity created = userService.createUser(
                 req.getTenantId(), req.getUsername(), req.getPassword(),
                 req.getDisplayName(), req.getRoles(), req.getDepartmentId());
-        created.setPasswordHash("[protected]");
+        created.setPasswordHash(PROTECTED_HASH);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -91,7 +93,7 @@ public class UserController {
         UserEntity updated = userService.updateUser(
                 tenantId, userId, req.getDisplayName(),
                 req.getRoles(), req.getDepartmentId(), req.getActive());
-        updated.setPasswordHash("[protected]");
+        updated.setPasswordHash(PROTECTED_HASH);
         return ResponseEntity.ok(updated);
     }
 

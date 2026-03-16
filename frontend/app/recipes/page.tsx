@@ -72,7 +72,9 @@ const newStepForm = (recipeId: string, nextNum: number) => ({
   instruments: '', durationMinutes: 30, temperatureCelsius: '' as string | number,
 });
 
+let _ingKeySeq = 0;
 const newIng = () => ({
+  _rowKey: `ing-${++_ingKeySeq}`,
   itemId: '',
   itemName: '',
   unitMode: 'WEIGHT',
@@ -129,6 +131,7 @@ export default function RecipesPage() {
     setEditIngRecipeId(r.recipeId);
     setEditIngRows(
       (r.ingredients ?? []).map((ing) => ({
+        _rowKey: ing.ingredientId,
         itemId: ing.itemId,
         itemName: ing.itemName ?? '',
         unitMode: ing.unitMode ?? 'WEIGHT',
@@ -145,6 +148,23 @@ export default function RecipesPage() {
     setEditIngRecipeId(null);
     setEditIngRows([]);
   };
+
+  const updateEditIngField = useCallback((idx: number, field: string, value: unknown) => {
+    setEditIngRows((rows) => rows.map((r2, i) => i === idx ? { ...r2, [field]: value } : r2));
+  }, []);
+
+  const updateEditIngItem = useCallback((idx: number, itemId: string) => {
+    const item = allItems.find(it => it.itemId === itemId);
+    setEditIngRows((rows) => rows.map((r2, i) => i === idx ? { ...r2, itemId, itemName: item?.name || r2.itemName } : r2));
+  }, [allItems]);
+
+  const removeEditIngRow = useCallback((idx: number) => {
+    setEditIngRows((rows) => rows.filter((_, i) => i !== idx));
+  }, []);
+
+  const switchTab = useCallback((recipeId: string, tabKey: 'ingredients' | 'steps') => {
+    setActiveTab((prev) => ({ ...prev, [recipeId]: tabKey }));
+  }, []);
 
   /* ── Template actions ────────────────────────────────────────────────── */
   const loadTemplates = useCallback(async () => {
@@ -204,7 +224,7 @@ export default function RecipesPage() {
       setSavingIngredients(true);
       await apiFetch(`/v1/recipes/${recipeId}/ingredients?tenantId=${TENANT_ID}`, {
         method: 'PUT',
-        body: JSON.stringify(editIngRows),
+        body: JSON.stringify(editIngRows.map(({ _rowKey, ...rest }) => rest)),
       });
       cancelEditIngredients();
       // Reload recipes for current product
@@ -306,10 +326,7 @@ export default function RecipesPage() {
       activities: step.activities ?? '',
       instruments: step.instruments ?? '',
       durationMinutes: step.durationMinutes ?? 30,
-      temperatureCelsius:
-        step.temperatureCelsius !== null && step.temperatureCelsius !== undefined
-          ? step.temperatureCelsius
-          : '',
+      temperatureCelsius: step.temperatureCelsius ?? '',
     });
     setEditStepId(step.stepId);
     setStepOpen(true);
@@ -322,7 +339,7 @@ export default function RecipesPage() {
       const payload = {
         ...stepForm,
         durationMinutes: stepForm.durationMinutes || null,
-        temperatureCelsius: stepForm.temperatureCelsius !== '' ? Number(stepForm.temperatureCelsius) : null,
+        temperatureCelsius: stepForm.temperatureCelsius === '' ? null : Number(stepForm.temperatureCelsius),
       };
       if (editStepId) {
         await apiFetch(`/v1/technology-steps/${editStepId}?tenantId=${TENANT_ID}`, {
@@ -405,6 +422,7 @@ export default function RecipesPage() {
           tenantId: TENANT_ID,
           productId: selectedPid,
           ...form,
+          ingredients: form.ingredients.map(({ _rowKey, ...rest }) => rest),
         }),
       });
       setOpen(false);
@@ -415,6 +433,12 @@ export default function RecipesPage() {
       setSaving(false);
     }
   };
+
+  const stepSubmitLabel = (() => {
+    if (savingStep) return t('common.saving');
+    if (editStepId) return t('common.save');
+    return t('recipes.addStep');
+  })();
 
   return (
     <div className="max-w-[1800px]">
@@ -515,9 +539,8 @@ export default function RecipesPage() {
             </div>
           )}
 
-          {loading ? (
-            <Spinner />
-          ) : selectedPid ? (
+          {loading && <Spinner />}
+          {!loading && selectedPid && (
             <div className="space-y-2">
               {recipes.length === 0 ? (
                 <div className="text-sm text-gray-400 py-12 text-center rounded-2xl border border-gray-200 bg-white shadow-sm">
@@ -529,8 +552,9 @@ export default function RecipesPage() {
                   const recipeSteps = steps[r.recipeId] ?? [];
                   return (
                   <div key={r.recipeId} className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-                    <div
-                      className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-gray-50 rounded-t-2xl"
+                    <button
+                      type="button"
+                      className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-gray-50 rounded-t-2xl w-full text-left bg-transparent border-0"
                       onClick={() => toggleExpand(r.recipeId)}
                     >
                       <span className="font-medium text-sm">v{r.version}</span>
@@ -570,7 +594,7 @@ export default function RecipesPage() {
                       <span className="text-gray-400">
                         {expanded === r.recipeId ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                       </span>
-                    </div>
+                    </button>
 
                     {expanded === r.recipeId && (
                       <div className="border-t">
@@ -584,7 +608,7 @@ export default function RecipesPage() {
                                   ? 'border-blue-600 text-blue-700'
                                   : 'border-transparent text-gray-500 hover:text-gray-700'
                               }`}
-                              onClick={() => setActiveTab((prev) => ({ ...prev, [r.recipeId]: tabKey }))}
+                              onClick={() => switchTab(r.recipeId, tabKey)}
                             >
                               {tabKey === 'ingredients'
                                 ? `${t('recipes.ingredients')} (${r.ingredients?.length ?? 0})`
@@ -629,13 +653,10 @@ export default function RecipesPage() {
                                   </thead>
                                   <tbody className="divide-y divide-gray-100">
                                     {editIngRows.map((row, idx) => (
-                                      <tr key={idx}>
+                                      <tr key={row._rowKey}>
                                         <td className="py-1 pr-2">
                                           <select className="input text-xs py-0.5" value={row.itemId}
-                                            onChange={(e) => {
-                                              const item = allItems.find(it => it.itemId === e.target.value);
-                                              setEditIngRows((rows) => rows.map((r2, i) => i === idx ? { ...r2, itemId: e.target.value, itemName: item?.name || r2.itemName } : r2));
-                                            }}>
+                                            onChange={(e) => updateEditIngItem(idx, e.target.value)}>
                                             <option value="">—</option>
                                             {allItems.map(it => <option key={it.itemId} value={it.itemId}>{it.name}</option>)}
                                           </select>
@@ -645,27 +666,27 @@ export default function RecipesPage() {
                                         </td>
                                         <td className="py-1 pr-2">
                                           <input className="input text-xs py-0.5" type="number" value={row.recipeQty}
-                                            onChange={(e) => setEditIngRows((rows) => rows.map((r2, i) => i === idx ? { ...r2, recipeQty: Number(e.target.value) } : r2))} />
+                                            onChange={(e) => updateEditIngField(idx, 'recipeQty', Number(e.target.value))} />
                                         </td>
                                         <td className="py-1 pr-2">
                                           <input className="input text-xs py-0.5" value={row.recipeUom}
-                                            onChange={(e) => setEditIngRows((rows) => rows.map((r2, i) => i === idx ? { ...r2, recipeUom: e.target.value } : r2))} />
+                                            onChange={(e) => updateEditIngField(idx, 'recipeUom', e.target.value)} />
                                         </td>
                                         <td className="py-1 pr-2">
                                           <input className="input text-xs py-0.5" type="number" value={row.purchasingUnitSize}
-                                            onChange={(e) => setEditIngRows((rows) => rows.map((r2, i) => i === idx ? { ...r2, purchasingUnitSize: Number(e.target.value) } : r2))} />
+                                            onChange={(e) => updateEditIngField(idx, 'purchasingUnitSize', Number(e.target.value))} />
                                         </td>
                                         <td className="py-1 pr-2">
                                           <input className="input text-xs py-0.5" value={row.purchasingUom}
-                                            onChange={(e) => setEditIngRows((rows) => rows.map((r2, i) => i === idx ? { ...r2, purchasingUom: e.target.value } : r2))} />
+                                            onChange={(e) => updateEditIngField(idx, 'purchasingUom', e.target.value)} />
                                         </td>
                                         <td className="py-1 pr-2">
                                           <input className="input text-xs py-0.5" type="number" step="0.01" value={row.wasteFactor}
-                                            onChange={(e) => setEditIngRows((rows) => rows.map((r2, i) => i === idx ? { ...r2, wasteFactor: Number(e.target.value) } : r2))} />
+                                            onChange={(e) => updateEditIngField(idx, 'wasteFactor', Number(e.target.value))} />
                                         </td>
                                         <td className="py-1">
                                           <button className="text-red-500 hover:text-red-700 text-xs"
-                                            onClick={() => setEditIngRows((rows) => rows.filter((_, i) => i !== idx))}>
+                                            onClick={() => removeEditIngRow(idx)}>
                                             ✕
                                           </button>
                                         </td>
@@ -743,13 +764,15 @@ export default function RecipesPage() {
                                 {t('recipes.addStep')}
                               </Button>
                             </div>
-                            {loadingSteps === r.recipeId ? (
+                            {loadingSteps === r.recipeId && (
                               <p className="text-xs text-gray-400">{t('common.loading')}</p>
-                            ) : recipeSteps.length === 0 ? (
+                            )}
+                            {loadingSteps !== r.recipeId && recipeSteps.length === 0 && (
                               <p className="text-xs text-gray-400 py-4 text-center border rounded-lg bg-gray-50">
                                 {t('recipes.noSteps')}
                               </p>
-                            ) : (
+                            )}
+                            {loadingSteps !== r.recipeId && recipeSteps.length > 0 && (
                               <div className="space-y-2">
                                 {recipeSteps.map((step) => (
                                   <div key={step.stepId} className="flex gap-3 border rounded-lg p-3 bg-gray-50 text-xs">
@@ -784,7 +807,8 @@ export default function RecipesPage() {
                 })
               )}
             </div>
-          ) : (
+          )}
+          {!loading && !selectedPid && (
             <div className="text-sm text-gray-400 py-12 text-center border rounded-xl bg-white">
               Select a product above to view its recipes.
             </div>
@@ -885,7 +909,7 @@ export default function RecipesPage() {
               </div>
               <div className="space-y-3">
                 {form.ingredients.map((ing, i) => (
-                  <div key={i} className="border rounded-lg p-3 bg-gray-50">
+                  <div key={ing._rowKey} className="border rounded-lg p-3 bg-gray-50">
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-xs font-medium text-gray-600">
                         Ingredient {i + 1}
@@ -1056,7 +1080,7 @@ export default function RecipesPage() {
             <div className="flex justify-end gap-2 pt-2 border-t">
               <Button variant="secondary" size="sm" onClick={() => setStepOpen(false)}>{t('common.cancel')}</Button>
               <Button variant="primary" size="sm" type="submit" disabled={savingStep}>
-                {savingStep ? t('common.saving') : editStepId ? t('common.save') : t('recipes.addStep')}
+                {stepSubmitLabel}
               </Button>
             </div>
           </form>

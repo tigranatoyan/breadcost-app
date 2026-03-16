@@ -2,7 +2,6 @@ package com.breadcost.eventstore;
 
 import com.breadcost.domain.LedgerEntry;
 import com.breadcost.events.DomainEvent;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,6 @@ import java.util.concurrent.atomic.AtomicLong;
 @Slf4j
 @RequiredArgsConstructor
 public class EventStore implements EventPublisher {
-    private final ObjectMapper objectMapper;
     private final Map<Long, StoredEvent> eventsByLedgerSeq = new ConcurrentHashMap<>();
     private final Map<String, LedgerEntry> ledgerEntriesById = new ConcurrentHashMap<>();
     private final AtomicLong ledgerSeqGenerator = new AtomicLong(1000);

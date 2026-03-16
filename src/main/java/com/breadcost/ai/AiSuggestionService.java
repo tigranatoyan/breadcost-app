@@ -31,7 +31,6 @@ public class AiSuggestionService {
     private final InventoryProjection inventoryProjection;
     private final EventStore eventStore;
     private final OrderRepository orderRepo;
-    private final ProductRepository productRepo;
     private final RecipeRepository recipeRepo;
 
     // ── BC-1901: Replenishment Hints (FR-12.3) ───────────────────────────────
@@ -46,7 +45,7 @@ public class AiSuggestionService {
         // Get current inventory positions
         var positions = inventoryProjection.getAllPositions().stream()
                 .filter(p -> tenantId.equals(p.getTenantId()))
-                .collect(Collectors.toList());
+                .toList();
 
         // Compute consumption rates from IssueToBatch events
         Map<String, Double> dailyConsumption = computeDailyConsumption(tenantId, 30);
@@ -118,7 +117,10 @@ public class AiSuggestionService {
      */
     @Transactional
     public List<AiDemandForecastEntity> generateDemandForecast(String tenantId, int forecastDays) {
-        List<ProductEntity> products = productRepo.findByTenantId(tenantId);
+        return doGenerateDemandForecast(tenantId, forecastDays);
+    }
+
+    private List<AiDemandForecastEntity> doGenerateDemandForecast(String tenantId, int forecastDays) {
         List<OrderEntity> orders = orderRepo.findByTenantId(tenantId);
 
         // Build per-product demand from CONFIRMED/DELIVERED orders
@@ -126,15 +128,17 @@ public class AiSuggestionService {
         Map<String, String> productNames = new HashMap<>();
         Instant cutoff = Instant.now().minus(30, ChronoUnit.DAYS);
 
+        Set<String> validStatuses = Set.of("CONFIRMED", "DELIVERED", "IN_PRODUCTION", "READY");
         for (OrderEntity order : orders) {
-            if (order.getOrderPlacedAt() == null || order.getOrderPlacedAt().isBefore(cutoff)) continue;
-            String status = order.getStatus();
-            if (!"CONFIRMED".equals(status) && !"DELIVERED".equals(status)
-                    && !"IN_PRODUCTION".equals(status) && !"READY".equals(status)) continue;
-
-            for (var line : order.getLines()) {
-                totalQtyByProduct.merge(line.getProductId(), line.getQty(), Double::sum);
-                productNames.putIfAbsent(line.getProductId(), line.getProductName());
+            if (order.getOrderPlacedAt() == null || order.getOrderPlacedAt().isBefore(cutoff)) {
+                // outside lookback window
+            } else if (!validStatuses.contains(order.getStatus())) {
+                // non-qualifying status
+            } else {
+                for (var line : order.getLines()) {
+                    totalQtyByProduct.merge(line.getProductId(), line.getQty(), Double::sum);
+                    productNames.putIfAbsent(line.getProductId(), line.getProductName());
+                }
             }
         }
 
@@ -178,7 +182,7 @@ public class AiSuggestionService {
         // Get recent forecasts or compute inline
         List<AiDemandForecastEntity> forecasts = forecastRepo.findByTenantId(tenantId);
         if (forecasts.isEmpty()) {
-            forecasts = generateDemandForecast(tenantId, 7);
+            forecasts = doGenerateDemandForecast(tenantId, 7);
         }
 
         List<AiProductionSuggestionEntity> suggestions = new ArrayList<>();
@@ -234,14 +238,10 @@ public class AiSuggestionService {
         Map<String, Double> totalByItem = new HashMap<>();
 
         for (StoredEvent se : eventStore.getAllEvents()) {
-            if (!"IssueToBatch".equals(se.getEventType())) continue;
-            if (se.getRecordedAtUtc().isBefore(cutoff)) continue;
-
-            var event = se.getEvent();
-            // IssueToBatchEvent has tenantId, itemId, qty fields via DomainEvent
-            // Use reflection-free approach: check event properties
-            if (event instanceof com.breadcost.events.IssueToBatchEvent ibe) {
-                if (!tenantId.equals(ibe.getTenantId())) continue;
+            if (!"IssueToBatch".equals(se.getEventType()) || se.getRecordedAtUtc().isBefore(cutoff)) {
+                // not relevant event or outside lookback
+            } else if (se.getEvent() instanceof com.breadcost.events.IssueToBatchEvent ibe
+                    && tenantId.equals(ibe.getTenantId())) {
                 totalByItem.merge(ibe.getItemId(), ibe.getQty().doubleValue(), Double::sum);
             }
         }

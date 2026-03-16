@@ -7,7 +7,7 @@ import { useT, useDateFmt, useDateTimeFmt } from '@/lib/i18n';
 import { Plus, Calendar, ChevronUp, ChevronDown, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
-// ─── types ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface Product {
   productId: string;
@@ -43,6 +43,7 @@ interface Order {
 }
 
 type LineForm = {
+  _key: string;
   productId: string;
   productName: string;
   departmentId: string;
@@ -52,7 +53,7 @@ type LineForm = {
   unitPrice: string;
 };
 
-// ─── status helpers ───────────────────────────────────────────────────────────
+// â”€â”€â”€ status helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const ALL_STATUSES = ['DRAFT', 'CONFIRMED', 'IN_PRODUCTION', 'READY', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'];
 
@@ -66,11 +67,12 @@ const STATUS_NEXT_KEY: Record<string, string> = {
   CONFIRMED: 'orders.startProduction',
 };
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function makeDefaultLine(products: Product[]): LineForm {
   const p = products[0];
   return {
+    _key: crypto.randomUUID(),
     productId: p?.productId ?? '',
     productName: p?.name ?? '',
     departmentId: p?.departmentId ?? '',
@@ -81,7 +83,7 @@ function makeDefaultLine(products: Product[]): LineForm {
   };
 }
 
-// ─── component ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function OrdersPage() {
   const t = useT();
@@ -134,7 +136,7 @@ export default function OrdersPage() {
   const [cancelReason, setCancelReason] = useState('');
   const [forecastCount, setForecastCount] = useState(0);
 
-  // ─── load ────────────────────────────────────────────────────────────────────
+  // â”€â”€â”€ load â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const load = useCallback(async (p = page) => {
     try {
@@ -166,7 +168,7 @@ export default function OrdersPage() {
     load(newPage);
   };
 
-  // ─── filtered list ────────────────────────────────────────────────────────────
+  // â”€â”€â”€ filtered list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const filtered = useMemo(() => {
     return orders.filter((o) => {
@@ -176,7 +178,7 @@ export default function OrdersPage() {
     });
   }, [orders, statusFilter, customerSearch]);
 
-  // ─── create order ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€ create order â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const openForm = () => {
     setForm({
@@ -199,6 +201,7 @@ export default function OrdersPage() {
       forceRush: o.rushOrder,
       customRushPremiumPct: o.rushPremiumPct ? String(o.rushPremiumPct) : '',
       lines: o.lines.map((l) => ({
+        _key: crypto.randomUUID(),
         productId: l.productId,
         productName: l.productName,
         departmentId: '',
@@ -249,7 +252,7 @@ export default function OrdersPage() {
         requestedDeliveryTime: new Date(form.requestedDeliveryTime).toISOString(),
         notes: form.notes || null,
         forceRush: form.forceRush,
-        customRushPremiumPct: form.customRushPremiumPct ? parseFloat(form.customRushPremiumPct) : null,
+        customRushPremiumPct: form.customRushPremiumPct ? Number.parseFloat(form.customRushPremiumPct) : null,
         lines: form.lines.map((l) => ({
           productId: l.productId,
           productName: l.productName,
@@ -257,7 +260,7 @@ export default function OrdersPage() {
           departmentName: l.departmentName,
           qty: l.qty,
           uom: l.uom,
-          unitPrice: parseFloat(l.unitPrice) || 0,
+          unitPrice: Number.parseFloat(l.unitPrice) || 0,
         })),
       };
       if (editTarget) {
@@ -284,7 +287,7 @@ export default function OrdersPage() {
     }
   };
 
-  // ─── actions ──────────────────────────────────────────────────────────────────
+  // â”€â”€â”€ actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const doConfirm = async (orderId: string) => {
     try {
@@ -336,7 +339,12 @@ export default function OrdersPage() {
     }
   };
 
-  // ─── render ───────────────────────────────────────────────────────────────────
+  // â”€â”€â”€ render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  let orderSaveLabel: string;
+  if (saving) orderSaveLabel = t('common.saving');
+  else if (editTarget) orderSaveLabel = t('common.save');
+  else orderSaveLabel = t('orders.newOrder');
 
   return (
     <div className="max-w-[1800px]">
@@ -380,21 +388,23 @@ export default function OrdersPage() {
       </div>
 
       {/* list */}
-      {loading ? (
-        <PageSkeleton />
-      ) : filtered.length === 0 ? (
+      {loading && <PageSkeleton />}
+      {!loading && filtered.length === 0 && (
         <div className="text-center py-16 text-sm text-gray-400 rounded-2xl border border-gray-200 bg-white">
           {orders.length === 0 ? t('orders.noOrders') : t('orders.noMatch')}
         </div>
-      ) : (
+      )}
+      {!loading && filtered.length > 0 && (
         <div className="space-y-2">
           {filtered.map((o) => (
             <div key={o.orderId} className="rounded-2xl border border-gray-200 bg-white shadow-sm">
               {/* row header */}
-              <div
-                className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 select-none"
-                onClick={() => setExpanded(expanded === o.orderId ? null : o.orderId)}
-              >
+              <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50">
+                <button
+                  type="button"
+                  className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer select-none bg-transparent border-none p-0 text-left"
+                  onClick={() => setExpanded(expanded === o.orderId ? null : o.orderId)}
+                >
                 {/* customer */}
                 <span className="font-medium text-sm flex-1 min-w-0">
                   {o.customerName}
@@ -420,18 +430,17 @@ export default function OrdersPage() {
                 )}
                 {/* status */}
                 <Badge status={o.status} />
+                </button>
                 {/* action buttons */}
-                <div
-                  className="flex gap-1 shrink-0"
-                  onClick={(e) => e.stopPropagation()}
+                <div className="flex gap-1 shrink-0">
                 >
-                  {/* DRAFT → Edit */}
+                  {/* DRAFT â†’ Edit */}
                   {o.status === 'DRAFT' && (
                     <Button variant="secondary" size="xs" disabled={actionId === o.orderId} onClick={() => openEdit(o)}>
                       {t('orders.editBtn')}
                     </Button>
                   )}
-                  {/* DRAFT → Confirm */}
+                  {/* DRAFT â†’ Confirm */}
                   {o.status === 'DRAFT' && (
                     <Button variant="primary" size="xs" disabled={actionId === o.orderId} onClick={() => doConfirm(o.orderId)}>
                       {t('orders.confirmBtn')}
@@ -450,9 +459,13 @@ export default function OrdersPage() {
                     </Button>
                   )}
                 </div>
-                <span className="text-gray-400 text-xs shrink-0">
+                <button
+                  type="button"
+                  className="text-gray-400 text-xs shrink-0 bg-transparent border-none p-0 cursor-pointer"
+                  onClick={() => setExpanded(expanded === o.orderId ? null : o.orderId)}
+                >
                   {expanded === o.orderId ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </span>
+                </button>
               </div>
 
               {/* expanded detail */}
@@ -470,10 +483,14 @@ export default function OrdersPage() {
                     {ALL_STATUSES.filter((s) => s !== 'CANCELLED').map((s, i) => {
                       const reached = ALL_STATUSES.indexOf(o.status) >= ALL_STATUSES.indexOf(s);
                       const current = o.status === s;
+                      let statusBadgeCls: string;
+                      if (current) statusBadgeCls = 'bg-blue-600 text-white';
+                      else if (reached) statusBadgeCls = 'bg-blue-100 text-blue-700';
+                      else statusBadgeCls = 'bg-gray-100 text-gray-400';
                       return (
                         <span key={s} className="flex items-center gap-1">
                           {i > 0 && <span className={`w-4 h-px ${reached ? 'bg-blue-400' : 'bg-gray-200'}`} />}
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${current ? 'bg-blue-600 text-white' : reached ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-400'}`}>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusBadgeCls}`}>
                             {t(`statusLabels.${s}` as any)}
                           </span>
                         </span>
@@ -484,7 +501,7 @@ export default function OrdersPage() {
                     )}
                   </div>
                   {/* lines table */}
-                  {o.lines && o.lines.length > 0 && (
+                  {!!o.lines?.length && (
                     <table className="w-full text-xs">
                       <thead>
                         <tr className="text-gray-500 bg-gray-50">
@@ -534,7 +551,7 @@ export default function OrdersPage() {
 
       {!loading && <Pagination page={page} totalPages={totalPages} onPageChange={changePage} />}
 
-      {/* ─── Create / Edit Order Modal ──────────────────────────────────────── */}
+      {/* â”€â”€â”€ Create / Edit Order Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {open && (
         <Modal title={editTarget ? t('orders.editOrderTitle') : t('orders.newOrderTitle')} onClose={() => { setOpen(false); setEditTarget(null); }} wide>
           <form onSubmit={submit} className="space-y-4">
@@ -546,7 +563,7 @@ export default function OrdersPage() {
                   value={form.customerName}
                   onChange={(e) => setForm((f) => ({ ...f, customerName: e.target.value }))}
                 >
-                  <option value="">— {t('common.select')} —</option>
+                  <option value="">â€” {t('common.select')} â€”</option>
                   {customers.map(c => <option key={c.customerId} value={c.name}>{c.name}</option>)}
                 </select>
               </Field>
@@ -579,7 +596,7 @@ export default function OrdersPage() {
                   checked={form.forceRush}
                   onChange={(e) => setForm((f) => ({ ...f, forceRush: e.target.checked }))}
                 />
-                <span className="text-sm font-medium text-orange-800">⚡ {t('orders.rushOrder')}</span>
+                <span className="text-sm font-medium text-orange-800">âš¡ {t('orders.rushOrder')}</span>
               </label>
               {form.forceRush && (
                 <div className="flex items-center gap-2">
@@ -590,6 +607,7 @@ export default function OrdersPage() {
                     min={0}
                     step="0.1"
                     placeholder="e.g. 15"
+                    aria-label={t('orders.rushPremium')}
                     value={form.customRushPremiumPct}
                     onChange={(e) => setForm((f) => ({ ...f, customRushPremiumPct: e.target.value }))}
                   />
@@ -613,12 +631,13 @@ export default function OrdersPage() {
               )}
               <div className="space-y-2">
                 {form.lines.map((line, i) => (
-                  <div key={i} className="border rounded-lg p-3 bg-gray-50">
+                  <div key={line._key} className="border rounded-lg p-3 bg-gray-50">
                     <div className="grid grid-cols-4 gap-2 items-end">
                       <div className="col-span-2">
                         <label className="text-xs text-gray-500">{t('orders.product')}</label>
                         <select
                           className="input"
+                          aria-label={t('orders.product')}
                           value={line.productId}
                           onChange={(e) => updateLine(i, 'productId', e.target.value)}
                         >
@@ -633,6 +652,7 @@ export default function OrdersPage() {
                           className="input"
                           type="number"
                           min={1}
+                          aria-label={t('orders.qty')}
                           value={line.qty}
                           onChange={(e) => updateLine(i, 'qty', +e.target.value)}
                         />
@@ -644,6 +664,7 @@ export default function OrdersPage() {
                           type="number"
                           min={0}
                           step="0.01"
+                          aria-label={t('orders.unitPrice')}
                           value={line.unitPrice}
                           onChange={(e) => updateLine(i, 'unitPrice', e.target.value)}
                         />
@@ -668,14 +689,14 @@ export default function OrdersPage() {
                 {t('common.cancel')}
               </Button>
               <Button variant="primary" size="sm" type="submit" disabled={saving || form.lines.length === 0}>
-                {saving ? t('common.saving') : editTarget ? t('common.save') : t('orders.newOrder')}
+                {orderSaveLabel}
               </Button>
             </div>
           </form>
         </Modal>
       )}
 
-      {/* ─── Cancel Reason Dialog ───────────────────────────────────────────── */}
+      {/* â”€â”€â”€ Cancel Reason Dialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {cancelTarget && (
         <Modal title={t('orders.cancelOrder')} onClose={() => setCancelTarget(null)}>
           <div className="space-y-4">

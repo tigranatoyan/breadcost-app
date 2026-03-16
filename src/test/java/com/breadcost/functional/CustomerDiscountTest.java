@@ -1,17 +1,12 @@
 package com.breadcost.functional;
 
-import com.breadcost.customers.CustomerDiscountRuleEntity;
-import com.breadcost.customers.CustomerDiscountRuleRepository;
 import com.breadcost.customers.CustomerEntity;
 import com.breadcost.customers.CustomerRepository;
-import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.math.BigDecimal;
 import java.util.Map;
 import java.util.UUID;
 
@@ -31,7 +26,6 @@ class CustomerDiscountTest extends FunctionalTestBase {
 
     private static final String DISC_TENANT = "discount-tenant";
 
-    @Autowired private CustomerDiscountRuleRepository discountRepo;
     @Autowired private CustomerRepository customerRepo;
 
     private String customerId;

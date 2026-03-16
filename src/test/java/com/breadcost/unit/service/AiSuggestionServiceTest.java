@@ -110,7 +110,6 @@ class AiSuggestionServiceTest {
 
     @Test
     void generateDemandForecast_noOrders_returnsEmpty() {
-        when(productRepo.findByTenantId("t1")).thenReturn(List.of());
         when(orderRepo.findByTenantId("t1")).thenReturn(List.of());
 
         var forecasts = svc.generateDemandForecast("t1", 7);
@@ -120,7 +119,6 @@ class AiSuggestionServiceTest {
 
     @Test
     void generateDemandForecast_withRecentOrders_createsForecast() {
-        when(productRepo.findByTenantId("t1")).thenReturn(List.of());
         var line = OrderLineEntity.builder()
                 .productId("p1").productName("Bread").qty(100).build();
         var order = OrderEntity.builder().orderId("o1").tenantId("t1")
@@ -140,7 +138,6 @@ class AiSuggestionServiceTest {
 
     @Test
     void generateDemandForecast_oldOrders_ignored() {
-        when(productRepo.findByTenantId("t1")).thenReturn(List.of());
         var line = OrderLineEntity.builder()
                 .productId("p1").productName("Bread").qty(100).build();
         var order = OrderEntity.builder().orderId("o1").tenantId("t1")
@@ -160,7 +157,6 @@ class AiSuggestionServiceTest {
     void generateProductionSuggestions_noForecasts_generatesFirst() {
         when(forecastRepo.findByTenantId("t1")).thenReturn(List.of());
         // When no forecasts, it calls generateDemandForecast internally
-        when(productRepo.findByTenantId("t1")).thenReturn(List.of());
         when(orderRepo.findByTenantId("t1")).thenReturn(List.of());
 
         var suggestions = svc.generateProductionSuggestions("t1", LocalDate.now());

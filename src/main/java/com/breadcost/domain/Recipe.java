@@ -24,7 +24,7 @@ public class Recipe {
     private Integer versionNumber;
     private RecipeStatus status;
 
-    // Batch size this recipe is defined for (e.g., "produces 50 loaves per batch")
+    /** Batch size this recipe is defined for, e.g. produces 50 loaves per batch. */
     private BigDecimal batchSize;
     private String batchSizeUom;    // e.g., "PCS" or "KG"
 

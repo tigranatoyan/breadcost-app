@@ -3,7 +3,6 @@ package com.breadcost.masterdata;
 import com.breadcost.domain.Order;
 import com.breadcost.domain.ProductionPlan;
 import com.breadcost.domain.WorkOrder;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -66,32 +65,11 @@ public class ProductionPlanService {
             throw new IllegalStateException("Work orders can only be generated for DRAFT plans.");
         }
 
-        // Find all CONFIRMED orders for this tenant
-        List<OrderEntity> confirmedOrders = orderRepository.findByTenantIdAndStatus(tenantId, "CONFIRMED");
-
-        // Prefer orders whose requestedDeliveryTime is on planDate; fall back to all confirmed orders
-        LocalDate targetDate = plan.getPlanDate();
-        List<OrderEntity> relevantOrders = confirmedOrders.stream()
-                .filter(o -> o.getRequestedDeliveryTime() != null &&
-                        o.getRequestedDeliveryTime()
-                                .atZone(java.time.ZoneOffset.UTC)
-                                .toLocalDate()
-                                .equals(targetDate))
-                .collect(Collectors.toList());
-
-        // If no date-matched orders, use ALL confirmed orders so a plan can always be generated
-        if (relevantOrders.isEmpty()) {
-            relevantOrders = confirmedOrders;
-        }
-
-        // Collect all lines from relevant orders
-        List<OrderLineEntity> allLines = relevantOrders.stream()
-                .flatMap(o -> o.getLines().stream())
-                .collect(Collectors.toList());
+        List<OrderLineEntity> allLines = collectRelevantOrderLines(tenantId, plan.getPlanDate());
 
         if (allLines.isEmpty()) {
             plan.setStatus(ProductionPlan.Status.GENERATED);
-            return planRepository.save(plan); // no confirmed orders — still mark as generated
+            return planRepository.save(plan);
         }
 
         // Key: departmentId + "|" + productId → aggregated qty + line IDs
@@ -118,46 +96,7 @@ public class ProductionPlanService {
 
         // Build work order entities
         for (AggregatedLine agg : aggregated.values()) {
-            // Look up product → active recipe
-            Optional<ProductEntity> productOpt = productRepository.findAll().stream()
-                    .filter(p -> tenantId.equals(p.getTenantId()) && agg.productId.equals(p.getProductId()))
-                    .findFirst();
-
-            String recipeId = null;
-            int batchCount = 1;
-            Optional<RecipeEntity> recipeOpt = Optional.empty();
-
-            if (productOpt.isPresent() && productOpt.get().getActiveRecipeId() != null) {
-                recipeId = productOpt.get().getActiveRecipeId();
-                recipeOpt = recipeRepository.findById(recipeId);
-                if (recipeOpt.isPresent() && recipeOpt.get().getBatchSize() != null) {
-                    BigDecimal batchSizeBD = recipeOpt.get().getBatchSize();
-                    batchCount = new BigDecimal(agg.totalQty)
-                            .divide(batchSizeBD, 0, RoundingMode.CEILING)
-                            .intValue();
-                    if (batchCount < 1) batchCount = 1;
-                }
-            }
-
-            WorkOrderEntity wo = WorkOrderEntity.builder()
-                    .workOrderId(UUID.randomUUID().toString())
-                    .plan(plan)
-                    .tenantId(tenantId)
-                    .departmentId(agg.departmentId)
-                    .departmentName(agg.departmentName)
-                    .productId(agg.productId)
-                    .productName(agg.productName)
-                    .recipeId(recipeId)
-                    .targetQty(agg.totalQty)
-                    .uom(agg.uom)
-                    .batchCount(batchCount)
-                    .status(WorkOrder.Status.PENDING)
-                    .sourceOrderLineIds(String.join(",", agg.lineIds))
-                    .startOffsetHours(0)
-                    .durationHours(recipeOpt.flatMap(r -> Optional.ofNullable(r.getLeadTimeHours())).orElse(null))
-                    .build();
-
-            plan.getWorkOrders().add(wo);
+            plan.getWorkOrders().add(buildWorkOrderForAggregatedLine(tenantId, plan, agg));
         }
 
         // After generating, advance status from DRAFT → GENERATED
@@ -179,7 +118,7 @@ public class ProductionPlanService {
 
     @Transactional
     public ProductionPlanEntity publishPlan(String tenantId, String planId) {
-        return approvePlan(tenantId, planId); // legacy alias
+        return approvePlan(tenantId, planId);
     }
 
     @Transactional
@@ -288,7 +227,7 @@ public class ProductionPlanService {
 
     @Transactional
     public WorkOrderEntity completeWorkOrder(String tenantId, String workOrderId) {
-        return completeWorkOrder(tenantId, workOrderId, null, null, null, null);
+        return doCompleteWorkOrder(tenantId, workOrderId, null, null, null, null);
     }
 
     /**
@@ -298,6 +237,12 @@ public class ProductionPlanService {
     public WorkOrderEntity completeWorkOrder(String tenantId, String workOrderId,
                                               Double actualYield, Double wasteQty,
                                               String qualityScore, String qualityNotes) {
+        return doCompleteWorkOrder(tenantId, workOrderId, actualYield, wasteQty, qualityScore, qualityNotes);
+    }
+
+    private WorkOrderEntity doCompleteWorkOrder(String tenantId, String workOrderId,
+                                                 Double actualYield, Double wasteQty,
+                                                 String qualityScore, String qualityNotes) {
         WorkOrderEntity wo = findWorkOrder(tenantId, workOrderId);
         if (wo.getStatus() != WorkOrder.Status.STARTED) {
             throw new IllegalStateException("Only STARTED work orders can be completed.");
@@ -305,52 +250,10 @@ public class ProductionPlanService {
         wo.setStatus(WorkOrder.Status.COMPLETED);
         wo.setCompletedAt(Instant.now());
 
-        // ── G-9: Record yield/quality metrics ─────────────────────────────
-        if (actualYield != null) {
-            wo.setActualYield(actualYield);
-            // Calculate variance against recipe expectedYield × batchCount
-            if (wo.getRecipeId() != null) {
-                recipeRepository.findById(wo.getRecipeId()).ifPresent(recipe -> {
-                    if (recipe.getExpectedYield() != null) {
-                        double expected = recipe.getExpectedYield().doubleValue() * wo.getBatchCount();
-                        if (expected > 0) {
-                            wo.setYieldVariancePct(((actualYield - expected) / expected) * 100.0);
-                        }
-                    }
-                });
-            }
-        }
-        if (wasteQty != null) wo.setWasteQty(wasteQty);
-        if (qualityScore != null) wo.setQualityScore(qualityScore);
-        if (qualityNotes != null) wo.setQualityNotes(qualityNotes);
-
+        recordYieldAndQuality(wo, actualYield, wasteQty, qualityScore, qualityNotes);
         WorkOrderEntity saved = workOrderRepository.save(wo);
-
-        // ── G-2: Backflush — consume ingredients on WO completion ─────────
-        if (wo.getRecipeId() != null) {
-            try {
-                String siteId = wo.getPlan() != null ? wo.getPlan().getSiteId() : null;
-                inventoryService.consumeIngredients(
-                        tenantId, siteId,
-                        wo.getRecipeId(), wo.getBatchCount(),
-                        "PRODUCTION", wo.getWorkOrderId());
-            } catch (Exception e) {
-                log.error("Backflush failed for WO {}: {}", workOrderId, e.getMessage());
-            }
-        }
-
-        // Auto-advance plan to IN_PROGRESS when first WO starts; auto-complete when all WOs done
-        ProductionPlanEntity plan = wo.getPlan();
-        if (plan != null) {
-            boolean allDone = plan.getWorkOrders().stream()
-                    .allMatch(w -> w.getStatus() == WorkOrder.Status.COMPLETED
-                            || w.getStatus() == WorkOrder.Status.CANCELLED);
-            if (allDone && plan.getStatus() == ProductionPlan.Status.IN_PROGRESS) {
-                plan.setStatus(ProductionPlan.Status.COMPLETED);
-                advanceLinkedOrders(tenantId, plan);
-                planRepository.save(plan);
-            }
-        }
+        performBackflush(tenantId, wo);
+        autoCompletePlanIfAllDone(tenantId, wo.getPlan());
         return saved;
     }
 
@@ -391,7 +294,7 @@ public class ProductionPlanService {
         ProductionPlanEntity plan = findPlan(tenantId, planId);
         List<WorkOrderEntity> wos = plan.getWorkOrders().stream()
                 .filter(w -> w.getStatus() != WorkOrder.Status.CANCELLED)
-                .collect(Collectors.toList());
+                .toList();
 
         int totalLeadTimeHours = wos.stream()
                 .filter(w -> w.getStartOffsetHours() != null && w.getDurationHours() != null)
@@ -421,7 +324,7 @@ public class ProductionPlanService {
                     wo.getWorkOrderId(), wo.getProductName(), wo.getDepartmentName(),
                     wo.getStatus().name(), start, dur, end, parallel, onCriticalPath,
                     wo.getBatchCount(), wo.getTargetQty(), wo.getUom());
-        }).collect(Collectors.toList());
+        }).toList();
 
         return new PlanSchedule(plan.getPlanId(), plan.getPlanDate().toString(),
                 plan.getShift().name(), plan.getStatus().name(),
@@ -449,48 +352,13 @@ public class ProductionPlanService {
         Map<String, PlanMaterialRequirement> consolidated = new LinkedHashMap<>();
 
         for (WorkOrderEntity wo : plan.getWorkOrders()) {
-            if (wo.getRecipeId() == null || wo.getStatus() == WorkOrder.Status.CANCELLED) continue;
-
-            Optional<RecipeEntity> recipeOpt = recipeRepository.findById(wo.getRecipeId());
-            if (recipeOpt.isEmpty() || recipeOpt.get().getIngredients() == null) continue;
-
-            int multiplier = wo.getBatchCount();
-
-            for (RecipeIngredientEntity ing : recipeOpt.get().getIngredients()) {
-                BigDecimal totalWeight = switch (ing.getUnitMode()) {
-                    case WEIGHT -> ing.getRecipeQty() != null ? ing.getRecipeQty() : BigDecimal.ZERO;
-                    case PIECE, COMBO -> (ing.getWeightPerPiece() != null && ing.getPieceQty() != null)
-                            ? ing.getWeightPerPiece().multiply(BigDecimal.valueOf(ing.getPieceQty()))
-                            : BigDecimal.ZERO;
-                };
-
-                BigDecimal wasteFactor = ing.getWasteFactor() != null ? ing.getWasteFactor() : BigDecimal.ZERO;
-                BigDecimal withWaste = totalWeight
-                        .multiply(BigDecimal.ONE.add(wasteFactor))
-                        .multiply(BigDecimal.valueOf(multiplier));
-
-                BigDecimal pus = ing.getPurchasingUnitSize();
-                double purchasingUnits = (pus != null && pus.compareTo(BigDecimal.ZERO) > 0)
-                        ? withWaste.divide(pus, 4, RoundingMode.CEILING).doubleValue()
-                        : withWaste.doubleValue();
-
-                consolidated.merge(
-                        ing.getItemId(),
-                        new PlanMaterialRequirement(ing.getItemId(), ing.getItemName(),
-                                ing.getPurchasingUom(), purchasingUnits, wo.getWorkOrderId()),
-                        (existing, newVal) -> new PlanMaterialRequirement(
-                                existing.itemId(), existing.itemName(),
-                                existing.purchasingUom(),
-                                round4(existing.purchasingUnitsNeeded() + newVal.purchasingUnitsNeeded()),
-                                null)
-                );
-            }
+            consolidateWorkOrderMaterials(wo, consolidated);
         }
         return new ArrayList<>(consolidated.values());
     }
 
     private double round4(double v) {
-        return new BigDecimal(v).setScale(4, RoundingMode.HALF_UP).doubleValue();
+        return BigDecimal.valueOf(v).setScale(4, RoundingMode.HALF_UP).doubleValue();
     }
 
     // ─── QUERIES ─────────────────────────────────────────────────────────────
@@ -528,10 +396,172 @@ public class ProductionPlanService {
                 .orElseThrow(() -> new NoSuchElementException("WorkOrder not found: " + workOrderId));
     }
 
+    // ─── EXTRACTED HELPERS (cognitive complexity reduction) ───────────────────
+
+    private List<OrderLineEntity> collectRelevantOrderLines(String tenantId, LocalDate targetDate) {
+        List<OrderEntity> confirmedOrders = orderRepository.findByTenantIdAndStatus(tenantId, "CONFIRMED");
+
+        List<OrderEntity> relevantOrders = confirmedOrders.stream()
+                .filter(o -> o.getRequestedDeliveryTime() != null &&
+                        o.getRequestedDeliveryTime()
+                                .atZone(java.time.ZoneOffset.UTC)
+                                .toLocalDate()
+                                .equals(targetDate))
+                .toList();
+
+        if (relevantOrders.isEmpty()) {
+            relevantOrders = confirmedOrders;
+        }
+
+        return relevantOrders.stream()
+                .flatMap(o -> o.getLines().stream())
+                .toList();
+    }
+
+    private WorkOrderEntity buildWorkOrderForAggregatedLine(String tenantId,
+                                                             ProductionPlanEntity plan,
+                                                             AggregatedLine agg) {
+        Optional<ProductEntity> productOpt = productRepository.findAll().stream()
+                .filter(p -> tenantId.equals(p.getTenantId()) && agg.productId.equals(p.getProductId()))
+                .findFirst();
+
+        String recipeId = null;
+        int batchCount = 1;
+        Optional<RecipeEntity> recipeOpt = Optional.empty();
+
+        if (productOpt.isPresent() && productOpt.get().getActiveRecipeId() != null) {
+            recipeId = productOpt.get().getActiveRecipeId();
+            recipeOpt = recipeRepository.findById(recipeId);
+            if (recipeOpt.isPresent() && recipeOpt.get().getBatchSize() != null) {
+                BigDecimal batchSizeBD = recipeOpt.get().getBatchSize();
+                batchCount = BigDecimal.valueOf(agg.totalQty)
+                        .divide(batchSizeBD, 0, RoundingMode.CEILING)
+                        .intValue();
+                if (batchCount < 1) batchCount = 1;
+            }
+        }
+
+        return WorkOrderEntity.builder()
+                .workOrderId(UUID.randomUUID().toString())
+                .plan(plan)
+                .tenantId(tenantId)
+                .departmentId(agg.departmentId)
+                .departmentName(agg.departmentName)
+                .productId(agg.productId)
+                .productName(agg.productName)
+                .recipeId(recipeId)
+                .targetQty(agg.totalQty)
+                .uom(agg.uom)
+                .batchCount(batchCount)
+                .status(WorkOrder.Status.PENDING)
+                .sourceOrderLineIds(String.join(",", agg.lineIds))
+                .startOffsetHours(0)
+                .durationHours(recipeOpt.flatMap(r -> Optional.ofNullable(r.getLeadTimeHours())).orElse(null))
+                .build();
+    }
+
+    private void recordYieldAndQuality(WorkOrderEntity wo, Double actualYield,
+                                        Double wasteQty, String qualityScore, String qualityNotes) {
+        if (actualYield != null) {
+            wo.setActualYield(actualYield);
+            computeYieldVariance(wo, actualYield);
+        }
+        if (wasteQty != null) wo.setWasteQty(wasteQty);
+        if (qualityScore != null) wo.setQualityScore(qualityScore);
+        if (qualityNotes != null) wo.setQualityNotes(qualityNotes);
+    }
+
+    private void computeYieldVariance(WorkOrderEntity wo, double actualYield) {
+        if (wo.getRecipeId() == null) return;
+        recipeRepository.findById(wo.getRecipeId()).ifPresent(recipe -> {
+            if (recipe.getExpectedYield() != null) {
+                double expected = recipe.getExpectedYield().doubleValue() * wo.getBatchCount();
+                if (expected > 0) {
+                    wo.setYieldVariancePct(((actualYield - expected) / expected) * 100.0);
+                }
+            }
+        });
+    }
+
+    private void performBackflush(String tenantId, WorkOrderEntity wo) {
+        if (wo.getRecipeId() == null) return;
+        try {
+            String siteId = wo.getPlan() != null ? wo.getPlan().getSiteId() : null;
+            inventoryService.consumeIngredients(
+                    tenantId, siteId,
+                    wo.getRecipeId(), wo.getBatchCount(),
+                    "PRODUCTION", wo.getWorkOrderId());
+        } catch (Exception e) {
+            log.error("Backflush failed for WO {}: {}", wo.getWorkOrderId(), e.getMessage());
+        }
+    }
+
+    private void autoCompletePlanIfAllDone(String tenantId, ProductionPlanEntity plan) {
+        if (plan == null) return;
+        boolean allDone = plan.getWorkOrders().stream()
+                .allMatch(w -> w.getStatus() == WorkOrder.Status.COMPLETED
+                        || w.getStatus() == WorkOrder.Status.CANCELLED);
+        if (allDone && plan.getStatus() == ProductionPlan.Status.IN_PROGRESS) {
+            plan.setStatus(ProductionPlan.Status.COMPLETED);
+            advanceLinkedOrders(tenantId, plan);
+            planRepository.save(plan);
+        }
+    }
+
+    private void consolidateWorkOrderMaterials(WorkOrderEntity wo,
+                                                Map<String, PlanMaterialRequirement> consolidated) {
+        if (wo.getRecipeId() == null || wo.getStatus() == WorkOrder.Status.CANCELLED) {
+            return;
+        }
+
+        Optional<RecipeEntity> recipeOpt = recipeRepository.findById(wo.getRecipeId());
+        if (recipeOpt.isEmpty() || recipeOpt.get().getIngredients() == null) {
+            return;
+        }
+
+        int multiplier = wo.getBatchCount();
+        for (RecipeIngredientEntity ing : recipeOpt.get().getIngredients()) {
+            double purchasingUnits = computeIngredientPurchasingUnits(ing, multiplier);
+            consolidated.merge(
+                    ing.getItemId(),
+                    new PlanMaterialRequirement(ing.getItemId(), ing.getItemName(),
+                            ing.getPurchasingUom(), purchasingUnits, wo.getWorkOrderId()),
+                    (existing, newVal) -> new PlanMaterialRequirement(
+                            existing.itemId(), existing.itemName(),
+                            existing.purchasingUom(),
+                            round4(existing.purchasingUnitsNeeded() + newVal.purchasingUnitsNeeded()),
+                            null)
+            );
+        }
+    }
+
+    private double computeIngredientPurchasingUnits(RecipeIngredientEntity ing, int multiplier) {
+        BigDecimal totalWeight = switch (ing.getUnitMode()) {
+            case WEIGHT -> ing.getRecipeQty() != null ? ing.getRecipeQty() : BigDecimal.ZERO;
+            case PIECE, COMBO -> (ing.getWeightPerPiece() != null && ing.getPieceQty() != null)
+                    ? ing.getWeightPerPiece().multiply(BigDecimal.valueOf(ing.getPieceQty()))
+                    : BigDecimal.ZERO;
+        };
+
+        BigDecimal wasteFactor = ing.getWasteFactor() != null ? ing.getWasteFactor() : BigDecimal.ZERO;
+        BigDecimal withWaste = totalWeight
+                .multiply(BigDecimal.ONE.add(wasteFactor))
+                .multiply(BigDecimal.valueOf(multiplier));
+
+        BigDecimal pus = ing.getPurchasingUnitSize();
+        return (pus != null && pus.compareTo(BigDecimal.ZERO) > 0)
+                ? withWaste.divide(pus, 4, RoundingMode.CEILING).doubleValue()
+                : withWaste.doubleValue();
+    }
+
     // ─── INNER HELPERS ───────────────────────────────────────────────────────
 
     private static class AggregatedLine {
-        final String departmentId, departmentName, productId, productName, uom;
+        final String departmentId;
+        final String departmentName;
+        final String productId;
+        final String productName;
+        final String uom;
         double totalQty = 0;
         final List<String> lineIds = new ArrayList<>();
 

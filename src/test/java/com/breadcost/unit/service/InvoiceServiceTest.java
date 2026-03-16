@@ -1,7 +1,6 @@
 package com.breadcost.unit.service;
 
 import com.breadcost.customers.CustomerEntity;
-import com.breadcost.customers.CustomerDiscountRuleEntity;
 import com.breadcost.customers.CustomerDiscountRuleRepository;
 import com.breadcost.customers.CustomerRepository;
 import com.breadcost.invoice.*;

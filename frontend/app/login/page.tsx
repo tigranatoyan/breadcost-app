@@ -1,7 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { setSession, UserInfo } from '@/lib/auth';
+import { setSession, UserInfo, getToken } from '@/lib/auth';
 import { API_BASE } from '@/lib/api';
 import { Button } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
@@ -13,6 +13,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState('admin');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (getToken()) router.replace('/dashboard');
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

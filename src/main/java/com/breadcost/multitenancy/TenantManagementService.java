@@ -23,6 +23,12 @@ import java.util.*;
 @Slf4j
 public class TenantManagementService {
 
+    private static final String STATUS_KEY = "status";
+    private static final String STATUS_PENDING = "PENDING";
+    private static final String CUSTOMERS_COUNT_KEY = "customersCount";
+    private static final String PRODUCTS_COUNT_KEY = "productsCount";
+    private static final String ORDERS_COUNT_KEY = "ordersCount";
+
     private final TenantOnboardingRepository onboardingRepo;
     private final TenantBrandingRepository brandingRepo;
     private final TenantConfigRepository tenantConfigRepo;
@@ -76,7 +82,7 @@ public class TenantManagementService {
     public TenantOnboardingEntity approveOnboarding(String requestId) {
         TenantOnboardingEntity req = onboardingRepo.findById(requestId)
                 .orElseThrow(() -> new NoSuchElementException("Onboarding request not found: " + requestId));
-        if (!"PENDING".equals(req.getStatus())) {
+        if (!STATUS_PENDING.equals(req.getStatus())) {
             throw new IllegalStateException("Request is not pending: " + req.getStatus());
         }
 
@@ -121,7 +127,7 @@ public class TenantManagementService {
     }
 
     public List<TenantOnboardingEntity> getPendingRequests() {
-        return onboardingRepo.findByStatus("PENDING");
+        return onboardingRepo.findByStatus(STATUS_PENDING);
     }
 
     public List<TenantOnboardingEntity> getAllRequests() {
@@ -135,23 +141,26 @@ public class TenantManagementService {
                 .orElseGet(() -> TenantBrandingEntity.builder().tenantId(tenantId).build());
     }
 
-    @Transactional
-    public TenantBrandingEntity updateBranding(String tenantId, String logoUrl, String primaryColor,
-                                                String secondaryColor, String accentColor,
-                                                String receiptBusinessName, String receiptFooter,
-                                                String receiptHeader, String locale, String timezone) {
-        TenantBrandingEntity branding = brandingRepo.findById(tenantId)
-                .orElse(TenantBrandingEntity.builder().tenantId(tenantId).build());
+    public record BrandingUpdateRequest(
+            String tenantId, String logoUrl, String primaryColor,
+            String secondaryColor, String accentColor,
+            String receiptBusinessName, String receiptFooter,
+            String receiptHeader, String locale, String timezone) {}
 
-        if (logoUrl != null) branding.setLogoUrl(logoUrl);
-        if (primaryColor != null) branding.setPrimaryColor(primaryColor);
-        if (secondaryColor != null) branding.setSecondaryColor(secondaryColor);
-        if (accentColor != null) branding.setAccentColor(accentColor);
-        if (receiptBusinessName != null) branding.setReceiptBusinessName(receiptBusinessName);
-        if (receiptFooter != null) branding.setReceiptFooter(receiptFooter);
-        if (receiptHeader != null) branding.setReceiptHeader(receiptHeader);
-        if (locale != null) branding.setLocale(locale);
-        if (timezone != null) branding.setTimezone(timezone);
+    @Transactional
+    public TenantBrandingEntity updateBranding(BrandingUpdateRequest req) {
+        TenantBrandingEntity branding = brandingRepo.findById(req.tenantId())
+                .orElse(TenantBrandingEntity.builder().tenantId(req.tenantId()).build());
+
+        if (req.logoUrl() != null) branding.setLogoUrl(req.logoUrl());
+        if (req.primaryColor() != null) branding.setPrimaryColor(req.primaryColor());
+        if (req.secondaryColor() != null) branding.setSecondaryColor(req.secondaryColor());
+        if (req.accentColor() != null) branding.setAccentColor(req.accentColor());
+        if (req.receiptBusinessName() != null) branding.setReceiptBusinessName(req.receiptBusinessName());
+        if (req.receiptFooter() != null) branding.setReceiptFooter(req.receiptFooter());
+        if (req.receiptHeader() != null) branding.setReceiptHeader(req.receiptHeader());
+        if (req.locale() != null) branding.setLocale(req.locale());
+        if (req.timezone() != null) branding.setTimezone(req.timezone());
 
         return brandingRepo.save(branding);
     }
@@ -168,91 +177,111 @@ public class TenantManagementService {
         export.put("exportedAt", Instant.now().toString());
         export.put("tenantId", tenantId);
 
-        // Tenant config
+        addTenantConfigExport(tenantId, export);
+        addBrandingExport(tenantId, export);
+        addProductsExport(tenantId, export);
+        addCustomersExport(tenantId, export);
+        addOrdersExport(tenantId, export);
+        addSubscriptionExport(tenantId, export);
+        addInvoicesExport(tenantId, export);
+        addWorkOrdersExport(tenantId, export);
+        addProductionPlansExport(tenantId, export);
+
+        log.info("Exported data for tenant={}: {} products, {} customers, {} orders, {} invoices, {} workOrders, {} plans",
+                tenantId, export.get(PRODUCTS_COUNT_KEY), export.get(CUSTOMERS_COUNT_KEY),
+                export.get(ORDERS_COUNT_KEY), export.get("invoicesCount"),
+                export.get("workOrdersCount"), export.get("productionPlansCount"));
+        return export;
+    }
+
+    private void addTenantConfigExport(String tenantId, Map<String, Object> export) {
         tenantConfigRepo.findById(tenantId).ifPresent(c -> export.put("tenantConfig", Map.of(
                 "displayName", c.getDisplayName() != null ? c.getDisplayName() : "",
                 "mainCurrency", c.getMainCurrency(),
                 "orderCutoffTime", c.getOrderCutoffTime()
         )));
+    }
 
-        // Branding
+    private void addBrandingExport(String tenantId, Map<String, Object> export) {
         brandingRepo.findById(tenantId).ifPresent(b -> export.put("branding", Map.of(
                 "logoUrl", b.getLogoUrl() != null ? b.getLogoUrl() : "",
                 "primaryColor", b.getPrimaryColor(),
                 "locale", b.getLocale()
         )));
+    }
 
-        // Products
+    private void addProductsExport(String tenantId, Map<String, Object> export) {
         List<ProductEntity> products = productRepo.findByTenantId(tenantId);
-        export.put("productsCount", products.size());
+        export.put(PRODUCTS_COUNT_KEY, products.size());
         export.put("products", products.stream().map(p -> Map.of(
                 "productId", p.getProductId(),
                 "name", p.getName(),
                 "price", p.getPrice() != null ? p.getPrice().toString() : "0"
         )).toList());
+    }
 
-        // Customers
+    private void addCustomersExport(String tenantId, Map<String, Object> export) {
         var customers = customerRepo.findByTenantId(tenantId);
-        export.put("customersCount", customers.size());
+        export.put(CUSTOMERS_COUNT_KEY, customers.size());
         export.put("customers", customers.stream().map(c -> Map.of(
                 "customerId", c.getCustomerId(),
                 "name", c.getName(),
                 "email", c.getEmail() != null ? c.getEmail() : ""
         )).toList());
+    }
 
-        // Orders
+    private void addOrdersExport(String tenantId, Map<String, Object> export) {
         List<OrderEntity> orders = orderRepo.findByTenantId(tenantId);
-        export.put("ordersCount", orders.size());
+        export.put(ORDERS_COUNT_KEY, orders.size());
         export.put("orders", orders.stream().map(o -> Map.of(
                 "orderId", o.getOrderId(),
-                "status", o.getStatus(),
+                STATUS_KEY, o.getStatus(),
                 "customerName", o.getCustomerName() != null ? o.getCustomerName() : "",
                 "totalAmount", o.getTotalAmount() != null ? o.getTotalAmount().toString() : "0",
                 "createdAt", o.getCreatedAt() != null ? o.getCreatedAt().toString() : ""
         )).toList());
+    }
 
-        // Subscription
+    private void addSubscriptionExport(String tenantId, Map<String, Object> export) {
         subscriptionRepo.findByTenantId(tenantId).ifPresent(s -> export.put("subscription", Map.of(
                 "tier", s.getTierLevel(),
                 "active", s.isActive(),
                 "expiresAt", s.getExpiryDate() != null ? s.getExpiryDate().toString() : ""
         )));
+    }
 
-        // Invoices
+    private void addInvoicesExport(String tenantId, Map<String, Object> export) {
         List<InvoiceEntity> invoices = invoiceRepo.findByTenantId(tenantId);
         export.put("invoicesCount", invoices.size());
         export.put("invoices", invoices.stream().map(i -> Map.of(
                 "invoiceId", i.getInvoiceId(),
                 "invoiceNumber", i.getInvoiceNumber() != null ? i.getInvoiceNumber() : "",
-                "status", i.getStatus().name(),
+                STATUS_KEY, i.getStatus().name(),
                 "totalAmount", i.getTotalAmount() != null ? i.getTotalAmount().toString() : "0",
                 "issuedDate", i.getIssuedDate() != null ? i.getIssuedDate().toString() : "",
                 "dueDate", i.getDueDate() != null ? i.getDueDate().toString() : ""
         )).toList());
+    }
 
-        // Work orders
+    private void addWorkOrdersExport(String tenantId, Map<String, Object> export) {
         List<WorkOrderEntity> workOrders = workOrderRepo.findByTenantId(tenantId);
         export.put("workOrdersCount", workOrders.size());
         export.put("workOrders", workOrders.stream().map(w -> Map.of(
                 "workOrderId", w.getWorkOrderId(),
                 "productId", w.getProductId() != null ? w.getProductId() : "",
-                "status", w.getStatus() != null ? w.getStatus().name() : "",
+                STATUS_KEY, w.getStatus() != null ? w.getStatus().name() : "",
                 "targetQty", String.valueOf(w.getTargetQty())
         )).toList());
+    }
 
-        // Production plans
+    private void addProductionPlansExport(String tenantId, Map<String, Object> export) {
         List<ProductionPlanEntity> plans = productionPlanRepo.findByTenantId(tenantId);
         export.put("productionPlansCount", plans.size());
         export.put("productionPlans", plans.stream().map(p -> Map.of(
                 "planId", p.getPlanId(),
                 "planDate", p.getPlanDate() != null ? p.getPlanDate().toString() : "",
-                "status", p.getStatus() != null ? p.getStatus().name() : ""
+                STATUS_KEY, p.getStatus() != null ? p.getStatus().name() : ""
         )).toList());
-
-        log.info("Exported data for tenant={}: {} products, {} customers, {} orders, {} invoices, {} workOrders, {} plans",
-                tenantId, products.size(), customers.size(), orders.size(),
-                invoices.size(), workOrders.size(), plans.size());
-        return export;
     }
 
     // ── D4.4: Cross-Tenant Admin Dashboard ───────────────────────────────────
@@ -265,7 +294,7 @@ public class TenantManagementService {
         List<TenantConfigEntity> tenants = tenantConfigRepo.findAll();
         Map<String, Object> overview = new LinkedHashMap<>();
         overview.put("totalTenants", tenants.size());
-        overview.put("pendingOnboarding", onboardingRepo.findByStatus("PENDING").size());
+        overview.put("pendingOnboarding", onboardingRepo.findByStatus(STATUS_PENDING).size());
 
         List<Map<String, Object>> tenantSummaries = new ArrayList<>();
         for (TenantConfigEntity tenant : tenants) {
@@ -275,9 +304,9 @@ public class TenantManagementService {
             summary.put("displayName", tenant.getDisplayName() != null ? tenant.getDisplayName() : tid);
             summary.put("currency", tenant.getMainCurrency());
             summary.put("suspended", tenant.isSuspended());
-            summary.put("productsCount", productRepo.findByTenantId(tid).size());
-            summary.put("ordersCount", orderRepo.findByTenantId(tid).size());
-            summary.put("customersCount", customerRepo.findByTenantId(tid).size());
+            summary.put(PRODUCTS_COUNT_KEY, productRepo.findByTenantId(tid).size());
+            summary.put(ORDERS_COUNT_KEY, orderRepo.findByTenantId(tid).size());
+            summary.put(CUSTOMERS_COUNT_KEY, customerRepo.findByTenantId(tid).size());
 
             subscriptionRepo.findByTenantIdAndActive(tid, true).ifPresent(s -> {
                 summary.put("subscriptionTier", s.getTierLevel());

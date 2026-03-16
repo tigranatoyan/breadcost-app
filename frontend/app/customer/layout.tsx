@@ -14,7 +14,7 @@ const NAV = [
   { href: '/customer/profile', label: 'My Account', icon: User },
 ];
 
-export default function CustomerLayout({ children }: { children: React.ReactNode }) {
+export default function CustomerLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
   const router = useRouter();
   const isLoginPage = pathname === '/customer/login';

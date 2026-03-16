@@ -1,9 +1,9 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useReducer } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { PageSkeleton } from '@/components/ui';
 import { Badge, Card, StatCard, Progress, Button, SectionTitle, Table } from '@/components/design-system';
-import { CircleDollarSign, ShoppingCart, Factory, Warehouse, AlertTriangle, RefreshCw, Settings, DollarSign, TrendingUp, Users, Package } from 'lucide-react';
+import { CircleDollarSign, ShoppingCart, Factory, Warehouse, AlertTriangle, RefreshCw, Settings, DollarSign, TrendingUp, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useI18n, useDateTimeFmt, BCP47 } from '@/lib/i18n';
 
@@ -17,11 +17,14 @@ function fmtDuration(ms: number): { label: string; urgent: boolean; overdue: boo
   const abs = Math.abs(ms);
   const h = Math.floor(abs / 3_600_000);
   const m = Math.floor((abs % 3_600_000) / 60_000);
-  const label = overdue
-    ? `${h}h ${m}m overdue`
-    : h > 0
-    ? `in ${h}h ${m}m`
-    : `in ${m}m`;
+  let label: string;
+  if (overdue) {
+    label = `${h}h ${m}m overdue`;
+  } else if (h > 0) {
+    label = `in ${h}h ${m}m`;
+  } else {
+    label = `in ${m}m`;
+  }
   return { label, urgent: !overdue && h < 12, overdue };
 }
 
@@ -104,8 +107,22 @@ interface StatCardData {
   accent?: boolean;
 }
 
+interface TopProduct {
+  name?: string;
+  productName?: string;
+  totalQty?: number;
+  totalRevenue?: number;
+  orderCount?: number;
+}
+
+const ISSUE_COLORS: Record<string, string> = {
+  error: 'bg-red-50 text-red-600',
+  warn: 'bg-amber-50 text-amber-600',
+  info: 'bg-blue-50 text-blue-600',
+};
+
 // ─── sub-components ───────────────────────────────────────────────────────────
-function KpiCard({ label, value, sub, href, icon: Icon }: StatCardData) {
+function KpiCard({ label, value, sub, href, icon: Icon }: Readonly<StatCardData>) {
   return (
     <Link href={href} className="block hover:shadow-md transition-shadow rounded-2xl">
       <StatCard icon={Icon} label={label} value={value} hint={sub} />
@@ -113,7 +130,7 @@ function KpiCard({ label, value, sub, href, icon: Icon }: StatCardData) {
   );
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function SectionLabel({ children }: Readonly<{ children: React.ReactNode }>) {
   return <h2 className="text-xs font-semibold uppercase tracking-[0.22em] text-gray-500 mb-3">{children}</h2>;
 }
 
@@ -123,7 +140,7 @@ type WidgetId = typeof WIDGET_IDS[number];
 const WIDGET_STORAGE_KEY = 'bc_dashboard_widgets';
 
 function getVisibleWidgets(): Set<WidgetId> {
-  if (typeof window === 'undefined') return new Set(WIDGET_IDS);
+  if (globalThis.window === undefined) return new Set(WIDGET_IDS);
   try {
     const raw = localStorage.getItem(WIDGET_STORAGE_KEY);
     if (!raw) return new Set(WIDGET_IDS);
@@ -135,139 +152,72 @@ function saveVisibleWidgets(ids: Set<WidgetId>) {
   localStorage.setItem(WIDGET_STORAGE_KEY, JSON.stringify([...ids]));
 }
 
-// ─── main component ───────────────────────────────────────────────────────────
-export default function DashboardPage() {
-  const { t, locale } = useI18n();
-  const fmtDateTime = useDateTimeFmt();
-  const [loading, setLoading] = useState(true);
-  const [deptCount, setDeptCount] = useState(0);
-  const [, setProductCount] = useState(0);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [plans, setPlans] = useState<Plan[]>([]);
-  const [positions, setPositions] = useState<StockPosition[]>([]);
-  const [stockItems, setStockItems] = useState<StockItem[]>([]);
-  const [serverAlerts, setServerAlerts] = useState<StockAlert[]>([]);
-  const [revenue, setRevenue] = useState<RevenueSummary | null>(null);
-  const [topProducts, setTopProducts] = useState<Array<Record<string, unknown>>>([]);
-  const [analyticsKpis, setAnalyticsKpis] = useState<Record<string, string>>({});
-  const [tick, setTick] = useState(0);
-  const [visibleWidgets, setVisibleWidgets] = useState<Set<WidgetId>>(() => getVisibleWidgets());
-  const [showConfig, setShowConfig] = useState(false);
-  const today = new Date().toISOString().substring(0, 10);
+async function fetchAnalyticsKpis(): Promise<Record<string, string>> {
+  const keys = ['gross_margin_pct', 'avg_order_value', 'overdue_invoices', 'active_customers', 'order_frequency', 'customer_lifetime_value', 'disputed_invoice_rate'];
+  const results: Record<string, string> = {};
+  for (const key of keys) {
+    try {
+      const val = await apiFetch<Record<string, unknown>>(`/v2/reports/kpi?blockKey=${key}&tenantId=${TENANT_ID}`);
+      const raw = val?.value;
+      results[key] = typeof raw === 'string' || typeof raw === 'number' ? String(raw) : '\u2014';
+    } catch { results[key] = '\u2014'; }
+  }
+  return results;
+}
 
-  const toggleWidget = (id: WidgetId) => {
-    setVisibleWidgets((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      saveVisibleWidgets(next);
-      return next;
-    });
-  };
-  const show = (id: WidgetId) => visibleWidgets.has(id);
+function isOrderCritical(o: Order): boolean {
+  const ms = msUntil(o.requestedDeliveryTime);
+  return ms < 0 || ms < 12 * 3_600_000;
+}
 
-  const load = useCallback(() => {
-    Promise.all([
-      apiFetch<unknown[]>(`/v1/departments?tenantId=${TENANT_ID}`).then((d) => setDeptCount(d.length)),
-      apiFetch<unknown[]>(`/v1/products?tenantId=${TENANT_ID}`).then((d) => setProductCount(d.length)),
-      apiFetch<Order[]>(`/v1/orders?tenantId=${TENANT_ID}`).then(setOrders),
-      apiFetch<Plan[]>(`/v1/production-plans?tenantId=${TENANT_ID}`).then(setPlans),
-      apiFetch<StockPosition[]>(`/v1/inventory/positions?tenantId=${TENANT_ID}`).then(setPositions).catch(() => {}),
-      apiFetch<StockItem[]>(`/v1/items?tenantId=${TENANT_ID}`).then(setStockItems).catch(() => {}),
-      apiFetch<StockAlert[]>(`/v1/inventory/alerts?tenantId=${TENANT_ID}`).then(setServerAlerts).catch(() => {}),
-      apiFetch<RevenueSummary>(`/v1/reports/revenue-summary?tenantId=${TENANT_ID}`).then(setRevenue).catch(() => {}),
-      apiFetch<Array<Record<string, unknown>>>(`/v1/reports/top-products?tenantId=${TENANT_ID}&limit=8`).then(setTopProducts).catch(() => {}),
-      (async () => {
-        const keys = ['gross_margin_pct', 'avg_order_value', 'overdue_invoices', 'active_customers', 'order_frequency', 'customer_lifetime_value', 'disputed_invoice_rate'];
-        const results: Record<string, string> = {};
-        for (const key of keys) {
-          try {
-            const val = await apiFetch<Record<string, unknown>>(`/v2/reports/kpi?blockKey=${key}&tenantId=${TENANT_ID}`);
-            results[key] = val?.value != null ? String(val.value) : '\u2014';
-          } catch { results[key] = '\u2014'; }
-        }
-        setAnalyticsKpis(results);
-      })(),
-    ])
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => { load(); }, [load]);
-
-  // auto-refresh every 60s (BC-1505) + refresh countdowns every 30s
-  useEffect(() => {
-    const refreshId = setInterval(() => { load(); }, 60_000);
-    const tickId = setInterval(() => setTick((t) => t + 1), 30_000);
-    return () => { clearInterval(refreshId); clearInterval(tickId); };
-  }, [load]);
-
-  // ── derived metrics ────────────────────────────────────────────────────────
-  const activeOrders = orders.filter((o) => o.status !== 'CANCELLED' && o.status !== 'DELIVERED');
-  const criticalOrders = activeOrders.filter((o) => {
-    const ms = msUntil(o.requestedDeliveryTime);
-    return ms < 0 || ms < 12 * 3_600_000;
-  });
-  const rushOrders = orders.filter((o) => o.rushOrder || o.isRushOrder);
-  const confirmedOrders = orders.filter((o) => o.status === 'CONFIRMED');
-  const todayPlans = plans.filter((p) => p.planDate === today);
-  const activePlan = plans.find((p) => p.status === 'IN_PROGRESS' || p.status === 'PUBLISHED');
-
-  // inventory metrics
-  const totalStockValue = positions.reduce((s, p) => s + (p.valuationAmount ?? 0), 0);
+function computeLowStock(positions: StockPosition[], stockItems: StockItem[]): StockPosition[] {
   const itemMap: Record<string, StockItem> = {};
   stockItems.forEach((i) => { itemMap[i.itemId] = i; });
-  const lowStockPositions = positions.filter((p) => {
+  return positions.filter((p) => {
     const threshold = itemMap[p.itemId]?.minStockThreshold ?? 0;
     return threshold > 0 && p.onHandQty < threshold;
   });
+}
 
-  const runningRevenue = orders
-    .filter((o) => o.status !== 'CANCELLED' && o.status !== 'DRAFT')
-    .reduce((sum, o) => sum + (o.totalAmount ?? 0), 0);
+interface Issue { level: 'error' | 'warn' | 'info'; msg: string }
 
-  // delivery timeline — non-cancelled, sorted by delivery time asc
-  const deliveryTimeline = [...activeOrders]
-    .filter((o) => !!o.requestedDeliveryTime)
-    .sort((a, b) => new Date(a.requestedDeliveryTime).getTime() - new Date(b.requestedDeliveryTime).getTime())
-    .slice(0, 8);
-
-  // BC-1807: Today's Orders widget data
-  const todayOrders = orders.filter((o) => {
-    const placed = (o as unknown as { orderPlacedAt?: string }).orderPlacedAt;
-    const dt = placed || o.requestedDeliveryTime;
-    return dt && dt.substring(0, 10) === today;
-  });
-  const todayOrderValue = todayOrders.reduce((s, o) => s + (o.totalAmount ?? 0), 0);
-
-  // BC-1807: Active Plans widget data
-  const activePlans = plans.filter((p) => ['IN_PROGRESS', 'PUBLISHED', 'APPROVED'].includes(p.status));
-  const activePlanStatusBreakdown: Record<string, number> = {};
-  for (const p of activePlans) {
-    activePlanStatusBreakdown[p.status] = (activePlanStatusBreakdown[p.status] ?? 0) + 1;
-  }
-
-  // next big event
-  const nextEvent: { label: string; detail: string; accent: string } | null = (() => {
-    const nextDelivery = deliveryTimeline[0];
-    if (nextDelivery) {
-      const { label, overdue } = fmtDuration(msUntil(nextDelivery.requestedDeliveryTime));
-      return {
-        label: t('dashboard.nextDelivery', { customer: nextDelivery.customerName }),
-        detail: `${label} · ${fmtMoney(nextDelivery.totalAmount ?? 0)}`,
-        accent: overdue ? 'bg-red-700' : 'bg-slate-800',
-      };
-    }
-    const nextPlan = plans.find((p) => p.status === 'DRAFT' || p.status === 'PUBLISHED');
-    if (nextPlan) return {
-      label: t('dashboard.nextProductionRun', { date: nextPlan.planDate }),
-      detail: `${nextPlan.shift} · ${nextPlan.status}`,
-      accent: 'bg-slate-800',
+function computeNextEvent(
+  deliveryTimeline: Order[],
+  plans: Plan[],
+  t: (k: string, params?: Record<string, unknown>) => string,
+): { label: string; detail: string; accent: string } | null {
+  const nextDelivery = deliveryTimeline[0];
+  if (nextDelivery) {
+    const { label, overdue } = fmtDuration(msUntil(nextDelivery.requestedDeliveryTime));
+    return {
+      label: t('dashboard.nextDelivery', { customer: nextDelivery.customerName }),
+      detail: `${label} · ${fmtMoney(nextDelivery.totalAmount ?? 0)}`,
+      accent: overdue ? 'bg-red-700' : 'bg-slate-800',
     };
-    return null;
-  })();
+  }
+  const nextPlan = plans.find((p) => p.status === 'DRAFT' || p.status === 'PUBLISHED');
+  if (nextPlan) return {
+    label: t('dashboard.nextProductionRun', { date: nextPlan.planDate }),
+    detail: `${nextPlan.shift} · ${nextPlan.status}`,
+    accent: 'bg-slate-800',
+  };
+  return null;
+}
 
-  // issues
-  interface Issue { level: 'error' | 'warn' | 'info'; msg: string }
+function computeIssues(
+  ctx: {
+    activeOrders: Order[];
+    orders: Order[];
+    rushOrders: Order[];
+    confirmedOrders: Order[];
+    todayPlans: Plan[];
+    plans: Plan[];
+    serverAlerts: StockAlert[];
+    lowStockPositions: StockPosition[];
+  },
+  t: (k: string, params?: Record<string, unknown>) => string,
+): Issue[] {
+  const { activeOrders, orders, rushOrders, confirmedOrders, todayPlans, plans, serverAlerts, lowStockPositions } = ctx;
   const issues: Issue[] = [];
   for (const o of activeOrders) {
     const ms = msUntil(o.requestedDeliveryTime);
@@ -292,6 +242,105 @@ export default function DashboardPage() {
   if (confirmedNoMatch.length > 0) issues.push({ level: 'info', msg: t('dashboard.confirmedNoMatchPlan', { count: confirmedNoMatch.length }) });
   const cancelledCount = orders.filter((o) => o.status === 'CANCELLED').length;
   if (cancelledCount > 0) issues.push({ level: 'info', msg: t('dashboard.cancelledOnRecord', { count: cancelledCount }) });
+  return issues;
+}
+
+// ─── main component ───────────────────────────────────────────────────────────
+export default function DashboardPage() {
+  const { t, locale } = useI18n();
+  const fmtDateTime = useDateTimeFmt();
+  const [loading, setLoading] = useState(true);
+  const [deptCount, setDeptCount] = useState(0);
+  const [, bumpProductCount] = useReducer((x: number) => x + 1, 0);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [positions, setPositions] = useState<StockPosition[]>([]);
+  const [stockItems, setStockItems] = useState<StockItem[]>([]);
+  const [serverAlerts, setServerAlerts] = useState<StockAlert[]>([]);
+  const [revenue, setRevenue] = useState<RevenueSummary | null>(null);
+  const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
+  const [analyticsKpis, setAnalyticsKpis] = useState<Record<string, string>>({});
+  const [, bumpTick] = useReducer((x: number) => x + 1, 0);
+  const [visibleWidgets, setVisibleWidgets] = useState<Set<WidgetId>>(() => getVisibleWidgets());
+  const [showConfig, setShowConfig] = useState(false);
+  const today = new Date().toISOString().substring(0, 10);
+
+  const toggleWidget = (id: WidgetId) => {
+    setVisibleWidgets((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      saveVisibleWidgets(next);
+      return next;
+    });
+  };
+  const show = (id: WidgetId) => visibleWidgets.has(id);
+
+  const load = useCallback(() => {
+    Promise.all([
+      apiFetch<unknown[]>(`/v1/departments?tenantId=${TENANT_ID}`).then((d) => setDeptCount(d.length)),
+      apiFetch<unknown[]>(`/v1/products?tenantId=${TENANT_ID}`).then(() => bumpProductCount()),
+      apiFetch<Order[]>(`/v1/orders?tenantId=${TENANT_ID}`).then(setOrders),
+      apiFetch<Plan[]>(`/v1/production-plans?tenantId=${TENANT_ID}`).then(setPlans),
+      apiFetch<StockPosition[]>(`/v1/inventory/positions?tenantId=${TENANT_ID}`).then(setPositions).catch(() => {}),
+      apiFetch<StockItem[]>(`/v1/items?tenantId=${TENANT_ID}`).then(setStockItems).catch(() => {}),
+      apiFetch<StockAlert[]>(`/v1/inventory/alerts?tenantId=${TENANT_ID}`).then(setServerAlerts).catch(() => {}),
+      apiFetch<RevenueSummary>(`/v1/reports/revenue-summary?tenantId=${TENANT_ID}`).then(setRevenue).catch(() => {}),
+      apiFetch<TopProduct[]>(`/v1/reports/top-products?tenantId=${TENANT_ID}&limit=8`).then(setTopProducts).catch(() => {}),
+      fetchAnalyticsKpis().then(setAnalyticsKpis),
+    ])
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  // auto-refresh every 60s (BC-1505) + refresh countdowns every 30s
+  useEffect(() => {
+    const refreshId = setInterval(() => { load(); }, 60_000);
+    const tickId = setInterval(() => bumpTick(), 30_000);
+    return () => { clearInterval(refreshId); clearInterval(tickId); };
+  }, [load]);
+
+  // ── derived metrics ────────────────────────────────────────────────────────
+  const activeOrders = orders.filter((o) => o.status !== 'CANCELLED' && o.status !== 'DELIVERED');
+  const criticalOrders = activeOrders.filter(isOrderCritical);
+  const rushOrders = orders.filter((o) => o.rushOrder || o.isRushOrder);
+  const confirmedOrders = orders.filter((o) => o.status === 'CONFIRMED');
+  const todayPlans = plans.filter((p) => p.planDate === today);
+  const activePlan = plans.find((p) => p.status === 'IN_PROGRESS' || p.status === 'PUBLISHED');
+
+  // inventory metrics
+  const totalStockValue = positions.reduce((s, p) => s + (p.valuationAmount ?? 0), 0);
+  const lowStockPositions = computeLowStock(positions, stockItems);
+
+  const runningRevenue = orders
+    .filter((o) => o.status !== 'CANCELLED' && o.status !== 'DRAFT')
+    .reduce((sum, o) => sum + (o.totalAmount ?? 0), 0);
+
+  // delivery timeline — non-cancelled, sorted by delivery time asc
+  const deliveryTimeline = [...activeOrders]
+    .filter((o) => !!o.requestedDeliveryTime)
+    .sort((a, b) => new Date(a.requestedDeliveryTime).getTime() - new Date(b.requestedDeliveryTime).getTime())
+    .slice(0, 8);
+
+  // BC-1807: Today's Orders widget data
+  const todayOrders = orders.filter((o) => {
+    const placed = (o as unknown as { orderPlacedAt?: string }).orderPlacedAt;
+    const dt = placed || o.requestedDeliveryTime;
+    return dt?.substring(0, 10) === today;
+  });
+  const todayOrderValue = todayOrders.reduce((s, o) => s + (o.totalAmount ?? 0), 0);
+
+  // BC-1807: Active Plans widget data
+  const activePlans = plans.filter((p) => ['IN_PROGRESS', 'PUBLISHED', 'APPROVED'].includes(p.status));
+  const activePlanStatusBreakdown: Record<string, number> = {};
+  for (const p of activePlans) {
+    activePlanStatusBreakdown[p.status] = (activePlanStatusBreakdown[p.status] ?? 0) + 1;
+  }
+
+  const nextEvent = computeNextEvent(deliveryTimeline, plans, t);
+
+  const issues = computeIssues({ activeOrders, orders, rushOrders, confirmedOrders, todayPlans, plans, serverAlerts, lowStockPositions }, t);
 
   // kpi stats
   const stats: StatCardData[] = [
@@ -446,10 +495,13 @@ export default function DashboardPage() {
               <div className="divide-y">
                 {deliveryTimeline.map((o) => {
                   const { label: dtLabel, urgent, overdue } = fmtDuration(msUntil(o.requestedDeliveryTime));
-                  void tick; // force re-render on tick
                   const conflictsInOrder = (o.lines ?? []).filter((l) => l.leadTimeConflict).length;
-                  const rowBg = overdue ? 'bg-red-50' : urgent ? 'bg-orange-50' : '';
-                  const timeColor = overdue ? 'text-red-600 font-semibold' : urgent ? 'text-orange-600 font-semibold' : 'text-gray-500';
+                  let rowBg = '';
+                  if (overdue) rowBg = 'bg-red-50';
+                  else if (urgent) rowBg = 'bg-orange-50';
+                  let timeColor = 'text-gray-500';
+                  if (overdue) timeColor = 'text-red-600 font-semibold';
+                  else if (urgent) timeColor = 'text-orange-600 font-semibold';
                   return (
                     <div key={o.orderId} className={`px-5 py-3 flex items-center gap-3 ${rowBg}`}>
                       <div className="flex-1 min-w-0">
@@ -486,10 +538,10 @@ export default function DashboardPage() {
               <div className="px-5 py-10 text-center text-sm text-gray-400">{t('dashboard.noIssues')}</div>
             ) : (
               <div className="divide-y">
-                {issues.map((iss, i) => {
-                  const colors = iss.level === 'error' ? 'bg-red-50 text-red-600' : iss.level === 'warn' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600';
+                {issues.map((iss) => {
+                  const colors = ISSUE_COLORS[iss.level] ?? 'bg-blue-50 text-blue-600';
                   return (
-                    <div key={i} className="px-4 py-3 flex gap-3 text-sm items-start">
+                    <div key={`${iss.level}-${iss.msg}`} className="px-4 py-3 flex gap-3 text-sm items-start">
                       <div className={`rounded-full p-1.5 shrink-0 ${colors}`}>
                         <AlertTriangle className="h-3.5 w-3.5" />
                       </div>
@@ -587,9 +639,9 @@ export default function DashboardPage() {
           <Table
             cols={[t('analytics.productCol'), t('analytics.qtySold'), t('analytics.revenueCol'), t('analytics.ordersCol')]}
             rows={topProducts.map((p) => [
-              String(p.name || p.productName || ''),
+              p.name || p.productName || '',
               String(p.totalQty ?? 0),
-              Number(p.totalRevenue ?? 0).toLocaleString(),
+              (p.totalRevenue ?? 0).toLocaleString(),
               String(p.orderCount ?? 0),
             ])}
             empty={t('analytics.noProductData')}

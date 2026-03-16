@@ -30,7 +30,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: ButtonSize;
 }
 
-export function Button({ variant = 'primary', size = 'sm', className, children, ...props }: ButtonProps) {
+export function Button({ variant = 'primary', size = 'sm', className, children, ...props }: Readonly<ButtonProps>) {
   return (
     <button
       className={cn(
@@ -54,7 +54,7 @@ interface CardProps {
   children: ReactNode;
 }
 
-export function Card({ title, action, className, children }: CardProps) {
+export function Card({ title, action, className, children }: Readonly<CardProps>) {
   return (
     <div className={cn('rounded-2xl border border-gray-200 bg-white p-4 shadow-sm', className)}>
       {(title || action) && (
@@ -76,7 +76,7 @@ interface StatCardProps {
   hint?: string;
 }
 
-export function StatCard({ icon: Icon, label, value, hint }: StatCardProps) {
+export function StatCard({ icon: Icon, label, value, hint }: Readonly<StatCardProps>) {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
@@ -101,7 +101,7 @@ interface SectionTitleProps {
   action?: ReactNode;
 }
 
-export function SectionTitle({ eyebrow, title, subtitle, action }: SectionTitleProps) {
+export function SectionTitle({ eyebrow, title, subtitle, action }: Readonly<SectionTitleProps>) {
   return (
     <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
       <div>
@@ -122,7 +122,7 @@ interface InputFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 's
   rightIcon?: React.ComponentType<{ className?: string }>;
 }
 
-export function InputField({ label, hint, error, rightIcon: Icon, className, ...props }: InputFieldProps) {
+export function InputField({ label, hint, error, rightIcon: Icon, className, ...props }: Readonly<InputFieldProps>) {
   return (
     <label className="block">
       {label && <div className="mb-1 text-sm font-medium text-gray-700">{label}</div>}
@@ -139,8 +139,11 @@ export function InputField({ label, hint, error, rightIcon: Icon, className, ...
         />
         {Icon && <Icon className="pointer-events-none absolute right-3 top-2.5 h-4 w-4 text-gray-400" />}
       </div>
-      {error && <div className="mt-1 text-xs text-red-600">{error}</div>}
-      {hint && !error && <div className="mt-1 text-xs text-gray-500">{hint}</div>}
+      {error ? (
+        <div className="mt-1 text-xs text-red-600">{error}</div>
+      ) : (
+        hint && <div className="mt-1 text-xs text-gray-500">{hint}</div>
+      )}
     </label>
   );
 }
@@ -151,7 +154,7 @@ interface SelectFieldProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>,
   options: { value: string; label: string }[];
 }
 
-export function SelectField({ label, options, className, ...props }: SelectFieldProps) {
+export function SelectField({ label, options, className, ...props }: Readonly<SelectFieldProps>) {
   return (
     <label className="block">
       {label && <div className="mb-1 text-sm font-medium text-gray-700">{label}</div>}
@@ -176,7 +179,7 @@ interface ProgressProps {
   className?: string;
 }
 
-export function Progress({ value, className }: ProgressProps) {
+export function Progress({ value, className }: Readonly<ProgressProps>) {
   const clamped = Math.max(0, Math.min(100, value));
   return (
     <div className={cn('h-2 w-full overflow-hidden rounded-full bg-gray-100', className)}>
@@ -213,12 +216,12 @@ interface BadgeProps {
   children?: ReactNode;
 }
 
-export function Badge({ status, children }: BadgeProps) {
+export function Badge({ status, children }: Readonly<BadgeProps>) {
   const t = useT();
   const cls = STATUS_COLORS[status] ?? 'bg-gray-100 text-gray-700';
   const key = `statusLabels.${status}`;
   const translated = t(key as any);
-  const label = children || (translated !== key ? translated : status.replace(/_/g, ' '));
+  const label = children || (translated === key ? status.replaceAll('_', ' ') : translated);
   return (
     <span className={cn('inline-flex rounded-full px-2 py-0.5 text-xs font-medium', cls)}>
       {label}
@@ -235,15 +238,20 @@ interface SidebarItemProps {
   onClick?: () => void;
 }
 
-export function SidebarItem({ icon: Icon, label, active, accent, onClick }: SidebarItemProps) {
+export function SidebarItem({ icon: Icon, label, active, accent, onClick }: Readonly<SidebarItemProps>) {
+  let stateClass: string;
+  if (active) {
+    stateClass = accent ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-800 text-white shadow-sm';
+  } else {
+    stateClass = accent ? 'text-emerald-400 hover:bg-emerald-900/40 hover:text-emerald-300' : 'text-slate-300 hover:bg-slate-800 hover:text-white';
+  }
+
   return (
     <button
       onClick={onClick}
       className={cn(
         'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition',
-        active
-          ? accent ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-800 text-white shadow-sm'
-          : accent ? 'text-emerald-400 hover:bg-emerald-900/40 hover:text-emerald-300' : 'text-slate-300 hover:bg-slate-800 hover:text-white',
+        stateClass,
       )}
     >
       <Icon className={cn('h-4 w-4', accent && !active && 'text-emerald-400')} />
@@ -256,10 +264,11 @@ export function SidebarItem({ icon: Icon, label, active, accent, onClick }: Side
 interface TableProps {
   cols: string[];
   rows: ReactNode[][];
+  rowKeys?: string[];
   empty?: string;
 }
 
-export function Table({ cols, rows, empty = 'No records found' }: TableProps) {
+export function Table({ cols, rows, rowKeys, empty = 'No records found' }: Readonly<TableProps>) {
   if (rows.length === 0) {
     return <div className="text-center py-16 text-sm text-gray-400 border rounded-xl bg-white">{empty}</div>;
   }
@@ -279,9 +288,9 @@ export function Table({ cols, rows, empty = 'No records found' }: TableProps) {
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
             {rows.map((row, i) => (
-              <tr key={i} className="hover:bg-gray-50 transition-colors">
+              <tr key={rowKeys?.[i] ?? `row-${i}`} className="hover:bg-gray-50 transition-colors">
                 {row.map((cell, j) => (
-                  <td key={j} className="whitespace-nowrap px-4 py-3 text-gray-700 align-top">
+                  <td key={`cell-${i}-${j}`} className="whitespace-nowrap px-4 py-3 text-gray-700 align-top">
                     {cell}
                   </td>
                 ))}
@@ -294,9 +303,9 @@ export function Table({ cols, rows, empty = 'No records found' }: TableProps) {
       {/* Mobile card view */}
       <div className="sm:hidden space-y-3">
         {rows.map((row, i) => (
-          <div key={i} className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm space-y-1.5 text-sm">
+          <div key={rowKeys?.[i] ?? `card-${i}`} className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm space-y-1.5 text-sm">
             {row.map((cell, j) => (
-              <div key={j} className="flex items-start justify-between gap-2">
+              <div key={`field-${i}-${j}`} className="flex items-start justify-between gap-2">
                 <span className="text-xs font-medium text-gray-500 shrink-0">{cols[j]}</span>
                 <span className="text-gray-700 text-right">{cell}</span>
               </div>

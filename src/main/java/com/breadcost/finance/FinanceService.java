@@ -77,9 +77,13 @@ public class FinanceService {
     }
 
     public static class PostingResult {
-        public String debitAccount;
-        public String creditAccount;
-        public boolean operational;
+        private String debitAccount;
+        private String creditAccount;
+        private boolean operational;
+
+        public String getDebitAccount() { return debitAccount; }
+        public String getCreditAccount() { return creditAccount; }
+        public boolean isOperational() { return operational; }
 
         public static PostingResultBuilder builder() {
             return new PostingResultBuilder();
@@ -164,17 +168,17 @@ public class FinanceService {
     }
 
     /** Placeholder delivery completion rate (returns 95.0 if no delivery data). BC-1603 */
-    public BigDecimal deliveryCompletionRate(String tenantId, LocalDate dateFrom, LocalDate dateTo) {
+    public BigDecimal deliveryCompletionRate() {
         return new BigDecimal("95.00");
     }
 
     /** Placeholder stock turnover. BC-1603 */
-    public BigDecimal stockTurnover(String tenantId, LocalDate dateFrom, LocalDate dateTo) {
+    public BigDecimal stockTurnover() {
         return new BigDecimal("4.50");
     }
 
     /** Placeholder production efficiency. BC-1603 */
-    public BigDecimal productionEfficiency(String tenantId, LocalDate dateFrom, LocalDate dateTo) {
+    public BigDecimal productionEfficiency() {
         return new BigDecimal("92.00");
     }
 
@@ -202,17 +206,20 @@ public class FinanceService {
                 .filter(inv -> inv.getStatus() == InvoiceEntity.InvoiceStatus.ISSUED
                         || inv.getStatus() == InvoiceEntity.InvoiceStatus.OVERDUE)
                 .toList();
-        long b0_30 = 0, b31_60 = 0, b61_90 = 0, b90plus = 0;
+        long bucket0to30 = 0;
+        long bucket31to60 = 0;
+        long bucket61to90 = 0;
+        long bucket90plus = 0;
         for (InvoiceEntity inv : unpaid) {
             long days = inv.getDueDate() != null
                     ? java.time.temporal.ChronoUnit.DAYS.between(inv.getDueDate(), today)
                     : 0;
-            if (days <= 30) b0_30++;
-            else if (days <= 60) b31_60++;
-            else if (days <= 90) b61_90++;
-            else b90plus++;
+            if (days <= 30) bucket0to30++;
+            else if (days <= 60) bucket31to60++;
+            else if (days <= 90) bucket61to90++;
+            else bucket90plus++;
         }
-        return java.util.Map.of("0-30", b0_30, "31-60", b31_60, "61-90", b61_90, "90+", b90plus);
+        return java.util.Map.of("0-30", bucket0to30, "31-60", bucket31to60, "61-90", bucket61to90, "90+", bucket90plus);
     }
 
     /** Customer count with at least one order. D1.4 */

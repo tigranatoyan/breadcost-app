@@ -1,7 +1,6 @@
 package com.breadcost.functional;
 
 import com.breadcost.subscription.SubscriptionService;
-import com.breadcost.subscription.SubscriptionTierRepository;
 import com.breadcost.subscription.TenantSubscriptionRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.time.LocalDate;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -22,9 +22,6 @@ class SubscriptionEnforcementTest extends FunctionalTestBase {
 
     @Autowired
     private TenantSubscriptionRepository tenantSubRepo;
-
-    @Autowired
-    private SubscriptionTierRepository tierRepo;
 
     private void ensureTiers() {
         subscriptionService.seedTiers();
@@ -62,7 +59,7 @@ class SubscriptionEnforcementTest extends FunctionalTestBase {
             Map.of("tenantId", TENANT),
             bearer("admin1")
         ).andReturn().getResponse().getStatus();
-        assert code != 403 : "Expected non-403 but got 403 — subscription incorrectly blocked";
+        assertNotEquals(403, code, "Expected non-403 but got 403 — subscription incorrectly blocked");
     }
 
     @Test
@@ -83,7 +80,7 @@ class SubscriptionEnforcementTest extends FunctionalTestBase {
             "/v2/loyalty/tiers?tenantId=" + TENANT,
             bearer("admin1")
         ).andReturn().getResponse().getStatus();
-        assert code != 403 : "Expected non-403 but got 403 — subscription incorrectly blocked";
+        assertNotEquals(403, code, "Expected non-403 but got 403 — subscription incorrectly blocked");
     }
 
     // ── BC-3102: maxUsers limit ──────────────────────────────────────────────
@@ -122,6 +119,6 @@ class SubscriptionEnforcementTest extends FunctionalTestBase {
             ),
             bearer("admin1")
         ).andReturn().getResponse().getStatus();
-        assert code != 409 : "Expected non-409 but got 409 — user limit incorrectly enforced";
+        assertNotEquals(409, code, "Expected non-409 but got 409 — user limit incorrectly enforced");
     }
 }

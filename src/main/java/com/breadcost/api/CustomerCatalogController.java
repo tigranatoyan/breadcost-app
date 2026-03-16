@@ -3,7 +3,6 @@ package com.breadcost.api;
 import com.breadcost.domain.Product;
 import com.breadcost.masterdata.ProductEntity;
 import com.breadcost.masterdata.ProductRepository;
-import com.breadcost.masterdata.RecipeEntity;
 import com.breadcost.masterdata.RecipeRepository;
 import com.breadcost.masterdata.InventoryService;
 import com.breadcost.domain.Recipe;

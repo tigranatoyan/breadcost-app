@@ -65,9 +65,8 @@ class DepartmentServiceTest {
     void update_notFound_throws() {
         when(deptRepo.findById("bad")).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class,
-                () -> svc.update("bad", new DepartmentService.UpdateDepartmentRequest(
-                        "X", 1, null, null)));
+        var req = new DepartmentService.UpdateDepartmentRequest("X", 1, null, null);
+        assertThrows(IllegalArgumentException.class, () -> svc.update("bad", req));
     }
 
     @Test

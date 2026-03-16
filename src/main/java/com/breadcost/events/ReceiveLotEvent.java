@@ -1,6 +1,5 @@
 package com.breadcost.events;
 
-import com.breadcost.domain.LedgerEntry;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

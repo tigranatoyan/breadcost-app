@@ -203,7 +203,7 @@ export default function CustomersPage() {
       {tab === 'orders' && (
         <>
           <div className="flex items-center gap-4 mb-4">
-            <select className="input w-64" value={selectedCustomerId} onChange={e => setSelectedCustomerId(e.target.value)}>
+            <select className="input w-64" aria-label={t('customers.selectCustomer')} value={selectedCustomerId} onChange={e => setSelectedCustomerId(e.target.value)}>
               <option value="">— {t('customers.selectCustomer')} —</option>
               {customers.map(c => <option key={c.customerId} value={c.customerId}>{c.name}</option>)}
             </select>
@@ -211,9 +211,8 @@ export default function CustomersPage() {
               <Button variant="primary" size="sm" onClick={() => { setShowCreateOrder(true); setOrderForm({ customerId: selectedCustomerId }); addLine(); }}>+ {t('customers.createOrder')}</Button>
             )}
           </div>
-          {!selectedCustomerId ? (
-            <p className="text-gray-500 text-sm">{t('customers.selectCustomerHint')}</p>
-          ) : ordersLoading ? <Spinner /> : (
+          {selectedCustomerId && ordersLoading && <Spinner />}
+          {selectedCustomerId && !ordersLoading && (
             <Table
               cols={[t('customers.orderId'), t('customers.customer'), t('common.status'), t('customers.total'), t('common.date')]}
               rows={orders.map(o => [
@@ -225,6 +224,9 @@ export default function CustomersPage() {
               ])}
               empty={t('customers.noOrders')}
             />
+          )}
+          {!selectedCustomerId && (
+            <p className="text-gray-500 text-sm">{t('customers.selectCustomerHint')}</p>
           )}
         </>
       )}
@@ -256,7 +258,7 @@ export default function CustomersPage() {
             </Field>
             <h3 className="font-semibold text-sm">{t('customers.orderItems')}</h3>
             {orderLines.map((line, i) => (
-              <div key={i} className="grid grid-cols-4 gap-2 items-end">
+              <div key={`line-${i}-${line.productId}`} className="grid grid-cols-4 gap-2 items-end">
                 <Field label={t('customers.product')}>
                   <select className="input w-full" required value={line.productId} onChange={e => updateLine(i, 'productId', e.target.value)}>
                     <option value="">—</option>
@@ -279,7 +281,7 @@ export default function CustomersPage() {
 
       {/* order detail modal */}
       {orderDetail && (
-        <Modal title={`${t('customers.orderDetail')} \u2014 ${orderDetail.orderNumber ? `ORD-${String(orderDetail.orderNumber).padStart(4, '0')}` : orderDetail.orderId.slice(0, 8)}`} onClose={() => setOrderDetail(null)} wide>
+        <Modal title={`${t('customers.orderDetail')} \u2014 ${orderDetail.orderNumber ? 'ORD-' + String(orderDetail.orderNumber).padStart(4, '0') : orderDetail.orderId.slice(0, 8)}`} onClose={() => setOrderDetail(null)} wide>
           <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
             <div><span className="font-medium">{t('common.status')}:</span> <Badge status={orderDetail.status} /></div>
             <div><span className="font-medium">{t('customers.total')}:</span> {orderDetail.totalAmount?.toFixed(2)} {orderDetail.currency}</div>

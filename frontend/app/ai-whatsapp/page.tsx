@@ -69,8 +69,8 @@ function FlowCards() {
           <h3 className="text-base font-semibold text-gray-900">{flow.title}</h3>
           <p className="mb-3 text-xs text-gray-500">{flow.description}</p>
           <div className="space-y-2 rounded-2xl bg-gray-50 p-3">
-            {flow.messages.map((m, i) => (
-              <div key={i} className={`flex ${m.sender === 'bot' ? 'justify-start' : 'justify-end'}`}>
+            {flow.messages.map((m) => (
+              <div key={m.text} className={`flex ${m.sender === 'bot' ? 'justify-start' : 'justify-end'}`}>
                 <div className={`rounded-2xl px-4 py-2.5 text-xs max-w-[85%] shadow-sm ${
                   m.sender === 'bot' ? 'bg-white text-gray-800' : 'bg-blue-600 text-white'
                 }`}>
@@ -162,9 +162,9 @@ export default function AiWhatsappPage() {
         ))}
       </div>
 
-      {tab === 'flows' ? (
-        <FlowCards />
-      ) : loading ? <Spinner /> : (
+      {tab === 'flows' && <FlowCards />}
+      {tab !== 'flows' && loading && <Spinner />}
+      {tab !== 'flows' && !loading && (
         /* ── Split-pane: Conversation List + Chat Detail ── */
         <div className="grid gap-6 xl:grid-cols-[0.85fr_1.35fr]">
           {/* LEFT: Conversation List */}

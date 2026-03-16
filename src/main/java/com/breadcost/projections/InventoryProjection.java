@@ -29,6 +29,9 @@ import java.util.Comparator;
 @Slf4j
 @RequiredArgsConstructor
 public class InventoryProjection {
+
+    private static final String RECEIVING_LOCATION = "RECEIVING";
+
     private final EventStore eventStore;
     private final Map<String, InventoryPosition> positions = new ConcurrentHashMap<>();
 
@@ -84,7 +87,7 @@ public class InventoryProjection {
 
     private void handleReceiveLot(ReceiveLotEvent event) {
         String key = buildKey(event.getTenantId(), event.getSiteId(), 
-                             event.getItemId(), event.getLotId(), "RECEIVING");
+                             event.getItemId(), event.getLotId(), RECEIVING_LOCATION);
         
         InventoryPosition position = positions.computeIfAbsent(key, k -> 
             InventoryPosition.builder()
@@ -93,7 +96,7 @@ public class InventoryProjection {
                 .siteId(event.getSiteId())
                 .itemId(event.getItemId())
                 .lotId(event.getLotId())
-                .locationId("RECEIVING")
+                .locationId(RECEIVING_LOCATION)
                 .onHandQty(BigDecimal.ZERO)
                 .valuationAmount(BigDecimal.ZERO)
                 .avgUnitCost(BigDecimal.ZERO)
@@ -120,7 +123,7 @@ public class InventoryProjection {
     private void handleIssueToBatch(IssueToBatchEvent event) {
         String key = buildKey(event.getTenantId(), event.getSiteId(), 
                              event.getItemId(), event.getLotId(), 
-                             event.getLocationId() != null ? event.getLocationId() : "RECEIVING");
+                             event.getLocationId() != null ? event.getLocationId() : RECEIVING_LOCATION);
         
         InventoryPosition position = positions.get(key);
         if (position != null) {

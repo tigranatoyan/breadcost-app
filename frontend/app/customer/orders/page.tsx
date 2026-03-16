@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { API_BASE, TENANT_ID } from '@/lib/api';
-import { getCustomerToken, getCustomerInfo, type CustomerInfo } from '@/lib/customer-auth';
+import { getCustomerToken, getCustomerInfo } from '@/lib/customer-auth';
 import {
   Package, Clock, ChevronDown, ChevronUp,
   RefreshCw, ShoppingCart, CheckCircle2, Circle,
@@ -64,21 +64,16 @@ const TIMELINE_STEPS = [
 
 export default function MyOrdersPage() {
   const router = useRouter();
-  const t = useT();
-  const formatDate = useDateFmt();
-  const formatDateTime = useDateTimeFmt();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [timeline, setTimeline] = useState<TimelineEntry[]>([]);
   const [timelineLoading, setTimelineLoading] = useState(false);
-  const [, setCustomer] = useState<CustomerInfo | null>(null);
 
   const fetchOrders = useCallback(async () => {
     const c = getCustomerInfo();
     const token = getCustomerToken();
     if (!c || !token) { router.replace('/customer/login'); return; }
-    setCustomer(c);
     setLoading(true);
     try {
       const res = await fetch(
@@ -121,6 +116,70 @@ export default function MyOrdersPage() {
   const activeOrders = orders.filter(o => !['DELIVERED', 'CANCELLED'].includes(o.status));
   const pastOrders = orders.filter(o => ['DELIVERED', 'CANCELLED'].includes(o.status)).slice(0, 5);
 
+  let ordersContent: React.ReactNode;
+  if (loading) {
+    ordersContent = (
+      <div className="flex justify-center py-16">
+        <div className="w-8 h-8 border-4 border-amber-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  } else if (orders.length === 0) {
+    ordersContent = (
+      <div className="text-center py-16">
+        <Package className="mx-auto h-12 w-12 text-gray-300 mb-3" />
+        <p className="text-gray-500">No orders yet.</p>
+        <button
+          onClick={() => router.push('/customer/catalog')}
+          className="mt-4 inline-flex items-center gap-2 rounded-xl bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-amber-700"
+        >
+          <ShoppingCart className="h-4 w-4" /> Browse Catalog
+        </button>
+      </div>
+    );
+  } else {
+    ordersContent = (
+      <>
+        {activeOrders.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Active Orders</h2>
+            <div className="space-y-3">
+              {activeOrders.map(order => (
+                <OrderCard
+                  key={order.orderId}
+                  order={order}
+                  expanded={expandedId === order.orderId}
+                  onToggle={() => toggleExpand(order.orderId)}
+                  timeline={expandedId === order.orderId ? timeline : []}
+                  timelineLoading={expandedId === order.orderId && timelineLoading}
+                  completedStatuses={expandedId === order.orderId ? completedStatuses : new Set()}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {pastOrders.length > 0 && (
+          <div>
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Recent History</h2>
+            <div className="space-y-3">
+              {pastOrders.map(order => (
+                <OrderCard
+                  key={order.orderId}
+                  order={order}
+                  expanded={expandedId === order.orderId}
+                  onToggle={() => toggleExpand(order.orderId)}
+                  timeline={expandedId === order.orderId ? timeline : []}
+                  timelineLoading={expandedId === order.orderId && timelineLoading}
+                  completedStatuses={expandedId === order.orderId ? completedStatuses : new Set()}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </>
+    );
+  }
+
   return (
     <div>
       {/* Header */}
@@ -137,78 +196,24 @@ export default function MyOrdersPage() {
         </button>
       </div>
 
-      {loading ? (
-        <div className="flex justify-center py-16">
-          <div className="w-8 h-8 border-4 border-amber-600 border-t-transparent rounded-full animate-spin" />
-        </div>
-      ) : orders.length === 0 ? (
-        <div className="text-center py-16">
-          <Package className="mx-auto h-12 w-12 text-gray-300 mb-3" />
-          <p className="text-gray-500">No orders yet.</p>
-          <button
-            onClick={() => router.push('/customer/catalog')}
-            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-amber-700"
-          >
-            <ShoppingCart className="h-4 w-4" /> Browse Catalog
-          </button>
-        </div>
-      ) : (
-        <>
-          {/* Active orders */}
-          {activeOrders.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Active Orders</h2>
-              <div className="space-y-3">
-                {activeOrders.map(order => (
-                  <OrderCard
-                    key={order.orderId}
-                    order={order}
-                    expanded={expandedId === order.orderId}
-                    onToggle={() => toggleExpand(order.orderId)}
-                    timeline={expandedId === order.orderId ? timeline : []}
-                    timelineLoading={expandedId === order.orderId && timelineLoading}
-                    completedStatuses={expandedId === order.orderId ? completedStatuses : new Set()}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Recent history */}
-          {pastOrders.length > 0 && (
-            <div>
-              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Recent History</h2>
-              <div className="space-y-3">
-                {pastOrders.map(order => (
-                  <OrderCard
-                    key={order.orderId}
-                    order={order}
-                    expanded={expandedId === order.orderId}
-                    onToggle={() => toggleExpand(order.orderId)}
-                    timeline={expandedId === order.orderId ? timeline : []}
-                    timelineLoading={expandedId === order.orderId && timelineLoading}
-                    completedStatuses={expandedId === order.orderId ? completedStatuses : new Set()}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </>
-      )}
+      {ordersContent}
     </div>
   );
 }
 
 function OrderCard({
   order, expanded, onToggle, timeline, timelineLoading, completedStatuses,
-}: {
+}: Readonly<{
   order: Order;
   expanded: boolean;
   onToggle: () => void;
   timeline: TimelineEntry[];
   timelineLoading: boolean;
   completedStatuses: Set<string>;
-}) {
+}>) {
+  const t = useT();
+  const formatDate = useDateFmt();
+  const formatDateTime = useDateTimeFmt();
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
       {/* Summary row */}
@@ -222,18 +227,18 @@ function OrderCard({
               #{order.orderId.slice(0, 8)}
             </span>
             <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[order.status] || 'bg-gray-100 text-gray-700'}`}>
-              {t(`statusLabels.${order.status}` as any) || order.status}
+              {t(`statusLabels.${order.status}`) || order.status}
             </span>
             {order.rushOrder && (
               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">Rush</span>
             )}
           </div>
           <p className="text-sm text-gray-500">
-            {formatDate(order.orderPlacedAt)} · {order.lines?.length || 0} item{(order.lines?.length || 0) !== 1 ? 's' : ''}
+            {formatDate(order.orderPlacedAt)} · {order.lines.length} item{order.lines.length === 1 ? '' : 's'}
           </p>
         </div>
         <p className="font-semibold text-gray-900 mr-2">
-          {order.totalAmount?.toLocaleString()} AMD
+          {order.totalAmount.toLocaleString()} AMD
         </p>
         {expanded ? <ChevronUp className="h-4 w-4 text-gray-400" /> : <ChevronDown className="h-4 w-4 text-gray-400" />}
       </button>
@@ -263,7 +268,7 @@ function OrderCard({
                             <Icon className="h-4 w-4" />
                           </div>
                           <span className={`mt-1 text-[10px] text-center leading-tight ${done ? 'font-medium text-gray-900' : 'text-gray-400'}`}>
-                            {t(`statusLabels.${step.status}` as any)}
+                            {t(`statusLabels.${step.status}`)}
                           </span>
                         </div>
                         {i < TIMELINE_STEPS.length - 1 && (
@@ -278,13 +283,13 @@ function OrderCard({
               {/* Detailed timeline entries */}
               {timeline.length > 0 && (
                 <div className="mt-3 space-y-1">
-                  {timeline.map((t, i) => (
-                    <div key={i} className="flex items-start gap-2 text-xs text-gray-500">
+                  {timeline.map((entry) => (
+                    <div key={`${entry.status}-${entry.timestamp}`} className="flex items-start gap-2 text-xs text-gray-500">
                       <Circle className="h-2.5 w-2.5 mt-0.5 fill-amber-400 text-amber-400 shrink-0" />
-                      <span className="font-medium text-gray-700">{t.status}</span>
+                      <span className="font-medium text-gray-700">{entry.status}</span>
                       <span>—</span>
-                      <span>{t.description}</span>
-                      <span className="ml-auto text-gray-400">{formatDateTime(t.timestamp)}</span>
+                      <span>{entry.description}</span>
+                      <span className="ml-auto text-gray-400">{formatDateTime(entry.timestamp)}</span>
                     </div>
                   ))}
                 </div>
@@ -295,11 +300,11 @@ function OrderCard({
           {/* Line items */}
           <div className="rounded-xl bg-gray-50 p-3">
             <h3 className="text-sm font-semibold text-gray-700 mb-2">Items</h3>
-            {order.lines?.map((line, i) => (
-              <div key={i} className="flex justify-between text-sm py-1">
+            {order.lines.map((line) => (
+              <div key={`${line.productName}-${line.unitPrice}`} className="flex justify-between text-sm py-1">
                 <span className="text-gray-600">{line.productName} × {line.qty}</span>
                 <span className="font-medium text-gray-900">
-                  {((line.unitPrice || 0) * line.qty).toLocaleString()} AMD
+                  {(line.unitPrice * line.qty).toLocaleString()} AMD
                 </span>
               </div>
             ))}

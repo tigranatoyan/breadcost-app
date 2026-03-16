@@ -11,7 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * BC-1503: Invoice payment status tracking.
  * Tests: mark paid, mark overdue, double payment rejected.
  */
-public class InvoicePaymentTest extends FunctionalTestBase {
+class InvoicePaymentTest extends FunctionalTestBase {
 
     String adminToken() { return bearer("admin1"); }
 

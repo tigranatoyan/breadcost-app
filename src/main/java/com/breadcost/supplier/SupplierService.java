@@ -19,6 +19,8 @@ import java.util.UUID;
 @Slf4j
 public class SupplierService {
 
+    private static final String SUPPLIER_NOT_FOUND = "Supplier not found: ";
+
     private final SupplierRepository supplierRepository;
     private final SupplierCatalogItemRepository catalogItemRepository;
 
@@ -50,7 +52,7 @@ public class SupplierService {
                                           String name, String contactEmail,
                                           String contactPhone, String notes) {
         SupplierEntity supplier = supplierRepository.findByTenantIdAndSupplierId(tenantId, supplierId)
-                .orElseThrow(() -> new IllegalArgumentException("Supplier not found: " + supplierId));
+                .orElseThrow(() -> new IllegalArgumentException(SUPPLIER_NOT_FOUND + supplierId));
 
         if (name != null) supplier.setName(name);
         if (contactEmail != null) supplier.setContactEmail(contactEmail);
@@ -66,40 +68,43 @@ public class SupplierService {
 
     public SupplierEntity getSupplier(String tenantId, String supplierId) {
         return supplierRepository.findByTenantIdAndSupplierId(tenantId, supplierId)
-                .orElseThrow(() -> new IllegalArgumentException("Supplier not found: " + supplierId));
+                .orElseThrow(() -> new IllegalArgumentException(SUPPLIER_NOT_FOUND + supplierId));
     }
 
     @Transactional
     public void deleteSupplier(String tenantId, String supplierId) {
         SupplierEntity supplier = supplierRepository.findByTenantIdAndSupplierId(tenantId, supplierId)
-                .orElseThrow(() -> new IllegalArgumentException("Supplier not found: " + supplierId));
+                .orElseThrow(() -> new IllegalArgumentException(SUPPLIER_NOT_FOUND + supplierId));
         supplierRepository.delete(supplier);
     }
 
     // ── BC-1301: Catalog items ────────────────────────────────────────────────
 
+    public record CatalogItemRequest(
+            String tenantId, String supplierId,
+            String ingredientId, String ingredientName,
+            BigDecimal unitPrice, String currency,
+            int leadTimeDays, double moq, String unit) {}
+
     @Transactional
-    public SupplierCatalogItemEntity addCatalogItem(String tenantId, String supplierId,
-                                                     String ingredientId, String ingredientName,
-                                                     BigDecimal unitPrice, String currency,
-                                                     int leadTimeDays, double moq, String unit) {
+    public SupplierCatalogItemEntity addCatalogItem(CatalogItemRequest req) {
         // Verify supplier exists
-        getSupplier(tenantId, supplierId);
+        getSupplier(req.tenantId(), req.supplierId());
 
         SupplierCatalogItemEntity item = SupplierCatalogItemEntity.builder()
                 .itemId(UUID.randomUUID().toString())
-                .tenantId(tenantId)
-                .supplierId(supplierId)
-                .ingredientId(ingredientId)
-                .ingredientName(ingredientName)
-                .unitPrice(unitPrice != null ? unitPrice : BigDecimal.ZERO)
-                .currency(currency != null ? currency : "USD")
-                .leadTimeDays(leadTimeDays > 0 ? leadTimeDays : 1)
-                .moq(moq > 0 ? moq : 1.0)
-                .unit(unit)
+                .tenantId(req.tenantId())
+                .supplierId(req.supplierId())
+                .ingredientId(req.ingredientId())
+                .ingredientName(req.ingredientName())
+                .unitPrice(req.unitPrice() != null ? req.unitPrice() : BigDecimal.ZERO)
+                .currency(req.currency() != null ? req.currency() : "USD")
+                .leadTimeDays(req.leadTimeDays() > 0 ? req.leadTimeDays() : 1)
+                .moq(req.moq() > 0 ? req.moq() : 1.0)
+                .unit(req.unit())
                 .build();
 
-        log.info("Adding catalog item: tenantId={} supplierId={} ingredient={}", tenantId, supplierId, ingredientId);
+        log.info("Adding catalog item: tenantId={} supplierId={} ingredient={}", req.tenantId(), req.supplierId(), req.ingredientId());
         return catalogItemRepository.save(item);
     }
 

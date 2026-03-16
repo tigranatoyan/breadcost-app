@@ -22,7 +22,6 @@ test.describe('Arc 2: Production Planning', () => {
     tomorrow.setDate(tomorrow.getDate() + 2);
     const dateStr = tomorrow.toISOString().split('T')[0];
 
-    const initialCount = await prod.planCount();
     await prod.createPlan({ date: dateStr, shift: 'MORNING', notes: 'Arc2 E2E plan' });
     await page.waitForLoadState('load');
 

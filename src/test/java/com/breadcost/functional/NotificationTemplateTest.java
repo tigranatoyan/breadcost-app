@@ -1,9 +1,7 @@
 package com.breadcost.functional;
 
-import com.breadcost.notifications.NotificationTemplateRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
 import java.util.UUID;
@@ -18,8 +16,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class NotificationTemplateTest extends FunctionalTestBase {
 
     private static final String NT_TENANT = "nt-tenant-" + UUID.randomUUID();
-
-    @Autowired private NotificationTemplateRepository templateRepository;
 
     private String createTemplate(String type, String channel, String body) throws Exception {
         Map<String, Object> req = Map.of(

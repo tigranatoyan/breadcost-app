@@ -27,11 +27,11 @@ export default defineConfig({
 
   /* Web servers — only used when they are not already running.
      Set SKIP_WEB_SERVER=1 to suppress auto-start entirely. */
-  ...(!process.env.SKIP_WEB_SERVER ? {
+  ...(process.env.SKIP_WEB_SERVER ? {} : {
     webServer: [
       {
         command: process.platform === 'win32'
-          ? 'cd .. && .\\gradlew.bat bootRun'
+          ? String.raw`cd .. && .\gradlew.bat bootRun`
           : 'cd .. && ./gradlew bootRun',
         url: process.env.API_BASE ? `${process.env.API_BASE}/` : 'http://localhost:8080/',
         ignoreHTTPSErrors: true,
@@ -45,5 +45,5 @@ export default defineConfig({
         timeout: 30_000,
       },
     ],
-  } : {}),
+  }),
 });

@@ -33,7 +33,7 @@ export default function CheckoutPage() {
 
   // Load cart from sessionStorage
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (globalThis.window === undefined) return;
     const raw = sessionStorage.getItem('bc_cart');
     if (!raw) {
       router.replace('/customer/catalog');
@@ -192,10 +192,11 @@ export default function CheckoutPage() {
         <h2 className="font-semibold text-gray-900 mb-4">Delivery Options</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="delivery-date" className="block text-sm font-medium text-gray-700 mb-1">
               <CalendarDays className="inline h-4 w-4 mr-1" /> Delivery Date
             </label>
             <input
+              id="delivery-date"
               type="date"
               min={minDate}
               value={deliveryDate}
@@ -204,10 +205,11 @@ export default function CheckoutPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="time-slot" className="block text-sm font-medium text-gray-700 mb-1">
               <Clock className="inline h-4 w-4 mr-1" /> Time Slot
             </label>
             <select
+              id="time-slot"
               value={timeSlot}
               onChange={e => setTimeSlot(e.target.value)}
               className="input"
@@ -235,6 +237,7 @@ export default function CheckoutPage() {
       <div className="rounded-2xl border border-gray-200 bg-white shadow-sm p-5 mb-6">
         <h2 className="font-semibold text-gray-900 mb-3">Notes</h2>
         <textarea
+          aria-label="Order notes"
           value={notes}
           onChange={e => setNotes(e.target.value)}
           placeholder="Any special instructions…"

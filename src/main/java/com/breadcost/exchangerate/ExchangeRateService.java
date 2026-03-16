@@ -4,7 +4,6 @@ import com.breadcost.masterdata.TenantConfigEntity;
 import com.breadcost.masterdata.TenantConfigRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
@@ -98,6 +97,12 @@ public class ExchangeRateService {
     @SuppressWarnings("unchecked")
     public List<ExchangeRateEntity> fetchRatesFromApi(String tenantId, String baseCurrency,
                                                        List<String> targetCurrencies) {
+        return doFetchRatesFromApi(tenantId, baseCurrency, targetCurrencies);
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<ExchangeRateEntity> doFetchRatesFromApi(String tenantId, String baseCurrency,
+                                                          List<String> targetCurrencies) {
         RestClient client = restClientBuilder.build();
         Map<String, Object> response;
         try {
@@ -107,16 +112,16 @@ public class ExchangeRateService {
                     .body(Map.class);
         } catch (Exception e) {
             log.error("Failed to fetch exchange rates from API: {}", e.getMessage());
-            throw new RuntimeException("Exchange rate API unavailable", e);
+            throw new IllegalStateException("Exchange rate API unavailable", e);
         }
 
         if (response == null || !"success".equals(response.get("result"))) {
-            throw new RuntimeException("Exchange rate API returned error");
+            throw new IllegalStateException("Exchange rate API returned error");
         }
 
         Map<String, Number> rates = (Map<String, Number>) response.get("rates");
         if (rates == null) {
-            throw new RuntimeException("No rates in API response");
+            throw new IllegalStateException("No rates in API response");
         }
 
         LocalDate today = LocalDate.now();
@@ -168,7 +173,7 @@ public class ExchangeRateService {
         for (TenantConfigEntity config : tenantConfigRepo.findAll()) {
             try {
                 String base = config.getMainCurrency() != null ? config.getMainCurrency() : "AMD";
-                List<ExchangeRateEntity> fetched = fetchRatesFromApi(config.getTenantId(), base, defaultTargets);
+                List<ExchangeRateEntity> fetched = doFetchRatesFromApi(config.getTenantId(), base, defaultTargets);
                 total += fetched.size();
             } catch (Exception e) {
                 log.error("Failed to refresh rates for tenant {}: {}", config.getTenantId(), e.getMessage());

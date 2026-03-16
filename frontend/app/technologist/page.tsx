@@ -49,10 +49,23 @@ interface ProductRecipe {
 }
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
-function RecipeHealthBadge({ recipe }: { recipe: RecipeSummary | null }) {
+function RecipeHealthBadge({ recipe }: Readonly<{ recipe: RecipeSummary | null }>) {
   const t = useT();
   if (!recipe) return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">{t('technologist.noActiveRecipeLabel')}</span>;
   return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">{t('technologist.activeVersion', { version: recipe.versionNumber })}</span>;
+}
+
+function buildProductionBreakdown(plans: Plan[]): Record<string, { count: number; batches: number }> {
+  const result: Record<string, { count: number; batches: number }> = {};
+  for (const plan of plans) {
+    for (const wo of plan.workOrders ?? []) {
+      if (!result[wo.productName]) result[wo.productName] = { count: 0, batches: 0 };
+      result[wo.productName].count++;
+      result[wo.productName].batches += wo.batchCount ?? 0;
+    }
+  }
+  return result;
+}
 }
 
 // ─── main component ───────────────────────────────────────────────────────────
@@ -112,14 +125,7 @@ export default function TechnologistPage() {
     (withLeadTime || 1);
 
   // Work order breakdown by product across all completed/in-progress plans
-  const productionByProduct: Record<string, { count: number; batches: number }> = {};
-  for (const plan of plans) {
-    for (const wo of plan.workOrders ?? []) {
-      if (!productionByProduct[wo.productName]) productionByProduct[wo.productName] = { count: 0, batches: 0 };
-      productionByProduct[wo.productName].count++;
-      productionByProduct[wo.productName].batches += wo.batchCount ?? 0;
-    }
-  }
+  const productionByProduct = buildProductionBreakdown(plans);
   const topProducts = Object.entries(productionByProduct)
     .sort((a, b) => b[1].count - a[1].count)
     .slice(0, 8);
@@ -233,8 +239,8 @@ export default function TechnologistPage() {
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                              {recipe.ingredients.map((ing, i) => (
-                                <tr key={i}>
+                              {recipe.ingredients.map((ing) => (
+                                <tr key={ing.itemName}>
                                   <td className="py-1">{ing.itemName}</td>
                                   <td className="py-1 text-right text-gray-600">{ing.recipeQty} {ing.recipeUom}</td>
                                   <td className="py-1 text-right text-gray-400">{ing.wasteFactor ? `${(ing.wasteFactor * 100).toFixed(1)}%` : '—'}</td>

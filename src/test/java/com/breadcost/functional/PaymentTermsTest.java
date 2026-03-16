@@ -11,7 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * BC-1502: Payment terms per customer.
  * Tests: set payment terms, invoice due date computed from terms, default 30 days.
  */
-public class PaymentTermsTest extends FunctionalTestBase {
+class PaymentTermsTest extends FunctionalTestBase {
 
     String adminToken() { return bearer("admin1"); }
 

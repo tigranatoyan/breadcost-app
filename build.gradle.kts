@@ -8,6 +8,7 @@ plugins {
     checkstyle
     jacoco
     id("org.owasp.dependencycheck") version "10.0.3"
+    id("org.sonarqube") version "6.0.1.5171"
 }
 
 group = "com.breadcost"
@@ -139,4 +140,24 @@ tasks.jacocoTestCoverageVerification {
 dependencyCheck {
     failBuildOnCVSS = 9.0f          // only fail on CRITICAL initially
     formats = listOf("HTML", "JSON")
+}
+
+// ── SonarQube ─────────────────────────────────────────────────────────────
+sonar {
+    properties {
+        property("sonar.projectKey", "breadcost-app")
+        property("sonar.projectName", "BreadCost App")
+        property("sonar.host.url", "http://localhost:9000")
+        property("sonar.sources", "src/main/java,frontend")
+        property("sonar.tests", "src/test/java")
+        property("sonar.java.binaries", "build/classes/java/main")
+        property("sonar.java.libraries", "build/libs/**/*.jar")
+        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
+        property("sonar.javascript.lcov.reportPaths", "")
+        property("sonar.exclusions", "**/node_modules/**,**/build/**,**/.next/**,**/test-results/**,**/pw*.txt,**/FIGMA_TRIAL.tsx,**/*.py,**/scripts/**")
+        // Suppress S1450 on JPA entities — false positive: @PrePersist/@PreUpdate fields + Lombok getters
+        property("sonar.issue.ignore.multicriteria", "e1")
+        property("sonar.issue.ignore.multicriteria.e1.ruleKey", "java:S1450")
+        property("sonar.issue.ignore.multicriteria.e1.resourceKey", "**/*Entity.java")
+    }
 }

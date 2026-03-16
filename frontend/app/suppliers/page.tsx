@@ -527,7 +527,7 @@ export default function SuppliersPage() {
             </div>
             <h3 className="font-semibold text-sm mt-4">{t('suppliers.lines')}</h3>
             {poLines.map((line, i) => (
-              <div key={i} className="grid grid-cols-5 gap-2 items-end">
+              <div key={`po-${i}-${line.ingredientId}`} className="grid grid-cols-5 gap-2 items-end">
                 <Field label={t('suppliers.ingredient')}>
                   <select className="input w-full" required value={line.ingredientId} onChange={e => {
                     const item = items.find(it => it.itemId === e.target.value);

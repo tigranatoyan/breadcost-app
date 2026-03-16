@@ -11,7 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * BC-1505: Customer-specific pricing and discount rules.
  * Tests: add discount rule, list rules, effective price with discount, delete rule.
  */
-public class CustomerPricingTest extends FunctionalTestBase {
+class CustomerPricingTest extends FunctionalTestBase {
 
     String adminToken() { return bearer("admin1"); }
 

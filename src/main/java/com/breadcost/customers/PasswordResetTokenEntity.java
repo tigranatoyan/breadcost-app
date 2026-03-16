@@ -3,8 +3,6 @@ package com.breadcost.customers;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.Instant;
-
 @Entity
 @Table(name = "password_reset_tokens")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder

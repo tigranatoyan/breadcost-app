@@ -87,9 +87,11 @@ public class TenantManagementController {
     @PreAuthorize("hasAnyRole('Admin','Manager')")
     public TenantBrandingEntity updateBranding(@PathVariable String tenantId,
                                                 @RequestBody @Valid BrandingRequest req) {
-        return service.updateBranding(tenantId, req.logoUrl, req.primaryColor,
-                req.secondaryColor, req.accentColor, req.receiptBusinessName,
-                req.receiptFooter, req.receiptHeader, req.locale, req.timezone);
+        return service.updateBranding(
+                new TenantManagementService.BrandingUpdateRequest(
+                        tenantId, req.logoUrl, req.primaryColor,
+                        req.secondaryColor, req.accentColor, req.receiptBusinessName,
+                        req.receiptFooter, req.receiptHeader, req.locale, req.timezone));
     }
 
     @Data

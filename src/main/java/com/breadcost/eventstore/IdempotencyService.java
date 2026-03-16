@@ -23,8 +23,8 @@ public class IdempotencyService {
      */
     public String checkIdempotency(String tenantId, String commandName, String idempotencyKey) {
         String key = buildKey(tenantId, commandName, idempotencyKey);
-        CommandIdempotency record = idempotencyRecords.get(key);
-        return record != null ? record.getResultRef() : null;
+        CommandIdempotency entry = idempotencyRecords.get(key);
+        return entry != null ? entry.getResultRef() : null;
     }
 
     /**
@@ -32,7 +32,7 @@ public class IdempotencyService {
      */
     public void recordExecution(String tenantId, String commandName, String idempotencyKey, String resultRef) {
         String key = buildKey(tenantId, commandName, idempotencyKey);
-        CommandIdempotency record = CommandIdempotency.builder()
+        CommandIdempotency entry = CommandIdempotency.builder()
                 .tenantId(tenantId)
                 .commandName(commandName)
                 .idempotencyKey(idempotencyKey)
@@ -40,7 +40,7 @@ public class IdempotencyService {
                 .resultRef(resultRef)
                 .build();
         
-        idempotencyRecords.put(key, record);
+        idempotencyRecords.put(key, entry);
         log.info("Recorded command execution: command={}, idempotencyKey={}, resultRef={}", 
                 commandName, idempotencyKey, resultRef);
     }

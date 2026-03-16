@@ -58,7 +58,7 @@ export default function TenantManagementPage() {
   const loadOverview = useCallback(async () => {
     setOverviewLoading(true);
     try {
-      setOverview(await apiFetch('/v3/tenants/platform/overview') as PlatformOverview);
+      setOverview(await apiFetch<PlatformOverview>('/v3/tenants/platform/overview'));
     } catch (e) { setError(String(e)); }
     finally { setOverviewLoading(false); }
   }, []);
@@ -72,7 +72,7 @@ export default function TenantManagementPage() {
   const loadRequests = useCallback(async () => {
     setOnboardingLoading(true);
     try {
-      setRequests(await apiFetch('/v3/tenants/onboarding') as OnboardingRequest[]);
+      setRequests(await apiFetch<OnboardingRequest[]>('/v3/tenants/onboarding'));
     } catch (e) { setError(String(e)); }
     finally { setOnboardingLoading(false); }
   }, []);
@@ -103,7 +103,7 @@ export default function TenantManagementPage() {
   const loadBranding = useCallback(async () => {
     setBrandingLoading(true);
     try {
-      setBranding(await apiFetch(`/v3/tenants/${TENANT_ID}/branding`) as Branding);
+      setBranding(await apiFetch<Branding>(`/v3/tenants/${TENANT_ID}/branding`));
     } catch (e) { setError(String(e)); }
     finally { setBrandingLoading(false); }
   }, []);
@@ -127,7 +127,7 @@ export default function TenantManagementPage() {
   const doExport = async () => {
     setExporting(true);
     try {
-      const data = await apiFetch(`/v3/tenants/${TENANT_ID}/export`) as Record<string, unknown>;
+      const data = await apiFetch<Record<string, unknown>>(`/v3/tenants/${TENANT_ID}/export`);
       setExportData(data);
       // Trigger download
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -186,12 +186,12 @@ export default function TenantManagementPage() {
             <Table
               cols={[t('tenantMgmt.colTenant'), t('tenantMgmt.colCurrency'), t('tenantMgmt.colProducts'), t('tenantMgmt.colOrders'), t('tenantMgmt.colCustomers'), t('tenantMgmt.colTier'), t('tenantMgmt.colActive')]}
               rows={overview.tenants.map((tn) => [
-                tn.displayName || tn.tenantId,
+                tn.displayName ?? tn.tenantId,
                 tn.currency,
                 String(tn.productsCount),
                 String(tn.ordersCount),
                 String(tn.customersCount),
-                tn.subscriptionTier || '—',
+                tn.subscriptionTier ?? '—',
                 tn.subscriptionActive ? t('tenantMgmt.yes') : t('tenantMgmt.no'),
               ])}
               empty={t('tenantMgmt.noTenants')}
@@ -207,7 +207,7 @@ export default function TenantManagementPage() {
             cols={[t('tenantMgmt.colBusiness'), t('tenantMgmt.colOwner'), t('tenantMgmt.colEmail'), t('tenantMgmt.colTier'), t('tenantMgmt.colStatus'), t('tenantMgmt.colActions')]}
             rows={requests.map((r) => [
               r.businessName,
-              r.ownerName || '—',
+              r.ownerName ?? '—',
               r.ownerEmail,
               r.requestedTier,
               r.status,
@@ -321,9 +321,9 @@ export default function TenantManagementPage() {
           </Button>
           {exportData && (
             <div className="mt-4 grid grid-cols-3 gap-4">
-              <StatCard icon={ShoppingCart} label={t('tenantMgmt.colProducts')} value={String((exportData as Record<string, unknown>).productsCount || 0)} />
-              <StatCard icon={Users} label={t('tenantMgmt.colCustomers')} value={String((exportData as Record<string, unknown>).customersCount || 0)} />
-              <StatCard icon={Globe} label={t('tenantMgmt.colOrders')} value={String((exportData as Record<string, unknown>).ordersCount || 0)} />
+              <StatCard icon={ShoppingCart} label={t('tenantMgmt.colProducts')} value={String(Number(exportData.productsCount ?? 0))} />
+              <StatCard icon={Users} label={t('tenantMgmt.colCustomers')} value={String(Number(exportData.customersCount ?? 0))} />
+              <StatCard icon={Globe} label={t('tenantMgmt.colOrders')} value={String(Number(exportData.ordersCount ?? 0))} />
             </div>
           )}
         </Card>

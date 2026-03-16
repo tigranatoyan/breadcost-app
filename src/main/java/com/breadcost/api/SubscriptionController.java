@@ -66,9 +66,9 @@ public class SubscriptionController {
 
     /** GET /v2/subscriptions/tenants/{tenantId} — current subscription */
     @GetMapping("/tenants/{tenantId}")
-    public ResponseEntity<?> getSubscription(@PathVariable String tenantId) {
+    public ResponseEntity<Object> getSubscription(@PathVariable String tenantId) {
         Optional<TenantSubscriptionEntity> sub = subscriptionService.getActiveSub(tenantId);
-        return sub.<ResponseEntity<?>>map(ResponseEntity::ok)
+        return sub.<ResponseEntity<Object>>map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 

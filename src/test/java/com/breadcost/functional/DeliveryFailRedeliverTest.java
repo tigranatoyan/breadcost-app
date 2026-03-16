@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -14,19 +13,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @DisplayName("R2 :: BC-1404 — Failed Delivery and Re-Delivery")
 class DeliveryFailRedeliverTest extends FunctionalTestBase {
-
-    private String createRunWithOrder(String suffix) throws Exception {
-        String runBody = POST("/v2/delivery-runs", Map.of(
-                "tenantId", TENANT, "driverName", "FailDriver-" + suffix
-        ), bearer("admin1")).andExpect(status().isCreated())
-                .andReturn().getResponse().getContentAsString();
-        String runId = om.readTree(runBody).get("runId").asText();
-        String orderId = "fail-ord-" + suffix;
-        POST("/v2/delivery-runs/" + runId + "/orders", Map.of(
-                "tenantId", TENANT, "orderId", orderId
-        ), bearer("admin1")).andExpect(status().isCreated());
-        return runId;
-    }
 
     @Test
     @DisplayName("BC-1404 ✓ Mark order failed records failure reason")

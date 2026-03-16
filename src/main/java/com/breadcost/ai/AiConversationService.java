@@ -11,11 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * AI WhatsApp ordering service — BC-1801..1804.
@@ -42,10 +40,11 @@ public class AiConversationService {
     private final OrderService orderService;
 
     // simple pattern: "<qty> <unit> <product-name>" or "<product-name> <qty>"
+    private static final String UNIT_RE = "kg|pcs?|units?|loaves?|boxes?";
     private static final Pattern LINE_PATTERN =
-            Pattern.compile("(\\d+(?:\\.\\d+)?)\\s*(kg|pcs|pc|units?|loaves?|boxes?)?\\s+(.+)", Pattern.CASE_INSENSITIVE);
+            Pattern.compile("(\\d+\\.?\\d*)\\s*(" + UNIT_RE + ")?\\s+(.+)", Pattern.CASE_INSENSITIVE);
     private static final Pattern LINE_PATTERN_ALT =
-            Pattern.compile("(.+?)\\s+(\\d+(?:\\.\\d+)?)\\s*(kg|pcs|pc|units?|loaves?|boxes?)?", Pattern.CASE_INSENSITIVE);
+            Pattern.compile("(.+?)\\s+(\\d+\\.?\\d*)\\s*(" + UNIT_RE + ")?", Pattern.CASE_INSENSITIVE);
 
     // ── BC-1802: main entry point ─────────────────────────────────────────────
 
@@ -75,7 +74,7 @@ public class AiConversationService {
             case "GREETING"    -> handleGreeting(conv, tenantId);
             case "ORDER"       -> handleOrderIntent(conv, tenantId, text);
             case "CONFIRM"     -> handleConfirm(conv, tenantId);
-            case "CANCEL"      -> handleCancel(conv, tenantId);
+            case "CANCEL"      -> handleCancel(conv);
             case "HELP"        -> escalateToHuman(conv, tenantId, "Customer requested help");
             default            -> handleUnknown(conv, tenantId, intent.confidence);
         };
@@ -116,21 +115,28 @@ public class AiConversationService {
         List<ParsedOrderLine> lines = new ArrayList<>();
         for (String segment : text.split("[,;\\n]+")) {
             String s = segment.trim();
-            if (s.isEmpty()) continue;
-
-            Matcher m = LINE_PATTERN.matcher(s);
-            if (m.matches()) {
-                lines.add(resolveProduct(tenantId, m.group(3).trim(),
-                        Double.parseDouble(m.group(1)), normalizeUnit(m.group(2))));
-                continue;
-            }
-            Matcher m2 = LINE_PATTERN_ALT.matcher(s);
-            if (m2.matches()) {
-                lines.add(resolveProduct(tenantId, m2.group(1).trim(),
-                        Double.parseDouble(m2.group(2)), normalizeUnit(m2.group(3))));
+            if (!s.isEmpty()) {
+                ParsedOrderLine line = tryParseSegment(tenantId, s);
+                if (line != null) {
+                    lines.add(line);
+                }
             }
         }
         return lines;
+    }
+
+    private ParsedOrderLine tryParseSegment(String tenantId, String segment) {
+        Matcher m = LINE_PATTERN.matcher(segment);
+        if (m.matches()) {
+            return resolveProduct(tenantId, m.group(3).trim(),
+                    Double.parseDouble(m.group(1)), normalizeUnit(m.group(2)));
+        }
+        Matcher m2 = LINE_PATTERN_ALT.matcher(segment);
+        if (m2.matches()) {
+            return resolveProduct(tenantId, m2.group(1).trim(),
+                    Double.parseDouble(m2.group(2)), normalizeUnit(m2.group(3)));
+        }
+        return null;
     }
 
     private ParsedOrderLine resolveProduct(String tenantId, String rawName, double qty, String unit) {
@@ -282,17 +288,17 @@ public class AiConversationService {
                         .uom(l.getUnit())
                         .unitPrice(BigDecimal.ZERO) // price resolved by OrderService
                         .build())
-                .collect(Collectors.toList());
+                .toList();
 
         String customerId = customer != null ? customer.getCustomerId() : null;
         String customerName = customer != null ? customer.getName() : conv.getCustomerPhone();
 
-        OrderService.CreateOrderLineRequest first = orderLines.isEmpty() ? null : orderLines.getFirst();
         var order = orderService.createOrder(
-                tenantId, "default", customerId, customerName,
-                "AI_WHATSAPP", null, false, null,
-                "Created via WhatsApp AI (conv: " + conv.getConversationId() + ")",
-                orderLines, UUID.randomUUID().toString());
+                new OrderService.CreateOrderRequest(
+                        tenantId, "default", customerId, customerName,
+                        "AI_WHATSAPP", null, false, null,
+                        "Created via WhatsApp AI (conv: " + conv.getConversationId() + ")",
+                        orderLines, UUID.randomUUID().toString()));
 
         // Update draft
         draft.setStatus("CONFIRMED");
@@ -307,7 +313,7 @@ public class AiConversationService {
                "You'll receive delivery details soon. Thank you!";
     }
 
-    private String handleCancel(AiConversationEntity conv, String tenantId) {
+    private String handleCancel(AiConversationEntity conv) {
         Optional<AiDraftOrderEntity> pendingOpt =
                 draftOrderRepo.findByConversationIdAndStatus(conv.getConversationId(), "PENDING_CONFIRMATION");
         pendingOpt.ifPresent(draft -> {
@@ -322,9 +328,10 @@ public class AiConversationService {
             // Very low confidence — escalate
             return escalateToHuman(conv, tenantId, "Could not understand message (confidence=" + confidence + ")");
         }
-        return "I'm not sure I understood. You can:\n" +
-               "  • Send an order: 5 loaves White Bread, 2 kg Lavash\n" +
-               "  • Type HELP to speak with an operator";
+        return """
+                I'm not sure I understood. You can:
+                  \u2022 Send an order: 5 loaves White Bread, 2 kg Lavash
+                  \u2022 Type HELP to speak with an operator""";
     }
 
     // ── BC-1803: Upsell ──────────────────────────────────────────────────────

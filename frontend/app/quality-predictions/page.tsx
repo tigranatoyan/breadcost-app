@@ -31,10 +31,10 @@ export default function QualityPredictionsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await apiFetch('/v3/ai/suggestions/quality/generate', {
+      const data = await apiFetch<QualityPrediction[]>('/v3/ai/suggestions/quality/generate', {
         method: 'POST',
         body: JSON.stringify({ tenantId: TENANT_ID }),
-      }) as QualityPrediction[];
+      });
       setPredictions(data);
       setSuccess(`Generated ${data.length} quality predictions`);
     } catch (e) {
@@ -50,7 +50,7 @@ export default function QualityPredictionsPage() {
       const endpoint = filterRisk === 'HIGH'
         ? `/v3/ai/suggestions/quality/high-risk?tenantId=${TENANT_ID}`
         : `/v3/ai/suggestions/quality?tenantId=${TENANT_ID}`;
-      setPredictions(await apiFetch(endpoint) as QualityPrediction[]);
+      setPredictions(await apiFetch<QualityPrediction[]>(endpoint));
     } catch (e) {
       setError(String(e));
     } finally {

@@ -1,0 +1,84 @@
+java:S1068|src/main/java/com/breadcost/ai/AiSuggestionService.java|34|Remove this unused "productRepo" private field.
+java:S108|src/main/java/com/breadcost/masterdata/ItemService.java|94|Remove this block of code, fill it in, or add a comment explaining why it is empty.
+java:S1192|src/main/java/com/breadcost/multitenancy/TenantManagementService.java|185|Define a constant instead of duplicating this literal "customersCount" 3 times.
+java:S1192|src/main/java/com/breadcost/multitenancy/TenantManagementService.java|185|Define a constant instead of duplicating this literal "productsCount" 3 times.
+java:S1192|src/main/java/com/breadcost/multitenancy/TenantManagementService.java|186|Define a constant instead of duplicating this literal "ordersCount" 3 times.
+java:S125|src/main/java/com/breadcost/reporting/ReportService.java|314|This block of commented-out lines of code should be removed.
+java:S1481|src/main/java/com/breadcost/ai/DynamicPricingService.java|48|Remove this unused "productPrices" local variable.
+java:S1659|src/main/java/com/breadcost/masterdata/ItemService.java|85|Declare "typeIdx" and all following declarations on a separate line.
+java:S1854|src/main/java/com/breadcost/ai/DynamicPricingService.java|48|Remove this useless assignment to local variable "productPrices".
+java:S6201|src/main/java/com/breadcost/invoice/InvoiceService.java|449|Replace this instanceof check and cast with 'instanceof BigDecimal bigdecimal'
+java:S6201|src/main/java/com/breadcost/reporting/ReportService.java|264|Replace this instanceof check and cast with 'instanceof Number number'
+java:S6204|src/main/java/com/breadcost/masterdata/OrderService.java|364|Replace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()' and ensure that the list is unmodified.
+typescript:S1082|frontend/app/production-plans/page.tsx|626|Visible, non-interactive elements with click handlers must have at least one keyboard listener.
+typescript:S1082|frontend/app/production-plans/page.tsx|643|Visible, non-interactive elements with click handlers must have at least one keyboard listener.
+typescript:S1082|frontend/components/AuthShell.tsx|371|Visible, non-interactive elements with click handlers must have at least one keyboard listener.
+typescript:S1854|frontend/e2e/tests/arc-2-production-planning.spec.ts|25|Remove this useless assignment to variable "initialCount".
+typescript:S1874|frontend/app/pos/page.tsx|315|The signature '(...text: string[]): void' of 'win.document.write' is deprecated.
+typescript:S1874|frontend/app/pos/page.tsx|316|The signature '(...text: string[]): void' of 'win.document.write' is deprecated.
+typescript:S1874|frontend/app/pos/page.tsx|317|The signature '(...text: string[]): void' of 'win.document.write' is deprecated.
+typescript:S1874|frontend/app/pos/page.tsx|343|The signature '(...text: string[]): void' of 'win.document.write' is deprecated.
+typescript:S1874|frontend/app/pos/page.tsx|344|The signature '(...text: string[]): void' of 'win.document.write' is deprecated.
+typescript:S1874|frontend/app/pos/page.tsx|345|The signature '(...text: string[]): void' of 'win.document.write' is deprecated.
+typescript:S2004|frontend/app/production-plans/page.tsx|708|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S2004|frontend/components/ui.tsx|64|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S3358|frontend/app/admin/page.tsx|288|Extract this nested ternary operation into an independent statement.
+typescript:S3776|frontend/app/admin/page.tsx|49|Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+typescript:S3776|frontend/app/dashboard/page.tsx|156|Refactor this function to reduce its Cognitive Complexity from 24 to the 15 allowed.
+typescript:S3776|frontend/app/inventory/page.tsx|72|Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+typescript:S3776|frontend/app/technologist/page.tsx|59|Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+typescript:S4325|frontend/app/quality-predictions/page.tsx|34|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S4325|frontend/app/quality-predictions/page.tsx|53|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S4624|frontend/app/customers/page.tsx|284|Refactor this code to not use nested template literals.
+typescript:S5256|frontend/app/pos/page.tsx|675|Add a valid header row or column to this "<table>".
+typescript:S6478|frontend/app/report-builder/page.tsx|159|Move this component definition out of the parent component and pass data as props.
+typescript:S6479|frontend/app/customer/order-confirmation/[orderId]/page.tsx|70|Do not use Array index in keys
+typescript:S6479|frontend/app/customer/profile/page.tsx|210|Do not use Array index in keys
+typescript:S6479|frontend/app/customers/page.tsx|261|Do not use Array index in keys
+typescript:S6479|frontend/app/subscriptions/page.tsx|177|Do not use Array index in keys
+typescript:S6479|frontend/app/suppliers/page.tsx|530|Do not use Array index in keys
+typescript:S6479|frontend/app/technologist/page.tsx|237|Do not use Array index in keys
+typescript:S6479|frontend/components/AuthShell.tsx|244|Do not use Array index in keys
+typescript:S6479|frontend/components/design-system.tsx|290|Do not use Array index in keys
+typescript:S6479|frontend/components/design-system.tsx|292|Do not use Array index in keys
+typescript:S6479|frontend/components/design-system.tsx|305|Do not use Array index in keys
+typescript:S6479|frontend/components/design-system.tsx|307|Do not use Array index in keys
+typescript:S6479|frontend/components/ui.tsx|374|Do not use Array index in keys
+typescript:S6479|frontend/components/ui.tsx|376|Do not use Array index in keys
+typescript:S6481|frontend/components/ui.tsx|87|The object passed as the value prop to the Context provider changes every render. To fix this consider wrapping it in a useMemo hook.
+typescript:S6481|frontend/lib/i18n.tsx|69|The object passed as the value prop to the Context provider changes every render. To fix this consider wrapping it in a useMemo hook.
+typescript:S6551|frontend/app/report-builder/page.tsx|274|'Object.values(row)[0] ?? i' will use Object's default stringification format ('[object Object]') when stringified.
+typescript:S6551|frontend/app/report-builder/page.tsx|275|'v ?? 'â??'' will use Object's default stringification format ('[object Object]') when stringified.
+typescript:S6594|frontend/e2e/tests/i18n-sweep.spec.ts|59|Use the "RegExp.exec()" method instead.
+typescript:S6754|frontend/app/dashboard/page.tsx|161|useState call is not destructured into value + setter pair
+typescript:S6754|frontend/app/dashboard/page.tsx|170|useState call is not destructured into value + setter pair
+typescript:S6754|frontend/lib/i18n.tsx|44|useState call is not destructured into value + setter pair
+typescript:S6759|frontend/app/customer/layout.tsx|17|Mark the props of the component as read-only.
+typescript:S6759|frontend/app/error.tsx|3|Mark the props of the component as read-only.
+typescript:S6759|frontend/app/layout.tsx|12|Mark the props of the component as read-only.
+typescript:S6759|frontend/lib/i18n.tsx|43|Mark the props of the component as read-only.
+typescript:S6848|frontend/app/production-plans/page.tsx|626|Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.
+typescript:S6848|frontend/app/production-plans/page.tsx|643|Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.
+typescript:S6848|frontend/components/AuthShell.tsx|371|Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.
+typescript:S7735|frontend/app/admin/page.tsx|182|Unexpected negated condition.
+typescript:S7735|frontend/app/customer/catalog/page.tsx|231|Unexpected negated condition.
+typescript:S7735|frontend/e2e/playwright.config.ts|30|Unexpected negated condition.
+typescript:S7744|frontend/lib/api.ts|16|The empty object is useless.
+typescript:S7764|frontend/app/customer/catalog/page.tsx|45|Prefer `globalThis.window` over `window`.
+typescript:S7764|frontend/app/customer/checkout/page.tsx|36|Prefer `globalThis.window` over `window`.
+typescript:S7764|frontend/lib/api.ts|22|Prefer `globalThis.window` over `window`.
+typescript:S7764|frontend/lib/api.ts|22|Prefer `globalThis` over `window`.
+typescript:S7764|frontend/lib/auth.ts|19|Prefer `globalThis.window` over `window`.
+typescript:S7764|frontend/lib/auth.ts|29|Prefer `globalThis.window` over `window`.
+typescript:S7764|frontend/lib/auth.ts|62|Prefer `globalThis.window` over `window`.
+typescript:S7764|frontend/lib/customer-auth.ts|11|Prefer `globalThis.window` over `window`.
+typescript:S7764|frontend/lib/customer-auth.ts|16|Prefer `globalThis.window` over `window`.
+typescript:S7764|frontend/lib/customer-auth.ts|33|Prefer `globalThis.window` over `window`.
+typescript:S7764|frontend/lib/i18n.tsx|45|Prefer `globalThis.window` over `window`.
+typescript:S7773|frontend/app/pos/page.tsx|496|Prefer `Number.isNaN` over `isNaN`.
+typescript:S7778|frontend/app/production-plans/page.tsx|452|Do not call `Array#push()` multiple times.
+typescript:S7780|frontend/e2e/playwright.config.ts|34|`String.raw` should be used to avoid escaping `\`.
+typescript:S7780|frontend/middleware.ts|31|`String.raw` should be used to avoid escaping `\`.
+typescript:S7781|frontend/app/notification-templates/page.tsx|32|Prefer `String#replaceAll()` over `String#replace()`.
+typescript:S7781|frontend/app/notification-templates/page.tsx|32|Prefer `String#replaceAll()` over `String#replace()`.
+typescript:S7781|frontend/e2e/tests/obs-validate.spec.ts|119|Prefer `String#replaceAll()` over `String#replace()`.

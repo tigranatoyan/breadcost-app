@@ -60,6 +60,164 @@ interface PlanSchedule {
   workOrders: PlanScheduleEntry[];
 }
 
+function ScheduleSection({ planId, schedule, isLoading, onPatchSchedule }: Readonly<{
+  planId: string;
+  schedule?: PlanSchedule;
+  isLoading: boolean;
+  onPatchSchedule: (planId: string, woId: string, offset: number, duration: number | null) => Promise<void>;
+}>) {
+  const t = useT();
+  const total = schedule?.totalLeadTimeHours ?? 0;
+  const entries = schedule?.workOrders ?? [];
+  const activeEntries = entries.filter(
+    (e) => e.status !== 'CANCELLED' && e.durationHours != null
+  );
+
+  let headerBadge: JSX.Element | null = null;
+  if (isLoading) {
+    headerBadge = <span className="text-xs text-gray-400">{t('common.loading')}</span>;
+  } else if (total > 0) {
+    headerBadge = (
+      <span className="text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
+        {t('common.total')}: {total}h
+      </span>
+    );
+  }
+
+  return (
+    <div className="border-t px-4 py-3">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-xs font-semibold text-gray-500 uppercase">
+          {t('productionPlans.scheduleLeadTime')}
+        </h3>
+        {headerBadge}
+      </div>
+      {activeEntries.length === 0 ? (
+        <p className="text-xs text-gray-400">
+          {isLoading ? '' : t('productionPlans.noSchedule')}
+        </p>
+      ) : (
+        <div className="space-y-2">
+          <div className="relative h-4 text-xs text-gray-400 select-none">
+            <span className="absolute left-0">0h</span>
+            <span className="absolute left-1/2 -translate-x-1/2">{Math.round(total / 2)}h</span>
+            <span className="absolute right-0">{total}h</span>
+          </div>
+          {activeEntries.map((entry) => {
+            const startPct = total > 0 ? (entry.startOffsetHours / total) * 100 : 0;
+            const widthPct = total > 0 && entry.durationHours
+              ? (entry.durationHours / total) * 100
+              : 0;
+            let barCls: string;
+            if (entry.criticalPath) {
+              barCls = 'bg-blue-500';
+            } else if (entry.parallel) {
+              barCls = 'bg-emerald-500';
+            } else {
+              barCls = 'bg-gray-400';
+            }
+            return (
+              <div key={entry.workOrderId} className="flex items-center gap-2">
+                <div className="w-32 shrink-0 text-right">
+                  <div className="text-xs font-medium truncate">{entry.productName}</div>
+                  <div className="text-xs text-gray-400 truncate">{entry.departmentName}</div>
+                </div>
+                <div className="flex-1 relative h-7 bg-gray-100 rounded overflow-hidden">
+                  {widthPct > 0 && (
+                    <div
+                      className={`absolute top-0 h-full rounded ${barCls} opacity-85 flex items-center px-1`}
+                      style={{
+                        left: `${startPct}%`,
+                        width: `${Math.max(widthPct, 3)}%`,
+                      }}
+                      title={`Start: +${entry.startOffsetHours}h  Duration: ${entry.durationHours}h  End: +${entry.endOffsetHours ?? '\u2014'}h`}
+                    >
+                      <span className="text-white text-xs truncate">
+                        {entry.durationHours}h
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <span className="text-xs text-gray-400">+</span>
+                  <input
+                    type="number"
+                    min={0}
+                    className="w-14 border rounded px-1 py-0.5 text-xs text-center"
+                    value={entry.startOffsetHours}
+                    title="Start offset in hours"
+                    onChange={async (ev) => {
+                      const val = Number.parseInt(ev.target.value, 10);
+                      if (!Number.isNaN(val) && val >= 0) {
+                        await onPatchSchedule(planId, entry.workOrderId, val, entry.durationHours);
+                      }
+                    }}
+                  />
+                  <span className="text-xs text-gray-400">{t('productionPlans.hOffset')}</span>
+                </div>
+              </div>
+            );
+          })}
+          <div className="flex gap-4 pt-1 text-xs text-gray-500">
+            <span className="flex items-center gap-1">
+              <span className="inline-block w-3 h-3 rounded bg-blue-500" /> {t('productionPlans.criticalPath')}
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="inline-block w-3 h-3 rounded bg-emerald-500" /> {t('productionPlans.parallel')}
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="inline-block w-3 h-3 rounded bg-gray-400" /> {t('productionPlans.sequential')}
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MaterialRequirementsSection({ planId, materials, isLoading }: Readonly<{
+  planId: string;
+  materials?: MatReq[];
+  isLoading: boolean;
+}>) {
+  const t = useT();
+
+  let content: JSX.Element;
+  if (isLoading) {
+    content = <p className="text-xs text-gray-400">{t('common.loading')}</p>;
+  } else if (!materials) {
+    content = <p className="text-xs text-gray-400">{t('productionPlans.expandToLoad')}</p>;
+  } else if (materials.length === 0) {
+    content = <p className="text-xs text-gray-400">{t('productionPlans.noMaterials')}</p>;
+  } else {
+    content = (
+      <div className="flex flex-wrap gap-3">
+        {materials.map((m) => (
+          <div
+            key={m.itemName}
+            className="bg-white border rounded-lg px-3 py-2 text-xs"
+          >
+            <div className="font-medium">{m.itemName}</div>
+            <div className="text-gray-500">
+              {m.purchasingUnitsNeeded.toFixed(4)}{' '}
+              {m.purchasingUom}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="border-t px-4 py-3 bg-gray-50">
+      <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">
+        {t('productionPlans.materialRequirements')}
+      </h3>
+      {content}
+    </div>
+  );
+}
+
 export default function ProductionPlansPage() {
   const t = useT();
   const [askConfirm, confirmModal] = useConfirm({ confirmLabel: t('common.confirm'), cancelLabel: t('common.cancel') });
@@ -169,6 +327,10 @@ export default function ProductionPlansPage() {
 
   const [yieldInputs, setYieldInputs] = useState<Record<string, string>>({});
 
+  const updateYieldInput = useCallback((woId: string, value: string) => {
+    setYieldInputs((prev) => ({ ...prev, [woId]: value }));
+  }, []);
+
   const woAction = async (
     planId: string,
     woId: string,
@@ -178,7 +340,7 @@ export default function ProductionPlansPage() {
       setActionId(woId);
       const body: Record<string, unknown> = {};
       if (action === 'complete' && yieldInputs[woId]) {
-        body.actualYield = parseFloat(yieldInputs[woId]);
+        body.actualYield = Number.parseFloat(yieldInputs[woId]);
       }
       await apiFetch(
         `/v1/production-plans/work-orders/${woId}/${action}?tenantId=${TENANT_ID}`,
@@ -216,7 +378,7 @@ export default function ProductionPlansPage() {
       );
       setSchedules((prev) => ({ ...prev, [planId]: data }));
     } catch {
-      // schedule may not be available yet — silently ignore
+      // schedule may not be available yet â€” silently ignore
     } finally {
       setLoadingSchedule('');
     }
@@ -290,8 +452,7 @@ export default function ProductionPlansPage() {
         label: t('productionPlans.approve'),
         action: 'approve',
         cls: 'bg-purple-600 text-white hover:bg-purple-700',
-      });
-      btns.push({
+      }, {
         label: t('productionPlans.reject'),
         action: 'reject',
         cls: 'bg-red-600 text-white hover:bg-red-700',
@@ -322,7 +483,7 @@ export default function ProductionPlansPage() {
             planAction(p.planId, b.action);
           }}
         >
-          {busy ? '…' : b.label}
+          {busy ? 'â€¦' : b.label}
         </button>
       )),
       ...(p.status === 'DRAFT' || p.status === 'GENERATED'
@@ -402,7 +563,7 @@ export default function ProductionPlansPage() {
             }}
             title={t('common.previousDay')}
           >
-            ◀
+            â—€
           </button>
           <InputField
             className="w-44"
@@ -419,7 +580,7 @@ export default function ProductionPlansPage() {
             }}
             title={t('common.nextDay')}
           >
-            ▶
+            â–¶
           </button>
           <button
             className="btn-xs bg-blue-100 text-blue-700 hover:bg-blue-200 px-2"
@@ -465,8 +626,9 @@ export default function ProductionPlansPage() {
           {filteredPlans.map((p) => (
             <div key={p.planId} className="rounded-2xl border border-gray-200 bg-white shadow-sm">
               {/* Plan header row */}
-              <div
-                className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50"
+              <button
+                type="button"
+                className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 w-full text-left"
                 onClick={() => toggleExpand(p.planId)}
               >
                 <span className="font-medium text-sm">{p.planDate}</span>
@@ -482,16 +644,13 @@ export default function ProductionPlansPage() {
                     {p.notes}
                   </span>
                 )}
-                <div
-                  className="flex gap-1 ml-auto shrink-0"
-                  onClick={(e) => e.stopPropagation()}
-                >
+                <span className="flex gap-1 ml-auto shrink-0">
                   {planBtns(p)}
-                </div>
+                </span>
                 <span className="text-gray-400 text-xs shrink-0">
                   {expanded.has(p.planId) ? '▲' : '▼'}
                 </span>
-              </div>
+              </button>
 
               {/* Expanded: work orders + materials */}
               {expanded.has(p.planId) && (
@@ -501,11 +660,7 @@ export default function ProductionPlansPage() {
                     <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">
                       {t('productionPlans.workOrders')}
                     </h3>
-                    {!p.workOrders || p.workOrders.length === 0 ? (
-                      <p className="text-xs text-gray-400">
-                        {t('productionPlans.noWorkOrders')}
-                      </p>
-                    ) : (
+                    {p.workOrders?.length ? (
                       <table className="w-full text-xs">
                         <thead>
                           <tr className="text-gray-500">
@@ -551,7 +706,7 @@ export default function ProductionPlansPage() {
                                     className="w-20 border rounded px-1.5 py-0.5 text-xs"
                                     placeholder={t('productionPlans.yieldPlaceholder')}
                                     value={yieldInputs[wo.workOrderId] ?? ''}
-                                    onChange={(e) => setYieldInputs((prev) => ({ ...prev, [wo.workOrderId]: e.target.value }))}
+                                    onChange={(e) => updateYieldInput(wo.workOrderId, e.target.value)}
                                   />
                                 )}
                                 {wo.completedAt && wo.actualYield != null && (
@@ -606,152 +761,27 @@ export default function ProductionPlansPage() {
                           ))}
                         </tbody>
                       </table>
+                    ) : (
+                      <p className="text-xs text-gray-400">
+                        {t('productionPlans.noWorkOrders')}
+                      </p>
                     )}
                   </div>
 
                   {/* Schedule / Gantt timeline */}
-                  {(() => {
-                    const sched = schedules[p.planId];
-                    const total = sched?.totalLeadTimeHours ?? 0;
-                    const entries = sched?.workOrders ?? [];
-                    const activEntries = entries.filter(
-                      (e) => e.status !== 'CANCELLED' && e.durationHours !== null && e.durationHours !== undefined
-                    );
-                    return (
-                      <div className="border-t px-4 py-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="text-xs font-semibold text-gray-500 uppercase">
-                            {t('productionPlans.scheduleLeadTime')}
-                          </h3>
-                          {loadingSchedule === p.planId ? (
-                            <span className="text-xs text-gray-400">{t('common.loading')}</span>
-                          ) : total > 0 ? (
-                            <span className="text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
-                              {t('common.total')}: {total}h
-                            </span>
-                          ) : null}
-                        </div>
-                        {activEntries.length === 0 ? (
-                          <p className="text-xs text-gray-400">
-                            {loadingSchedule === p.planId
-                              ? ''
-                              : t('productionPlans.noSchedule')}
-                          </p>
-                        ) : (
-                          <div className="space-y-2">
-                            {/* Time axis labels */}
-                            <div className="relative h-4 text-xs text-gray-400 select-none">
-                              <span className="absolute left-0">0h</span>
-                              <span className="absolute left-1/2 -translate-x-1/2">{Math.round(total / 2)}h</span>
-                              <span className="absolute right-0">{total}h</span>
-                            </div>
-                            {activEntries.map((entry) => {
-                              const startPct = total > 0 ? (entry.startOffsetHours / total) * 100 : 0;
-                              const widthPct = total > 0 && entry.durationHours
-                                ? (entry.durationHours / total) * 100
-                                : 0;
-                              const barCls = entry.criticalPath
-                                ? 'bg-blue-500'
-                                : entry.parallel
-                                ? 'bg-emerald-500'
-                                : 'bg-gray-400';
-                              return (
-                                <div key={entry.workOrderId} className="flex items-center gap-2">
-                                  {/* Label */}
-                                  <div className="w-32 shrink-0 text-right">
-                                    <div className="text-xs font-medium truncate">{entry.productName}</div>
-                                    <div className="text-xs text-gray-400 truncate">{entry.departmentName}</div>
-                                  </div>
-                                  {/* Gantt bar */}
-                                  <div className="flex-1 relative h-7 bg-gray-100 rounded overflow-hidden">
-                                    {widthPct > 0 && (
-                                      <div
-                                        className={`absolute top-0 h-full rounded ${barCls} opacity-85 flex items-center px-1`}
-                                        style={{
-                                          left: `${startPct}%`,
-                                          width: `${Math.max(widthPct, 3)}%`,
-                                        }}
-                                        title={`Start: +${entry.startOffsetHours}h  Duration: ${entry.durationHours}h  End: +${entry.endOffsetHours}h`}
-                                      >
-                                        <span className="text-white text-xs truncate">
-                                          {entry.durationHours}h
-                                        </span>
-                                      </div>
-                                    )}
-                                  </div>
-                                  {/* Offset editor */}
-                                  <div className="flex items-center gap-1 shrink-0">
-                                    <label className="text-xs text-gray-400">+</label>
-                                    <input
-                                      type="number"
-                                      min={0}
-                                      className="w-14 border rounded px-1 py-0.5 text-xs text-center"
-                                      value={entry.startOffsetHours}
-                                      title="Start offset in hours"
-                                      onChange={async (ev) => {
-                                        const val = parseInt(ev.target.value, 10);
-                                        if (!isNaN(val) && val >= 0) {
-                                          await patchSchedule(p.planId, entry.workOrderId, val, entry.durationHours);
-                                        }
-                                      }}
-                                    />
-                                    <span className="text-xs text-gray-400">{t('productionPlans.hOffset')}</span>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                            {/* Legend */}
-                            <div className="flex gap-4 pt-1 text-xs text-gray-500">
-                              <span className="flex items-center gap-1">
-                                <span className="inline-block w-3 h-3 rounded bg-blue-500" /> {t('productionPlans.criticalPath')}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <span className="inline-block w-3 h-3 rounded bg-emerald-500" /> {t('productionPlans.parallel')}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <span className="inline-block w-3 h-3 rounded bg-gray-400" /> {t('productionPlans.sequential')}
-                              </span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()}
+                  <ScheduleSection
+                    planId={p.planId}
+                    schedule={schedules[p.planId]}
+                    isLoading={loadingSchedule === p.planId}
+                    onPatchSchedule={patchSchedule}
+                  />
 
                   {/* Material requirements */}
-                  <div className="border-t px-4 py-3 bg-gray-50">
-                    <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">
-                      {t('productionPlans.materialRequirements')}
-                    </h3>
-                    {loadingMats === p.planId ? (
-                      <p className="text-xs text-gray-400">{t('common.loading')}</p>
-                    ) : mats[p.planId] ? (
-                      mats[p.planId].length === 0 ? (
-                        <p className="text-xs text-gray-400">
-                          {t('productionPlans.noMaterials')}
-                        </p>
-                      ) : (
-                        <div className="flex flex-wrap gap-3">
-                          {mats[p.planId].map((m, i) => (
-                            <div
-                              key={i}
-                              className="bg-white border rounded-lg px-3 py-2 text-xs"
-                            >
-                              <div className="font-medium">{m.itemName}</div>
-                              <div className="text-gray-500">
-                                {m.purchasingUnitsNeeded.toFixed(4)}{' '}
-                                {m.purchasingUom}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )
-                    ) : (
-                      <p className="text-xs text-gray-400">
-                        {t('productionPlans.expandToLoad')}
-                      </p>
-                    )}
-                  </div>
+                  <MaterialRequirementsSection
+                    planId={p.planId}
+                    materials={mats[p.planId]}
+                    isLoading={loadingMats === p.planId}
+                  />
                 </div>
               )}
             </div>

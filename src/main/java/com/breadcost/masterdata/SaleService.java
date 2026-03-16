@@ -31,21 +31,7 @@ public class SaleService {
                                   BigDecimal cashReceived, String cardReference,
                                   String cashierId) {
 
-        // R5: Pre-check ingredient availability before completing sale
-        for (SaleLineInput input : lineInputs) {
-            var recipes = recipeRepository.findByTenantIdAndProductIdAndStatus(
-                    tenantId, input.productId(), Recipe.RecipeStatus.ACTIVE);
-            if (!recipes.isEmpty()) {
-                RecipeEntity recipe = recipes.get(0);
-                var shortages = inventoryService.checkMaterialAvailability(
-                        tenantId, recipe.getRecipeId(),
-                        input.quantity().divide(recipe.getBatchSize(), 0,
-                                java.math.RoundingMode.CEILING).intValue());
-                if (!shortages.isEmpty()) {
-                    log.warn("POS stock warning for {}: {}", input.productName(), shortages);
-                }
-            }
-        }
+        preCheckIngredientAvailability(tenantId, lineInputs);
 
         // Build lines
         List<SaleLineEntity> lines = lineInputs.stream().map(l -> {
@@ -91,40 +77,66 @@ public class SaleService {
 
         SaleEntity saved = saleRepository.save(sale);
 
-        // ── G-1: Deduct inventory per recipe for each sale line ──────────────
-        for (SaleLineEntity line : saved.getLines()) {
-            try {
-                RecipeEntity recipe = recipeRepository
-                        .findByTenantIdAndProductIdAndStatus(tenantId, line.getProductId(),
-                                Recipe.RecipeStatus.ACTIVE)
-                        .stream().findFirst().orElse(null);
-
-                if (recipe != null) {
-                    // Each sale line qty represents finished product units;
-                    // batchCount = ceil(qty / batchSize)
-                    int batchCount = line.getQuantity()
-                            .divide(recipe.getBatchSize(), 0, java.math.RoundingMode.CEILING)
-                            .intValue();
-                    if (batchCount < 1) batchCount = 1;
-
-                    inventoryService.consumeIngredients(
-                            tenantId, siteId,
-                            recipe.getRecipeId(), batchCount,
-                            "POS_SALE", saved.getSaleId());
-                } else {
-                    log.warn("No active recipe for product {} — skipping inventory deduction",
-                            line.getProductId());
-                }
-            } catch (Exception e) {
-                // Log but don't fail the sale — inventory deduction is best-effort
-                log.error("Failed to deduct inventory for sale line {}: {}",
-                        line.getLineId(), e.getMessage());
-            }
-        }
+        deductSaleLineInventory(tenantId, siteId, saved);
 
         log.info("POS sale completed: {} - {} - total={}", saved.getSaleId(),
                 saved.getPaymentMethod(), saved.getTotalAmount());
         return saved;
+    }
+
+    /** R5: Pre-check ingredient availability before completing sale. */
+    private void preCheckIngredientAvailability(String tenantId, List<SaleLineInput> lineInputs) {
+        for (SaleLineInput input : lineInputs) {
+            var recipes = recipeRepository.findByTenantIdAndProductIdAndStatus(
+                    tenantId, input.productId(), Recipe.RecipeStatus.ACTIVE);
+            if (recipes.isEmpty()) {
+                continue;
+            }
+            RecipeEntity recipe = recipes.get(0);
+            var shortages = inventoryService.checkMaterialAvailability(
+                    tenantId, recipe.getRecipeId(),
+                    input.quantity().divide(recipe.getBatchSize(), 0,
+                            java.math.RoundingMode.CEILING).intValue());
+            if (!shortages.isEmpty()) {
+                log.warn("POS stock warning for {}: {}", input.productName(), shortages);
+            }
+        }
+    }
+
+    /** G-1: Deduct inventory per recipe for each sale line (best-effort). */
+    private void deductSaleLineInventory(String tenantId, String siteId, SaleEntity saved) {
+        for (SaleLineEntity line : saved.getLines()) {
+            try {
+                deductSingleLineInventory(tenantId, siteId, saved.getSaleId(), line);
+            } catch (Exception e) {
+                log.error("Failed to deduct inventory for sale line {}: {}",
+                        line.getLineId(), e.getMessage());
+            }
+        }
+    }
+
+    private void deductSingleLineInventory(String tenantId, String siteId,
+                                            String saleId, SaleLineEntity line) {
+        RecipeEntity recipe = recipeRepository
+                .findByTenantIdAndProductIdAndStatus(tenantId, line.getProductId(),
+                        Recipe.RecipeStatus.ACTIVE)
+                .stream().findFirst().orElse(null);
+
+        if (recipe == null) {
+            log.warn("No active recipe for product {} — skipping inventory deduction",
+                    line.getProductId());
+            return;
+        }
+
+        int batchCount = line.getQuantity()
+                .divide(recipe.getBatchSize(), 0, java.math.RoundingMode.CEILING)
+                .intValue();
+        if (batchCount < 1) batchCount = 1;
+
+        inventoryService.consumeIngredients(
+                tenantId, siteId,
+                recipe.getRecipeId(), batchCount,
+                "POS_SALE", saleId);
     }
 
     public record SaleLineInput(

@@ -98,10 +98,7 @@ class DeliveryServiceTest {
                 .status(DeliveryRunEntity.RunStatus.PENDING).build();
 
         when(orderRepo.findByRunIdAndOrderId("run1", "o1")).thenReturn(Optional.of(dro));
-        when(orderRepo.save(any())).thenAnswer(inv -> {
-            DeliveryRunOrderEntity e = inv.getArgument(0);
-            return e;
-        });
+        when(orderRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
         // After save, the dro status is COMPLETED, so allDone = true
         when(orderRepo.findByRunId("run1")).thenReturn(List.of(dro));
         when(runRepo.findByTenantIdAndRunId("t1", "run1")).thenReturn(Optional.of(run));

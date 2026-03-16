@@ -16,7 +16,7 @@ export interface UserInfo {
 // ── Token helpers ─────────────────────────────────────────────────────────────
 
 export function getToken(): string {
-  if (typeof window === 'undefined') return '';
+  if (globalThis.window === undefined) return '';
   return localStorage.getItem(TOKEN_KEY) ?? '';
 }
 
@@ -26,7 +26,7 @@ export function getAuthHeader(): string {
 }
 
 export function getUserInfo(): UserInfo | null {
-  if (typeof window === 'undefined') return null;
+  if (globalThis.window === undefined) return null;
   const raw = localStorage.getItem(USER_KEY);
   if (!raw) return null;
   try { return JSON.parse(raw) as UserInfo; } catch { return null; }
@@ -59,7 +59,7 @@ export function getTenantId(): string {
 }
 
 export function isLoggedIn(): boolean {
-  if (typeof window === 'undefined') return false;
+  if (globalThis.window === undefined) return false;
   return !!localStorage.getItem(TOKEN_KEY);
 }
 

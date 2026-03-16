@@ -35,12 +35,18 @@ interface ProductionSuggestion {
 }
 
 /* ── Mini bar chart ────────────────────────────────────── */
-function MiniBarChart({ data }: { data: { label: string; value: number }[] }) {
+function confidenceClass(c: number): string {
+  if (c >= 0.8) return 'bg-green-100 text-green-700';
+  if (c >= 0.6) return 'bg-yellow-100 text-yellow-700';
+  return 'bg-red-100 text-red-700';
+}
+
+function MiniBarChart({ data }: Readonly<{ data: { label: string; value: number }[] }>) {
   const max = Math.max(...data.map(d => d.value), 1);
   return (
     <div className="flex items-end gap-2 h-40 px-2">
-      {data.map((d, i) => (
-        <div key={i} className="flex-1 flex flex-col items-center gap-1">
+      {data.map((d) => (
+        <div key={d.label} className="flex-1 flex flex-col items-center gap-1">
           <span className="text-[10px] font-medium text-gray-600">{d.value}</span>
           <div
             className="w-full rounded-t-lg bg-blue-500 transition-all"
@@ -175,9 +181,11 @@ export default function AiSuggestionsPage() {
                 {t('aiSuggestions.pending')}
               </label>
             </div>
-            {hintsLoading ? <Spinner /> : hints.length === 0 ? (
+            {hintsLoading && <Spinner />}
+            {!hintsLoading && hints.length === 0 && (
               <p className="text-center text-sm text-gray-400 py-8">{t('aiSuggestions.noHints')}</p>
-            ) : (
+            )}
+            {!hintsLoading && hints.length > 0 && (
               <div className="space-y-2 max-h-[50vh] overflow-y-auto">
                 {hints.map(h => (
                   <div key={h.id} className="rounded-xl border border-gray-200 p-3">
@@ -229,9 +237,11 @@ export default function AiSuggestionsPage() {
               </Field>
               <Button variant="primary" size="sm" onClick={generateForecast}>{t('aiSuggestions.generate')}</Button>
             </div>
-            {forecastLoading ? <Spinner /> : forecasts.length === 0 ? (
+            {forecastLoading && <Spinner />}
+            {!forecastLoading && forecasts.length === 0 && (
               <p className="text-center text-sm text-gray-400 py-8">{t('aiSuggestions.noForecasts')}</p>
-            ) : (
+            )}
+            {!forecastLoading && forecasts.length > 0 && (
               <>
                 <MiniBarChart
                   data={forecasts.slice(0, 7).map(f => ({
@@ -246,11 +256,7 @@ export default function AiSuggestionsPage() {
                       <div className="flex items-center gap-3 text-xs">
                         <span className="text-gray-500">{f.forecastDays}d</span>
                         <span className="font-semibold text-gray-900">{f.predictedQuantity}</span>
-                        <span className={`rounded-full px-2 py-0.5 font-medium ${
-                          f.confidence >= 0.8 ? 'bg-green-100 text-green-700'
-                            : f.confidence >= 0.6 ? 'bg-yellow-100 text-yellow-700'
-                            : 'bg-red-100 text-red-700'
-                        }`}>
+                        <span className={`rounded-full px-2 py-0.5 font-medium ${confidenceClass(f.confidence)}`}>
                           {(f.confidence * 100).toFixed(0)}%
                         </span>
                       </div>
@@ -278,9 +284,11 @@ export default function AiSuggestionsPage() {
               </Field>
               <Button variant="primary" size="sm" onClick={generateSuggestions}>{t('aiSuggestions.generate')}</Button>
             </div>
-            {prodLoading ? <Spinner /> : suggestions.length === 0 ? (
+            {prodLoading && <Spinner />}
+            {!prodLoading && suggestions.length === 0 && (
               <p className="text-center text-sm text-gray-400 py-8">{t('aiSuggestions.noSuggestions')}</p>
-            ) : (
+            )}
+            {!prodLoading && suggestions.length > 0 && (
               <div className="space-y-2 max-h-[50vh] overflow-y-auto">
                 {suggestions.map(s => (
                   <div key={s.id} className="rounded-xl border border-gray-200 p-3">

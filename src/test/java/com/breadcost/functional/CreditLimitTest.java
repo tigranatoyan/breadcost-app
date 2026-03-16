@@ -11,7 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * BC-1504: Credit limit enforcement and overdue order block.
  * Tests: set credit limit, credit check allowed, credit check blocked, limit exceeded on invoice.
  */
-public class CreditLimitTest extends FunctionalTestBase {
+class CreditLimitTest extends FunctionalTestBase {
 
     String adminToken() { return bearer("admin1"); }
 

@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import { Modal, Spinner, Alert, Badge, Field, Success } from '@/components/ui';
-import { SectionTitle, Button, Card } from '@/components/design-system';
+import { SectionTitle, Button } from '@/components/design-system';
 
 const TIER_META: Record<string, { description: string; color: string; recommended?: boolean }> = {
   BASIC: { description: 'subscriptions.basicDesc', color: 'border-gray-200' },
@@ -165,7 +165,7 @@ export default function SubscriptionsPage() {
                     </span>
                   )}
                   <h3 className="text-xl font-bold mb-1">{ti.name}</h3>
-                  <p className="text-sm text-gray-500 mb-3">{t(meta.description as any)}</p>
+                  <p className="text-sm text-gray-500 mb-3">{t(meta.description)}</p>
                   {ti.monthlyPrice !== null && ti.monthlyPrice !== undefined && (
                     <p className="text-3xl font-bold text-blue-600 mb-1">
                       {ti.monthlyPrice.toFixed(0)} <span className="text-sm text-gray-500 font-normal">{ti.currency || 'AMD'}/mo</span>
@@ -174,7 +174,7 @@ export default function SubscriptionsPage() {
                   {ti.maxUsers && <p className="text-sm text-gray-500 mb-4">{t('subscriptions.upToUsers', { count: ti.maxUsers })}</p>}
                   <div className="flex-1" />
                   <ul className="space-y-1.5 mb-4">
-                    {ti.features.map((f, i) => <li key={i} className="text-sm flex items-center gap-2"><span className="text-green-500 text-base">✓</span> {t(`subscriptions.feature_${f}` as any) || f}</li>)}
+                    {ti.features.map((f) => <li key={f} className="text-sm flex items-center gap-2"><span className="text-green-500 text-base">✓</span> {t(`subscriptions.feature_${f}`) || f}</li>)}
                   </ul>
                   {!isCurrent && (
                     <Button variant={meta.recommended ? 'primary' : 'secondary'} size="sm" onClick={() => { setAssignTier(ti.level); setShowAssign(true); }}>
@@ -205,7 +205,8 @@ export default function SubscriptionsPage() {
               </Button>
             </div>
           )}
-          {subLoading ? <Spinner /> : tenantSub ? (
+          {subLoading && <Spinner />}
+          {!subLoading && tenantSub && (
             <div className="bg-white shadow rounded p-4 space-y-2 text-sm">
               <div><strong>{t('subscriptions.currentTier')}:</strong> {tenantSub.tierName || tenantSub.tierId}</div>
               <div><strong>{t('common.status')}:</strong> <Badge status={tenantSub.status} /></div>
@@ -213,7 +214,8 @@ export default function SubscriptionsPage() {
               {tenantSub.endDate && <div><strong>{t('subscriptions.end')}:</strong> {tenantSub.endDate}</div>}
               <Button variant="primary" size="sm" className="mt-2" onClick={() => setShowAssign(true)}>{t('subscriptions.change')}</Button>
             </div>
-          ) : (
+          )}
+          {!subLoading && !tenantSub && (
             <div className="text-sm text-gray-500">
               <p>{t('subscriptions.noSubscription')}</p>
               <Button variant="primary" size="sm" className="mt-2" onClick={() => setShowAssign(true)}>{t('subscriptions.assign')}</Button>

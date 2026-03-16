@@ -12,7 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * BC-1603: Advanced financial KPI computation.
  * Tests: compute single KPI, run full report, revenue KPI exists, all standard KPIs compute.
  */
-public class FinancialKpiTest extends FunctionalTestBase {
+class FinancialKpiTest extends FunctionalTestBase {
 
     String adminToken() { return bearer("admin1"); }
 

@@ -7,7 +7,6 @@ import com.breadcost.events.ReceiveLotEvent;
 import com.breadcost.events.TransferInventoryEvent;
 import com.breadcost.eventstore.EventStore;
 import com.breadcost.projections.InventoryProjection;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +22,7 @@ class InventoryProjectionTest {
 
     @BeforeEach
     void setUp() {
-        eventStore = new EventStore(new ObjectMapper());
+        eventStore = new EventStore();
         projection = new InventoryProjection(eventStore);
         // Manually register listener + rebuild (mirrors @PostConstruct)
         eventStore.registerListener((storedEvent, ledgerEntry) ->

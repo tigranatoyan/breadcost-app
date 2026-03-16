@@ -19,6 +19,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ItemService {
 
+    private static final String ERRORS_KEY = "errors";
+    private static final String ERROR_KEY = "error";
+    private static final String CREATED_KEY = "created";
+
     private final ItemRepository itemRepository;
 
     @Cacheable(value = "items", key = "#tenantId")
@@ -71,6 +75,65 @@ public class ItemService {
 
     // ─── CSV import ────────────────────────────────────────────────────────
 
+    private record CsvColumnIndices(int nameIdx, int typeIdx, int uomIdx, int descIdx, int threshIdx) {
+        boolean hasRequiredColumns() {
+            return nameIdx >= 0 && typeIdx >= 0 && uomIdx >= 0;
+        }
+    }
+
+    private CsvColumnIndices parseHeaderIndices(String[] headers) {
+        int nameIdx = -1;
+        int typeIdx = -1;
+        int uomIdx = -1;
+        int descIdx = -1;
+        int threshIdx = -1;
+        for (int i = 0; i < headers.length; i++) {
+            String h = headers[i].trim().toLowerCase();
+            switch (h) {
+                case "name" -> nameIdx = i;
+                case "type" -> typeIdx = i;
+                case "baseuom", "uom", "base_uom" -> uomIdx = i;
+                case "description" -> descIdx = i;
+                case "minstockthreshold", "min_stock_threshold", "min_stock" -> threshIdx = i;
+                default -> { /* unrecognized header column — skip */ }
+            }
+        }
+        return new CsvColumnIndices(nameIdx, typeIdx, uomIdx, descIdx, threshIdx);
+    }
+
+    private boolean processCsvRow(String[] cols, CsvColumnIndices idx, String tenantId,
+                                  int row, List<Map<String, String>> errors) {
+        try {
+            String name = cols[idx.nameIdx()].trim();
+            String type = cols[idx.typeIdx()].trim().toUpperCase();
+            String uom = cols[idx.uomIdx()].trim().toUpperCase();
+            if (name.isEmpty() || type.isEmpty() || uom.isEmpty()) {
+                errors.add(Map.of("row", String.valueOf(row), ERROR_KEY, "name, type, and baseUom are required"));
+                return false;
+            }
+            String desc = idx.descIdx() >= 0 && idx.descIdx() < cols.length ? cols[idx.descIdx()].trim() : null;
+            double threshold = 0.0;
+            if (idx.threshIdx() >= 0 && idx.threshIdx() < cols.length && !cols[idx.threshIdx()].trim().isEmpty()) {
+                threshold = Double.parseDouble(cols[idx.threshIdx()].trim());
+            }
+            ItemEntity item = ItemEntity.builder()
+                    .itemId(UUID.randomUUID().toString())
+                    .tenantId(tenantId)
+                    .name(name)
+                    .type(type)
+                    .baseUom(uom)
+                    .description(desc != null && !desc.isEmpty() ? desc : null)
+                    .minStockThreshold(threshold)
+                    .active(true)
+                    .build();
+            itemRepository.save(item);
+            return true;
+        } catch (Exception e) {
+            errors.add(Map.of("row", String.valueOf(row), ERROR_KEY, e.getMessage()));
+            return false;
+        }
+    }
+
     @CacheEvict(value = {"items", "itemsActive", "itemsByType"}, allEntries = true)
     public Map<String, Object> importCsv(String tenantId, MultipartFile file) {
         List<Map<String, String>> errors = new ArrayList<>();
@@ -79,25 +142,13 @@ public class ItemService {
                 new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
             String headerLine = reader.readLine();
             if (headerLine == null) {
-                return Map.of("created", 0, "errors", List.of(Map.of("row", 0, "error", "Empty file")));
+                return Map.of(CREATED_KEY, 0, ERRORS_KEY, List.of(Map.of("row", 0, ERROR_KEY, "Empty file")));
             }
-            // strip BOM if present
             if (headerLine.startsWith("\uFEFF")) headerLine = headerLine.substring(1);
-            String[] headers = headerLine.split(",");
-            int nameIdx = -1, typeIdx = -1, uomIdx = -1, descIdx = -1, threshIdx = -1;
-            for (int i = 0; i < headers.length; i++) {
-                String h = headers[i].trim().toLowerCase();
-                switch (h) {
-                    case "name" -> nameIdx = i;
-                    case "type" -> typeIdx = i;
-                    case "baseuom", "uom", "base_uom" -> uomIdx = i;
-                    case "description" -> descIdx = i;
-                    case "minstockthreshold", "min_stock_threshold", "min_stock" -> threshIdx = i;
-                }
-            }
-            if (nameIdx < 0 || typeIdx < 0 || uomIdx < 0) {
-                return Map.of("created", 0, "errors", List.of(
-                        Map.of("row", 1, "error", "CSV must have columns: name, type, baseUom")));
+            CsvColumnIndices idx = parseHeaderIndices(headerLine.split(","));
+            if (!idx.hasRequiredColumns()) {
+                return Map.of(CREATED_KEY, 0, ERRORS_KEY, List.of(
+                        Map.of("row", 1, ERROR_KEY, "CSV must have columns: name, type, baseUom")));
             }
             String line;
             int row = 1;
@@ -105,41 +156,16 @@ public class ItemService {
                 row++;
                 if (line.isBlank()) continue;
                 String[] cols = line.split(",", -1);
-                try {
-                    String name = cols[nameIdx].trim();
-                    String type = cols[typeIdx].trim().toUpperCase();
-                    String uom = cols[uomIdx].trim().toUpperCase();
-                    if (name.isEmpty() || type.isEmpty() || uom.isEmpty()) {
-                        errors.add(Map.of("row", String.valueOf(row), "error", "name, type, and baseUom are required"));
-                        continue;
-                    }
-                    String desc = descIdx >= 0 && descIdx < cols.length ? cols[descIdx].trim() : null;
-                    double threshold = 0.0;
-                    if (threshIdx >= 0 && threshIdx < cols.length && !cols[threshIdx].trim().isEmpty()) {
-                        threshold = Double.parseDouble(cols[threshIdx].trim());
-                    }
-                    ItemEntity item = ItemEntity.builder()
-                            .itemId(UUID.randomUUID().toString())
-                            .tenantId(tenantId)
-                            .name(name)
-                            .type(type)
-                            .baseUom(uom)
-                            .description(desc != null && !desc.isEmpty() ? desc : null)
-                            .minStockThreshold(threshold)
-                            .active(true)
-                            .build();
-                    itemRepository.save(item);
+                if (processCsvRow(cols, idx, tenantId, row, errors)) {
                     created++;
-                } catch (Exception e) {
-                    errors.add(Map.of("row", String.valueOf(row), "error", e.getMessage()));
                 }
             }
         } catch (Exception e) {
-            return Map.of("created", created, "errors", List.of(Map.of("row", 0, "error", "Failed to read file: " + e.getMessage())));
+            return Map.of(CREATED_KEY, created, ERRORS_KEY, List.of(Map.of("row", 0, ERROR_KEY, "Failed to read file: " + e.getMessage())));
         }
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("created", created);
-        result.put("errors", errors);
+        result.put(CREATED_KEY, created);
+        result.put(ERRORS_KEY, errors);
         return result;
     }
 

@@ -18,6 +18,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProductService {
 
+    private static final String PRODUCT_NOT_FOUND = "Product not found: ";
+
     private final ProductRepository productRepository;
     private final DepartmentRepository departmentRepository;
     private final SubscriptionService subscriptionService;
@@ -100,7 +102,7 @@ public class ProductService {
     @CacheEvict(value = {"products", "product"}, allEntries = true)
     public ProductEntity update(String productId, UpdateProductRequest req) {
         ProductEntity entity = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
+                .orElseThrow(() -> new IllegalArgumentException(PRODUCT_NOT_FOUND + productId));
 
         entity.setName(req.name());
         entity.setDescription(req.description());
@@ -119,7 +121,7 @@ public class ProductService {
     @CacheEvict(value = {"products", "product"}, allEntries = true)
     public ProductEntity setActiveRecipe(String productId, String recipeId) {
         ProductEntity entity = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
+                .orElseThrow(() -> new IllegalArgumentException(PRODUCT_NOT_FOUND + productId));
         entity.setActiveRecipeId(recipeId);
         return productRepository.save(entity);
     }
@@ -140,6 +142,6 @@ public class ProductService {
     @Cacheable(value = "product", key = "#productId")
     public ProductEntity getById(String productId) {
         return productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
+                .orElseThrow(() -> new IllegalArgumentException(PRODUCT_NOT_FOUND + productId));
     }
 }

@@ -10,7 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * BC-1702: Feature access by subscription tier.
  * Tests: tenant with STANDARD has REPORTS, BASIC missing REPORTS, ENTERPRISE has AI_BOT, no sub returns not allowed.
  */
-public class FeatureAccessTest extends FunctionalTestBase {
+class FeatureAccessTest extends FunctionalTestBase {
 
     String adminToken() { return bearer("admin1"); }
 

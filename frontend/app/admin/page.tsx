@@ -160,12 +160,10 @@ export default function AdminPage() {
   // ── Config editing (BC-1703) ─────────────────────────────────────────────────
   const startEditConfig = () => {
     if (!config) return;
+    const rushStr = config.rushOrderPremiumPct == null ? '' : String(config.rushOrderPremiumPct);
     setCfgForm({
       orderCutoffTime: config.orderCutoffTime ?? '',
-      rushOrderPremiumPct:
-        config.rushOrderPremiumPct !== null && config.rushOrderPremiumPct !== undefined
-          ? String(config.rushOrderPremiumPct)
-          : '',
+      rushOrderPremiumPct: rushStr,
       mainCurrency: config.mainCurrency ?? '',
     });
     setEditingConfig(true);
@@ -179,7 +177,7 @@ export default function AdminPage() {
         method: 'PUT',
         body: JSON.stringify({
           orderCutoffTime: cfgForm.orderCutoffTime || null,
-          rushOrderPremiumPct: cfgForm.rushOrderPremiumPct !== '' ? Number(cfgForm.rushOrderPremiumPct) : null,
+          rushOrderPremiumPct: cfgForm.rushOrderPremiumPct === '' ? null : Number(cfgForm.rushOrderPremiumPct),
           mainCurrency: cfgForm.mainCurrency || null,
         }),
       });
@@ -283,9 +281,10 @@ export default function AdminPage() {
             </form>
           )}
 
-          {usersLoading ? (
+          {usersLoading && (
             <div className="px-4 py-4"><Spinner /></div>
-          ) : dbUsers.length > 0 ? (
+          )}
+          {!usersLoading && dbUsers.length > 0 && (
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="text-xs font-semibold text-gray-500 uppercase tracking-wide bg-gray-50 border-b">
@@ -317,7 +316,8 @@ export default function AdminPage() {
                 ))}
               </tbody>
             </table>
-          ) : (
+          )}
+          {!usersLoading && dbUsers.length === 0 && (
             <>
               <div className="flex items-center justify-between px-4 py-2 border-b bg-gray-50">
                 <span className="text-xs text-gray-500">{t('admin.showingDemoAccounts')}</span>

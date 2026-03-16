@@ -20,6 +20,12 @@ import java.util.*;
 @Transactional
 public class ReportService {
 
+    private static final String COUNT_UNIT = "count";
+    private static final String BLOCK_KEY_KEY = "blockKey";
+    private static final String VALUE_KEY = "value";
+    private static final String DATE_FROM_KEY = "dateFrom";
+    private static final String DATE_TO_KEY = "dateTo";
+
     private final ReportKpiBlockRepository kpiBlockRepo;
     private final CustomReportRepository customReportRepo;
     private final FinanceService financeService;
@@ -47,7 +53,7 @@ public class ReportService {
                 kpi("gross_margin_pct", "Gross Margin %", "( Revenue - COGS ) / Revenue × 100",
                         ReportKpiBlockEntity.KpiCategory.FINANCIAL, ReportKpiBlockEntity.QueryType.RATIO, "%"),
                 kpi("total_orders", "Total Orders", "Number of completed orders",
-                        ReportKpiBlockEntity.KpiCategory.CUSTOMER, ReportKpiBlockEntity.QueryType.COUNT, "count"),
+                        ReportKpiBlockEntity.KpiCategory.CUSTOMER, ReportKpiBlockEntity.QueryType.COUNT, COUNT_UNIT),
                 kpi("avg_order_value", "Average Order Value", "Revenue / completed orders",
                         ReportKpiBlockEntity.KpiCategory.FINANCIAL, ReportKpiBlockEntity.QueryType.RATIO, "GBP"),
                 kpi("delivery_completion_rate", "Delivery Completion Rate",
@@ -63,10 +69,10 @@ public class ReportService {
                         ReportKpiBlockEntity.KpiCategory.FINANCIAL, ReportKpiBlockEntity.QueryType.AGGREGATE, "GBP"),
                 kpi("overdue_invoices", "Overdue Invoices",
                         "Count of past-due unpaid invoices",
-                        ReportKpiBlockEntity.KpiCategory.FINANCIAL, ReportKpiBlockEntity.QueryType.COUNT, "count"),
+                        ReportKpiBlockEntity.KpiCategory.FINANCIAL, ReportKpiBlockEntity.QueryType.COUNT, COUNT_UNIT),
                 kpi("active_customers", "Active Customers",
                         "Unique customers with at least one order",
-                        ReportKpiBlockEntity.KpiCategory.CUSTOMER, ReportKpiBlockEntity.QueryType.COUNT, "count"),
+                        ReportKpiBlockEntity.KpiCategory.CUSTOMER, ReportKpiBlockEntity.QueryType.COUNT, COUNT_UNIT),
                 kpi("order_frequency", "Order Frequency",
                         "Average orders per customer",
                         ReportKpiBlockEntity.KpiCategory.CUSTOMER, ReportKpiBlockEntity.QueryType.RATIO, "x"),
@@ -78,7 +84,7 @@ public class ReportService {
                         ReportKpiBlockEntity.KpiCategory.FINANCIAL, ReportKpiBlockEntity.QueryType.RATIO, "%"),
                 kpi("invoice_aging", "Invoice Aging",
                         "Invoice count by aging bucket (0-30, 31-60, 61-90, 90+)",
-                        ReportKpiBlockEntity.KpiCategory.FINANCIAL, ReportKpiBlockEntity.QueryType.AGGREGATE, "count")
+                        ReportKpiBlockEntity.KpiCategory.FINANCIAL, ReportKpiBlockEntity.QueryType.AGGREGATE, COUNT_UNIT)
         ));
     }
 
@@ -168,7 +174,6 @@ public class ReportService {
         return customReportRepo.findByTenantIdAndActive(tenantId, true);
     }
 
-    @Transactional(readOnly = true)
     public CustomReportEntity getReport(String tenantId, String reportId) {
         return customReportRepo.findByTenantIdAndReportId(tenantId, reportId)
                 .orElseThrow(() -> new NoSuchElementException("Report not found: " + reportId));
@@ -181,7 +186,6 @@ public class ReportService {
      * Returns a Map with: blockKey, value, unit, dateFrom, dateTo
      * BC-1603
      */
-    @Transactional(readOnly = true)
     public Map<String, Object> computeKpi(String tenantId, String blockKey,
                                            LocalDate dateFrom, LocalDate dateTo) {
         ReportKpiBlockEntity block = kpiBlockRepo.findByBlockKey(blockKey)
@@ -190,12 +194,12 @@ public class ReportService {
         Object value = computeKpiValue(tenantId, blockKey, dateFrom, dateTo);
 
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("blockKey", blockKey);
+        result.put(BLOCK_KEY_KEY, blockKey);
         result.put("name", block.getName());
-        result.put("value", value);
+        result.put(VALUE_KEY, value);
         result.put("unit", block.getUnit());
-        result.put("dateFrom", dateFrom != null ? dateFrom.toString() : "");
-        result.put("dateTo", dateTo != null ? dateTo.toString() : "");
+        result.put(DATE_FROM_KEY, dateFrom != null ? dateFrom.toString() : "");
+        result.put(DATE_TO_KEY, dateTo != null ? dateTo.toString() : "");
         return result;
     }
 
@@ -203,7 +207,6 @@ public class ReportService {
      * Run all blocks in a custom report and return computed values.
      * BC-1603
      */
-    @Transactional(readOnly = true)
     public List<Map<String, Object>> runReport(String tenantId, String reportId,
                                                 LocalDate dateFrom, LocalDate dateTo) {
         CustomReportEntity report = getReport(tenantId, reportId);
@@ -213,7 +216,7 @@ public class ReportService {
                 results.add(computeKpi(tenantId, block.getBlockKey(), dateFrom, dateTo));
             } catch (NoSuchElementException e) {
                 Map<String, Object> err = new LinkedHashMap<>();
-                err.put("blockKey", block.getBlockKey());
+                err.put(BLOCK_KEY_KEY, block.getBlockKey());
                 err.put("error", "KPI block not found");
                 results.add(err);
             }
@@ -252,17 +255,17 @@ public class ReportService {
             int rowIdx = 1;
             for (Map<String, Object> row : data) {
                 Row r = sheet.createRow(rowIdx++);
-                r.createCell(0).setCellValue(str(row.get("blockKey")));
+                r.createCell(0).setCellValue(str(row.get(BLOCK_KEY_KEY)));
                 r.createCell(1).setCellValue(str(row.get("name")));
-                Object val = row.get("value");
-                if (val instanceof Number) {
-                    r.createCell(2).setCellValue(((Number) val).doubleValue());
+                Object val = row.get(VALUE_KEY);
+                if (val instanceof Number number) {
+                    r.createCell(2).setCellValue(number.doubleValue());
                 } else {
                     r.createCell(2).setCellValue(str(val));
                 }
                 r.createCell(3).setCellValue(str(row.get("unit")));
-                r.createCell(4).setCellValue(str(row.get("dateFrom")));
-                r.createCell(5).setCellValue(str(row.get("dateTo")));
+                r.createCell(4).setCellValue(str(row.get(DATE_FROM_KEY)));
+                r.createCell(5).setCellValue(str(row.get(DATE_TO_KEY)));
             }
 
             // Auto-size columns
@@ -291,12 +294,12 @@ public class ReportService {
         List<Map<String, Object>> data = runReport(tenantId, reportId, dateFrom, dateTo);
         StringBuilder sb = new StringBuilder("KPI Block,Name,Value,Unit,Date From,Date To\n");
         for (Map<String, Object> row : data) {
-            sb.append(str(row.get("blockKey"))).append(",")
+            sb.append(str(row.get(BLOCK_KEY_KEY))).append(",")
                     .append(str(row.get("name"))).append(",")
-                    .append(str(row.get("value"))).append(",")
+                    .append(str(row.get(VALUE_KEY))).append(",")
                     .append(str(row.get("unit"))).append(",")
-                    .append(str(row.get("dateFrom"))).append(",")
-                    .append(str(row.get("dateTo"))).append("\n");
+                    .append(str(row.get(DATE_FROM_KEY))).append(",")
+                    .append(str(row.get(DATE_TO_KEY))).append("\n");
         }
         return sb.toString().getBytes();
     }
@@ -305,17 +308,15 @@ public class ReportService {
 
     private Object computeKpiValue(String tenantId, String blockKey,
                                     LocalDate dateFrom, LocalDate dateTo) {
-        // Delegate to FinanceService for real DB queries where available;
-        // fall back to computed stubs for unimplemented KPIs.
         return switch (blockKey) {
             case "total_revenue" -> financeService.totalRevenue(tenantId, dateFrom, dateTo);
             case "cost_of_goods_sold" -> financeService.totalCostOfGoods(tenantId, dateFrom, dateTo);
             case "gross_margin_pct" -> financeService.grossMarginPct(tenantId, dateFrom, dateTo);
             case "total_orders" -> financeService.totalOrderCount(tenantId, dateFrom, dateTo);
             case "avg_order_value" -> financeService.avgOrderValue(tenantId, dateFrom, dateTo);
-            case "delivery_completion_rate" -> financeService.deliveryCompletionRate(tenantId, dateFrom, dateTo);
-            case "stock_turnover" -> financeService.stockTurnover(tenantId, dateFrom, dateTo);
-            case "production_efficiency" -> financeService.productionEfficiency(tenantId, dateFrom, dateTo);
+            case "delivery_completion_rate" -> financeService.deliveryCompletionRate();
+            case "stock_turnover" -> financeService.stockTurnover();
+            case "production_efficiency" -> financeService.productionEfficiency();
             case "outstanding_invoices" -> financeService.outstandingInvoices(tenantId);
             case "overdue_invoices" -> financeService.overdueInvoiceCount(tenantId);
             case "active_customers" -> financeService.activeCustomerCount(tenantId, dateFrom, dateTo);

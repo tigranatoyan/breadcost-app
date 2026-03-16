@@ -8,12 +8,12 @@ export interface CustomerInfo {
 }
 
 export function getCustomerToken(): string {
-  if (typeof window === 'undefined') return '';
+  if (globalThis.window === undefined) return '';
   return localStorage.getItem(CUST_TOKEN) ?? '';
 }
 
 export function getCustomerInfo(): CustomerInfo | null {
-  if (typeof window === 'undefined') return null;
+  if (globalThis.window === undefined) return null;
   const raw = localStorage.getItem(CUST_USER);
   if (!raw) return null;
   try { return JSON.parse(raw); } catch { return null; }
@@ -30,6 +30,6 @@ export function clearCustomerSession() {
 }
 
 export function isCustomerLoggedIn(): boolean {
-  if (typeof window === 'undefined') return false;
+  if (globalThis.window === undefined) return false;
   return !!localStorage.getItem(CUST_TOKEN);
 }

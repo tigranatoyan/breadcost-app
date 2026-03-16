@@ -155,8 +155,8 @@ export default function ReportBuilderPage() {
     } catch (e) { setError(String(e)); }
   };
 
-  /* block picker */
-  const BlockPicker = ({ selected, setSelected }: { selected: string[]; setSelected: (_v: string[]) => void }) => (
+  /* block picker — rendered as a function to avoid S6478 (component inside component) */
+  const renderBlockPicker = (selected: string[], setSelected: (_v: string[]) => void) => (
     <div className="max-h-60 overflow-y-auto border rounded p-2 space-y-1">
       {blocks.map(b => (
         <label key={b.blockId} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 p-1 rounded">
@@ -232,7 +232,7 @@ export default function ReportBuilderPage() {
           <form onSubmit={createReport} className="space-y-4">
             <Field label={t('common.name')}><input className="input w-full" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></Field>
             <Field label={t('common.description')}><textarea className="input w-full" rows={2} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></Field>
-            <Field label={t('reportBuilder.selectBlocks')}><BlockPicker selected={selectedBlocks} setSelected={setSelectedBlocks} /></Field>
+            <Field label={t('reportBuilder.selectBlocks')}>{renderBlockPicker(selectedBlocks, setSelectedBlocks)}</Field>
             <p className="text-sm text-gray-500">{selectedBlocks.length} {t('reportBuilder.blocksSelected')}</p>
             <div className="flex justify-end gap-2">
               <Button variant="secondary" size="sm" onClick={() => { setShowCreate(false); setSelectedBlocks([]); }}>{t('common.cancel')}</Button>
@@ -248,7 +248,7 @@ export default function ReportBuilderPage() {
           <form onSubmit={updateReport} className="space-y-4">
             <Field label={t('common.name')}><input className="input w-full" required value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} /></Field>
             <Field label={t('common.description')}><textarea className="input w-full" rows={2} value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })} /></Field>
-            <Field label={t('reportBuilder.selectBlocks')}><BlockPicker selected={editBlocks} setSelected={setEditBlocks} /></Field>
+            <Field label={t('reportBuilder.selectBlocks')}>{renderBlockPicker(editBlocks, setEditBlocks)}</Field>
             <p className="text-sm text-gray-500">{editBlocks.length} {t('reportBuilder.blocksSelected')}</p>
             <div className="flex justify-end gap-2">
               <Button variant="secondary" size="sm" onClick={() => setEditReport(null)}>{t('common.cancel')}</Button>
@@ -270,11 +270,22 @@ export default function ReportBuilderPage() {
                   <tr>{Object.keys(result.data[0]).map(k => <th key={k} className="text-left p-2 border-b font-medium">{k}</th>)}</tr>
                 </thead>
                 <tbody>
-                  {result.data.map((row, i) => (
-                    <tr key={i} className="border-b">
-                      {Object.values(row).map((v, j) => <td key={j} className="p-2">{String(v ?? '—')}</td>)}
+                  {result.data.map((row, i) => {
+                    const rowKey = Object.values(row)[0];
+                    const safeKey = typeof rowKey === 'string' || typeof rowKey === 'number' ? String(rowKey) : String(i);
+                    return (
+                    <tr key={`row-${safeKey}`} className="border-b">
+                      {Object.entries(row).map(([colKey, v]) => {
+                        let display: string;
+                        if (v == null) display = '\u2014';
+                        else if (typeof v === 'object') display = JSON.stringify(v);
+                        else if (typeof v === 'string') display = v;
+                        else display = String(v as number | boolean);
+                        return <td key={colKey} className="p-2">{display}</td>;
+                      })}
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

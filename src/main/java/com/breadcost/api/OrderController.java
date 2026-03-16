@@ -83,17 +83,12 @@ public class OrderController {
     @PreAuthorize("hasAnyRole('Admin','ProductionUser')")
     public ResponseEntity<OrderEntity> createOrder(@RequestBody CreateOrderRequest req) {
         OrderEntity created = orderService.createOrder(
-                req.getTenantId(),
-                req.getSiteId(),
-                req.getCustomerId(),
-                req.getCustomerName(),
-                getPrincipalName(),
-                req.getRequestedDeliveryTime(),
-                req.isForceRush(),
-                req.getCustomRushPremiumPct(),
-                req.getNotes(),
-                req.getLines(),
-                req.getIdempotencyKey()
+                new OrderService.CreateOrderRequest(
+                        req.getTenantId(), req.getSiteId(), req.getCustomerId(),
+                        req.getCustomerName(), getPrincipalName(),
+                        req.getRequestedDeliveryTime(), req.isForceRush(),
+                        req.getCustomRushPremiumPct(), req.getNotes(),
+                        req.getLines(), req.getIdempotencyKey())
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
@@ -110,11 +105,12 @@ public class OrderController {
 
         try {
             OrderEntity updated = orderService.updateDraftOrder(
-                    req.getTenantId(), orderId,
-                    req.getCustomerName(), req.getCustomerId(),
-                    req.getRequestedDeliveryTime(),
-                    req.isForceRush(), req.getCustomRushPremiumPct(),
-                    req.getNotes(), req.getLines());
+                    new OrderService.UpdateDraftOrderRequest(
+                            req.getTenantId(), orderId,
+                            req.getCustomerName(), req.getCustomerId(),
+                            req.getRequestedDeliveryTime(), req.isForceRush(),
+                            req.getCustomRushPremiumPct(), req.getNotes(),
+                            req.getLines()));
             return ResponseEntity.ok(updated);
         } catch (IllegalArgumentException | NoSuchElementException e) {
             return ResponseEntity.notFound().build();

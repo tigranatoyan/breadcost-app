@@ -107,9 +107,8 @@ class ProductServiceTest {
     void update_notFound_throws() {
         when(productRepo.findById("bad")).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class,
-                () -> svc.update("bad", new ProductService.UpdateProductRequest(
-                        null, null, null, null, null, 0, null)));
+        var req = new ProductService.UpdateProductRequest(null, null, null, null, null, 0, null);
+        assertThrows(IllegalArgumentException.class, () -> svc.update("bad", req));
     }
 
     // ── setActiveRecipe ──────────────────────────────────────────────────────

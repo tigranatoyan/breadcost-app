@@ -31,6 +31,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Slf4j
 public class AuthController {
 
+    private static final String MESSAGE = "message";
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
@@ -55,7 +57,7 @@ public class AuthController {
     @ApiResponse(responseCode = "200", description = "Login successful — JWT token returned")
     @ApiResponse(responseCode = "401", description = "Invalid credentials or deactivated account")
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest req) {
+    public ResponseEntity<Object> login(@Valid @RequestBody LoginRequest req) {
         log.info("Login attempt: {}", req.getUsername());
 
         // Look up user in DB
@@ -65,11 +67,11 @@ public class AuthController {
             UserEntity user = userOpt.get();
             if (!user.isActive()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("message", "Account is deactivated"));
+                        .body(Map.of(MESSAGE, "Account is deactivated"));
             }
             if (!passwordEncoder.matches(req.getPassword(), user.getPasswordHash())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("message", "Invalid username or password"));
+                        .body(Map.of(MESSAGE, "Invalid username or password"));
             }
             // Update last login
             user.setLastLoginAt(Instant.now());
@@ -94,7 +96,7 @@ public class AuthController {
     }
 
     /** Demo fallback — used when DB has no users yet (first boot) */
-    private ResponseEntity<?> fallbackLogin(LoginRequest req) {
+    private ResponseEntity<Object> fallbackLogin(LoginRequest req) {
         record DemoUser(String username, String password, List<String> roles) {}
         List<DemoUser> demos = List.of(
                 new DemoUser("admin",      "admin",      List.of("Admin")),
@@ -121,18 +123,18 @@ public class AuthController {
             }
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("message", "Invalid username or password"));
+                .body(Map.of(MESSAGE, "Invalid username or password"));
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> me(jakarta.servlet.http.HttpServletRequest request) {
+    public ResponseEntity<Object> me(jakarta.servlet.http.HttpServletRequest request) {
         String header = request.getHeader("Authorization");
         if (header == null || !header.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "No token"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(MESSAGE, "No token"));
         }
         String token = header.substring(7);
         if (!jwtUtil.isValid(token)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid token"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(MESSAGE, "Invalid token"));
         }
         return ResponseEntity.ok(Map.of(
                 "username", jwtUtil.getUsername(token),

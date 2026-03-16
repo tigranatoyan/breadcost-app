@@ -54,7 +54,7 @@ public class PurchaseOrderService {
         List<SupplierCatalogItemEntity> allItems =
                 catalogItemRepository.findAll().stream()
                         .filter(i -> i.getTenantId().equals(tenantId))
-                        .collect(Collectors.toList());
+                        .toList();
 
         // Group by supplierId
         Map<String, List<SupplierCatalogItemEntity>> bySupplierId =
@@ -241,7 +241,7 @@ public class PurchaseOrderService {
             wb.write(out);
             return out.toByteArray();
         } catch (IOException e) {
-            throw new RuntimeException("Failed to generate Excel export", e);
+            throw new IllegalStateException("Failed to generate Excel export", e);
         }
     }
 

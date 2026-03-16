@@ -1,0 +1,219 @@
+﻿typescript:S6759|breadcost-app:frontend/components/ui.tsx|6|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/ui.tsx|57|Mark the props of the component as read-only.
+typescript:S2004|breadcost-app:frontend/components/ui.tsx|64|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S6481|breadcost-app:frontend/components/ui.tsx|87|The object passed as the value prop to the Context provider changes every render. To fix this consider wrapping it in a useMemo hook.
+typescript:S6759|breadcost-app:frontend/components/ui.tsx|113|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/ui.tsx|139|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/ui.tsx|173|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/ui.tsx|260|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/ui.tsx|275|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/ui.tsx|308|Mark the props of the component as read-only.
+typescript:S7735|breadcost-app:frontend/components/ui.tsx|313|Unexpected negated condition.
+typescript:S7781|breadcost-app:frontend/components/ui.tsx|313|Prefer `String#replaceAll()` over `String#replace()`.
+typescript:S6759|breadcost-app:frontend/components/ui.tsx|322|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/ui.tsx|341|Mark the props of the component as read-only.
+typescript:S6479|breadcost-app:frontend/components/ui.tsx|374|Do not use Array index in keys
+typescript:S6479|breadcost-app:frontend/components/ui.tsx|376|Do not use Array index in keys
+typescript:S7781|breadcost-app:frontend/e2e/tests/obs-validate.spec.ts|119|Prefer `String#replaceAll()` over `String#replace()`.
+typescript:S7780|breadcost-app:frontend/middleware.ts|31|`String.raw` should be used to avoid escaping `\`.
+typescript:S6479|breadcost-app:frontend/app/subscriptions/page.tsx|177|Do not use Array index in keys
+typescript:S6551|breadcost-app:frontend/app/dashboard/page.tsx|185|'val.value' will use Object's default stringification format ('[object Object]') when stringified.
+typescript:S7735|breadcost-app:frontend/app/dashboard/page.tsx|185|Unexpected negated condition.
+typescript:S6551|breadcost-app:frontend/app/dashboard/page.tsx|590|'p.name || p.productName || ''' will use Object's default stringification format ('[object Object]') when stringified.
+typescript:S6551|breadcost-app:frontend/app/dashboard/page.tsx|591|'p.totalQty ?? 0' will use Object's default stringification format ('[object Object]') when stringified.
+typescript:S6551|breadcost-app:frontend/app/dashboard/page.tsx|593|'p.orderCount ?? 0' will use Object's default stringification format ('[object Object]') when stringified.
+typescript:S6759|breadcost-app:frontend/components/design-system.tsx|238|Mark the props of the component as read-only.
+typescript:S3358|breadcost-app:frontend/components/design-system.tsx|245|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/components/design-system.tsx|246|Extract this nested ternary operation into an independent statement.
+typescript:S7764|breadcost-app:frontend/app/dashboard/page.tsx|126|Prefer `globalThis.window` over `window`.
+typescript:S3776|breadcost-app:frontend/app/dashboard/page.tsx|139|Refactor this function to reduce its Cognitive Complexity from 24 to the 15 allowed.
+typescript:S7778|breadcost-app:frontend/app/production-plans/page.tsx|294|Do not call `Array#push()` multiple times.
+typescript:S7735|breadcost-app:frontend/app/customers/page.tsx|214|Unexpected negated condition.
+typescript:S3358|breadcost-app:frontend/app/customers/page.tsx|216|Extract this nested ternary operation into an independent statement.
+typescript:S3776|breadcost-app:frontend/app/recipes/page.tsx|86|Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+typescript:S3358|breadcost-app:frontend/app/recipes/page.tsx|520|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/orders/page.tsx|385|Extract this nested ternary operation into an independent statement.
+typescript:S1854|breadcost-app:frontend/app/customer/orders/page.tsx|67|Remove this useless assignment to variable "t".
+typescript:S7735|breadcost-app:frontend/components/design-system.tsx|221|Unexpected negated condition.
+typescript:S7781|breadcost-app:frontend/components/design-system.tsx|221|Prefer `String#replaceAll()` over `String#replace()`.
+typescript:S6551|breadcost-app:frontend/app/tenant-management/page.tsx|324|'(exportData as Record<string, unknown>).productsCount || 0' will use Object's default stringification format ('[object Object]') when stringified.
+typescript:S4325|breadcost-app:frontend/app/tenant-management/page.tsx|324|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S6551|breadcost-app:frontend/app/tenant-management/page.tsx|325|'(exportData as Record<string, unknown>).customersCount || 0' will use Object's default stringification format ('[object Object]') when stringified.
+typescript:S4325|breadcost-app:frontend/app/tenant-management/page.tsx|325|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S6551|breadcost-app:frontend/app/tenant-management/page.tsx|326|'(exportData as Record<string, unknown>).ordersCount || 0' will use Object's default stringification format ('[object Object]') when stringified.
+typescript:S4325|breadcost-app:frontend/app/tenant-management/page.tsx|326|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S2004|breadcost-app:frontend/app/recipes/page.tsx|636|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S2004|breadcost-app:frontend/app/recipes/page.tsx|637|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S4624|breadcost-app:frontend/app/customers/page.tsx|282|Refactor this code to not use nested template literals.
+typescript:S3358|breadcost-app:frontend/app/deliveries/page.tsx|212|Extract this nested ternary operation into an independent statement.
+typescript:S3776|breadcost-app:frontend/app/inventory/page.tsx|72|Refactor this function to reduce its Cognitive Complexity from 27 to the 15 allowed.
+typescript:S6479|breadcost-app:frontend/app/suppliers/page.tsx|530|Do not use Array index in keys
+typescript:S3358|breadcost-app:frontend/app/orders/page.tsx|671|Extract this nested ternary operation into an independent statement.
+typescript:S1854|breadcost-app:frontend/app/customer/orders/page.tsx|68|Remove this useless assignment to variable "formatDate".
+typescript:S1854|breadcost-app:frontend/app/customer/orders/page.tsx|69|Remove this useless assignment to variable "formatDateTime".
+typescript:S1854|breadcost-app:frontend/e2e/tests/arc-2-production-planning.spec.ts|25|Remove this useless assignment to variable "initialCount".
+typescript:S6594|breadcost-app:frontend/e2e/tests/i18n-sweep.spec.ts|59|Use the "RegExp.exec()" method instead.
+typescript:S3776|breadcost-app:frontend/app/admin/page.tsx|49|Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.
+typescript:S6754|breadcost-app:frontend/app/customer/orders/page.tsx|75|useState call is not destructured into value + setter pair
+typescript:S6759|breadcost-app:frontend/app/dashboard/page.tsx|108|Mark the props of the component as read-only.
+typescript:S6754|breadcost-app:frontend/app/dashboard/page.tsx|144|useState call is not destructured into value + setter pair
+typescript:S6606|breadcost-app:frontend/app/recipes/page.tsx|310|Prefer using nullish coalescing operator (`??`) instead of a ternary expression, as it is simpler to read.
+typescript:S3358|breadcost-app:frontend/app/recipes/page.tsx|748|Extract this nested ternary operation into an independent statement.
+typescript:S6478|breadcost-app:frontend/app/report-builder/page.tsx|159|Move this component definition out of the parent component and pass data as props.
+typescript:S6754|breadcost-app:frontend/lib/i18n.tsx|44|useState call is not destructured into value + setter pair
+typescript:S7764|breadcost-app:frontend/lib/i18n.tsx|45|Prefer `globalThis.window` over `window`.
+typescript:S7735|breadcost-app:frontend/e2e/playwright.config.ts|30|Unexpected negated condition.
+typescript:S7780|breadcost-app:frontend/e2e/playwright.config.ts|34|`String.raw` should be used to avoid escaping `\`.
+typescript:S3358|breadcost-app:frontend/app/ai-pricing/page.tsx|225|Extract this nested ternary operation into an independent statement.
+typescript:S6759|breadcost-app:frontend/app/ai-suggestions/page.tsx|38|Mark the props of the component as read-only.
+typescript:S6479|breadcost-app:frontend/app/ai-suggestions/page.tsx|43|Do not use Array index in keys
+typescript:S3358|breadcost-app:frontend/app/ai-suggestions/page.tsx|178|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/ai-suggestions/page.tsx|232|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/ai-suggestions/page.tsx|251|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/ai-suggestions/page.tsx|281|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/ai-whatsapp/page.tsx|167|Extract this nested ternary operation into an independent statement.
+typescript:S6759|breadcost-app:frontend/app/error.tsx|3|Mark the props of the component as read-only.
+typescript:S3776|breadcost-app:frontend/app/technologist/page.tsx|59|Refactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.
+typescript:S6759|breadcost-app:frontend/components/design-system.tsx|125|Mark the props of the component as read-only.
+typescript:S6479|breadcost-app:frontend/components/design-system.tsx|297|Do not use Array index in keys
+typescript:S6479|breadcost-app:frontend/components/design-system.tsx|299|Do not use Array index in keys
+typescript:S4325|breadcost-app:frontend/app/quality-predictions/page.tsx|34|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S4325|breadcost-app:frontend/app/quality-predictions/page.tsx|53|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S4325|breadcost-app:frontend/app/tenant-management/page.tsx|61|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S4325|breadcost-app:frontend/app/tenant-management/page.tsx|75|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S4325|breadcost-app:frontend/app/tenant-management/page.tsx|106|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S4325|breadcost-app:frontend/app/tenant-management/page.tsx|130|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S4325|breadcost-app:frontend/app/deliveries/page.tsx|263|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S4325|breadcost-app:frontend/app/deliveries/page.tsx|264|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S4325|breadcost-app:frontend/app/deliveries/page.tsx|265|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S4325|breadcost-app:frontend/app/reports/page.tsx|803|This assertion is unnecessary since it does not change the type of the expression.
+typescript:S3358|breadcost-app:frontend/app/subscriptions/page.tsx|208|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/orders/page.tsx|476|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/pos/page.tsx|394|Extract this nested ternary operation into an independent statement.
+typescript:S6479|breadcost-app:frontend/app/ai-whatsapp/page.tsx|73|Do not use Array index in keys
+typescript:S7744|breadcost-app:frontend/app/customer/profile/page.tsx|36|The empty object is useless.
+typescript:S6853|breadcost-app:frontend/app/customer/profile/page.tsx|168|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/profile/page.tsx|173|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/profile/page.tsx|178|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/profile/page.tsx|183|A form label must be associated with a control.
+typescript:S6479|breadcost-app:frontend/app/customer/profile/page.tsx|209|Do not use Array index in keys
+typescript:S6853|breadcost-app:frontend/app/customer/profile/page.tsx|275|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/profile/page.tsx|280|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/profile/page.tsx|285|A form label must be associated with a control.
+typescript:S7781|breadcost-app:frontend/app/notification-templates/page.tsx|32|Prefer `String#replaceAll()` over `String#replace()`.
+typescript:S7781|breadcost-app:frontend/app/notification-templates/page.tsx|32|Prefer `String#replaceAll()` over `String#replace()`.
+typescript:S7764|breadcost-app:frontend/app/customer/catalog/page.tsx|45|Prefer `globalThis.window` over `window`.
+typescript:S7764|breadcost-app:frontend/app/customer/checkout/page.tsx|36|Prefer `globalThis.window` over `window`.
+typescript:S6479|breadcost-app:frontend/app/customer/order-confirmation/[orderId]/page.tsx|70|Do not use Array index in keys
+typescript:S3358|breadcost-app:frontend/app/customer/orders/page.tsx|144|Extract this nested ternary operation into an independent statement.
+typescript:S6759|breadcost-app:frontend/app/customer/orders/page.tsx|202|Mark the props of the component as read-only.
+typescript:S7735|breadcost-app:frontend/app/customer/orders/page.tsx|232|Unexpected negated condition.
+typescript:S6479|breadcost-app:frontend/app/customer/orders/page.tsx|282|Do not use Array index in keys
+typescript:S6479|breadcost-app:frontend/app/customer/orders/page.tsx|299|Do not use Array index in keys
+typescript:S7735|breadcost-app:frontend/app/customer/catalog/page.tsx|231|Unexpected negated condition.
+typescript:S6759|breadcost-app:frontend/app/customer/layout.tsx|17|Mark the props of the component as read-only.
+typescript:S6853|breadcost-app:frontend/app/customer/login/page.tsx|188|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/login/page.tsx|193|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/login/page.tsx|211|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/login/page.tsx|216|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/login/page.tsx|221|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/login/page.tsx|238|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/login/page.tsx|259|A form label must be associated with a control.
+typescript:S6853|breadcost-app:frontend/app/customer/login/page.tsx|264|A form label must be associated with a control.
+typescript:S7764|breadcost-app:frontend/lib/customer-auth.ts|11|Prefer `globalThis.window` over `window`.
+typescript:S7764|breadcost-app:frontend/lib/customer-auth.ts|16|Prefer `globalThis.window` over `window`.
+typescript:S7764|breadcost-app:frontend/lib/customer-auth.ts|33|Prefer `globalThis.window` over `window`.
+typescript:S6767|breadcost-app:frontend/app/dashboard/page.tsx|104|'accent' PropType is defined but prop is never used
+typescript:S6759|breadcost-app:frontend/app/dashboard/page.tsx|116|Mark the props of the component as read-only.
+typescript:S3358|breadcost-app:frontend/app/dashboard/page.tsx|490|Extract this nested ternary operation into an independent statement.
+typescript:S6479|breadcost-app:frontend/app/dashboard/page.tsx|492|Do not use Array index in keys
+typescript:S3358|breadcost-app:frontend/app/inventory/page.tsx|556|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/inventory/page.tsx|558|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/inventory/page.tsx|665|Extract this nested ternary operation into an independent statement.
+typescript:S6848|breadcost-app:frontend/app/recipes/page.tsx|532|Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.
+typescript:S1082|breadcost-app:frontend/app/recipes/page.tsx|532|Visible, non-interactive elements with click handlers must have at least one keyboard listener.
+typescript:S1082|breadcost-app:frontend/components/AuthShell.tsx|371|Visible, non-interactive elements with click handlers must have at least one keyboard listener.
+typescript:S6848|breadcost-app:frontend/components/AuthShell.tsx|371|Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.
+typescript:S6759|breadcost-app:frontend/components/design-system.tsx|33|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/design-system.tsx|57|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/design-system.tsx|79|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/design-system.tsx|104|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/design-system.tsx|154|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/design-system.tsx|179|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/design-system.tsx|216|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/components/design-system.tsx|262|Mark the props of the component as read-only.
+typescript:S6479|breadcost-app:frontend/components/design-system.tsx|282|Do not use Array index in keys
+typescript:S6479|breadcost-app:frontend/components/design-system.tsx|284|Do not use Array index in keys
+typescript:S6479|breadcost-app:frontend/app/customers/page.tsx|259|Do not use Array index in keys
+typescript:S6479|breadcost-app:frontend/app/report-builder/page.tsx|274|Do not use Array index in keys
+typescript:S6479|breadcost-app:frontend/app/report-builder/page.tsx|275|Do not use Array index in keys
+typescript:S6551|breadcost-app:frontend/app/report-builder/page.tsx|275|'v ?? 'â'' will use Object's default stringification format ('[object Object]') when stringified.
+typescript:S6582|breadcost-app:frontend/app/dashboard/page.tsx|238|Prefer using an optional chain expression instead, as it's more concise and easier to read.
+typescript:S2004|breadcost-app:frontend/app/production-plans/page.tsx|554|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S7781|breadcost-app:frontend/app/reports/page.tsx|100|Prefer `String#replaceAll()` over `String#replace()`.
+typescript:S6479|breadcost-app:frontend/app/reports/page.tsx|882|Do not use Array index in keys
+typescript:S6479|breadcost-app:frontend/app/reports/page.tsx|914|Do not use Array index in keys
+typescript:S7735|breadcost-app:frontend/app/admin/page.tsx|182|Unexpected negated condition.
+typescript:S3358|breadcost-app:frontend/app/admin/page.tsx|288|Extract this nested ternary operation into an independent statement.
+typescript:S1874|breadcost-app:frontend/app/pos/page.tsx|313|The signature '(...text: string[]): void' of 'win.document.write' is deprecated.
+typescript:S1874|breadcost-app:frontend/app/pos/page.tsx|314|The signature '(...text: string[]): void' of 'win.document.write' is deprecated.
+typescript:S1874|breadcost-app:frontend/app/pos/page.tsx|315|The signature '(...text: string[]): void' of 'win.document.write' is deprecated.
+typescript:S1874|breadcost-app:frontend/app/pos/page.tsx|341|The signature '(...text: string[]): void' of 'win.document.write' is deprecated.
+typescript:S1874|breadcost-app:frontend/app/pos/page.tsx|342|The signature '(...text: string[]): void' of 'win.document.write' is deprecated.
+typescript:S1874|breadcost-app:frontend/app/pos/page.tsx|343|The signature '(...text: string[]): void' of 'win.document.write' is deprecated.
+typescript:S6479|breadcost-app:frontend/app/pos/page.tsx|620|Do not use Array index in keys
+typescript:S5256|breadcost-app:frontend/app/pos/page.tsx|666|Add a valid header row or column to this "<table>".
+typescript:S6479|breadcost-app:frontend/app/inventory/page.tsx|570|Do not use Array index in keys
+typescript:S3358|breadcost-app:frontend/app/inventory/page.tsx|948|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/production-plans/page.tsx|628|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/production-plans/page.tsx|728|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/production-plans/page.tsx|729|Extract this nested ternary operation into an independent statement.
+typescript:S2004|breadcost-app:frontend/app/recipes/page.tsx|587|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S3358|breadcost-app:frontend/app/recipes/page.tsx|1059|Extract this nested ternary operation into an independent statement.
+typescript:S6759|breadcost-app:frontend/lib/i18n.tsx|43|Mark the props of the component as read-only.
+typescript:S6481|breadcost-app:frontend/lib/i18n.tsx|69|The object passed as the value prop to the Context provider changes every render. To fix this consider wrapping it in a useMemo hook.
+typescript:S6479|breadcost-app:frontend/app/recipes/page.tsx|632|Do not use Array index in keys
+typescript:S2004|breadcost-app:frontend/app/recipes/page.tsx|648|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S2004|breadcost-app:frontend/app/recipes/page.tsx|652|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S2004|breadcost-app:frontend/app/recipes/page.tsx|656|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S2004|breadcost-app:frontend/app/recipes/page.tsx|660|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S2004|breadcost-app:frontend/app/recipes/page.tsx|664|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S2004|breadcost-app:frontend/app/recipes/page.tsx|668|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S7764|breadcost-app:frontend/lib/auth.ts|19|Prefer `globalThis.window` over `window`.
+typescript:S7764|breadcost-app:frontend/lib/auth.ts|29|Prefer `globalThis.window` over `window`.
+typescript:S3358|breadcost-app:frontend/app/dashboard/page.tsx|22|Extract this nested ternary operation into an independent statement.
+typescript:S3735|breadcost-app:frontend/app/dashboard/page.tsx|449|Remove this use of the "void" operator.
+typescript:S3358|breadcost-app:frontend/app/dashboard/page.tsx|451|Extract this nested ternary operation into an independent statement.
+typescript:S3358|breadcost-app:frontend/app/dashboard/page.tsx|452|Extract this nested ternary operation into an independent statement.
+typescript:S6759|breadcost-app:frontend/app/layout.tsx|12|Mark the props of the component as read-only.
+typescript:S2004|breadcost-app:frontend/app/orders/page.tsx|227|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S4624|breadcost-app:frontend/app/orders/page.tsx|313|Refactor this code to not use nested template literals.
+typescript:S1082|breadcost-app:frontend/app/orders/page.tsx|394|Visible, non-interactive elements with click handlers must have at least one keyboard listener.
+typescript:S6848|breadcost-app:frontend/app/orders/page.tsx|394|Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.
+typescript:S1082|breadcost-app:frontend/app/orders/page.tsx|424|Visible, non-interactive elements with click handlers must have at least one keyboard listener.
+typescript:S6848|breadcost-app:frontend/app/orders/page.tsx|424|Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.
+typescript:S6479|breadcost-app:frontend/app/orders/page.tsx|616|Do not use Array index in keys
+typescript:S6759|breadcost-app:frontend/app/pos/page.tsx|86|Mark the props of the component as read-only.
+typescript:S6848|breadcost-app:frontend/app/production-plans/page.tsx|468|Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.
+typescript:S1082|breadcost-app:frontend/app/production-plans/page.tsx|468|Visible, non-interactive elements with click handlers must have at least one keyboard listener.
+typescript:S6848|breadcost-app:frontend/app/production-plans/page.tsx|485|Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.
+typescript:S1082|breadcost-app:frontend/app/production-plans/page.tsx|485|Visible, non-interactive elements with click handlers must have at least one keyboard listener.
+typescript:S3358|breadcost-app:frontend/app/production-plans/page.tsx|655|Extract this nested ternary operation into an independent statement.
+typescript:S6853|breadcost-app:frontend/app/production-plans/page.tsx|684|A form label must be associated with a control.
+typescript:S2004|breadcost-app:frontend/app/production-plans/page.tsx|691|Refactor this code to not nest functions more than 4 levels deep.
+typescript:S6479|breadcost-app:frontend/app/production-plans/page.tsx|737|Do not use Array index in keys
+typescript:S7735|breadcost-app:frontend/app/recipes/page.tsx|325|Unexpected negated condition.
+typescript:S6479|breadcost-app:frontend/app/recipes/page.tsx|888|Do not use Array index in keys
+typescript:S6759|breadcost-app:frontend/app/reports/page.tsx|124|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/app/reports/page.tsx|136|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/app/reports/page.tsx|278|Mark the props of the component as read-only.
+typescript:S7735|breadcost-app:frontend/app/reports/page.tsx|325|Unexpected negated condition.
+typescript:S6759|breadcost-app:frontend/app/reports/page.tsx|425|Mark the props of the component as read-only.
+typescript:S6759|breadcost-app:frontend/app/technologist/page.tsx|52|Mark the props of the component as read-only.
+typescript:S6479|breadcost-app:frontend/app/technologist/page.tsx|237|Do not use Array index in keys
+typescript:S6759|breadcost-app:frontend/components/AuthShell.tsx|164|Mark the props of the component as read-only.
+typescript:S6479|breadcost-app:frontend/components/AuthShell.tsx|244|Do not use Array index in keys
+typescript:S7744|breadcost-app:frontend/lib/api.ts|16|The empty object is useless.
+typescript:S7764|breadcost-app:frontend/lib/api.ts|22|Prefer `globalThis` over `window`.
+typescript:S7764|breadcost-app:frontend/lib/api.ts|22|Prefer `globalThis.window` over `window`.
+typescript:S7764|breadcost-app:frontend/lib/auth.ts|62|Prefer `globalThis.window` over `window`.

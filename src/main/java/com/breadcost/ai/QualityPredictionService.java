@@ -58,7 +58,7 @@ public class QualityPredictionService {
             // Calculate yield statistics
             List<Double> yieldPcts = wos.stream()
                     .map(wo -> wo.getActualYield() / wo.getTargetQty())
-                    .collect(Collectors.toList());
+                    .toList();
 
             double avgYield = yieldPcts.stream().mapToDouble(d -> d).average().orElse(1.0);
 
@@ -97,7 +97,7 @@ public class QualityPredictionService {
             else riskLevel = "LOW";
 
             List<String> factors = buildRiskFactors(recentAvg, avgYield, stdDev, failRate, avgWastePct, complexityFactor);
-            String recommendation = buildRecommendation(riskLevel, factors, recentAvg, avgYield);
+            String recommendation = buildRecommendation(riskLevel, recentAvg, avgYield);
 
             double confidence = Math.min(0.95, 0.4 + wos.size() / 50.0 + (1 - stdDev) * 0.2);
 
@@ -160,13 +160,13 @@ public class QualityPredictionService {
         return factors;
     }
 
-    private String buildRecommendation(String riskLevel, List<String> factors,
+    private String buildRecommendation(String riskLevel,
                                         double recentAvg, double histAvg) {
         return switch (riskLevel) {
             case "HIGH" -> "Immediate attention required. Consider recipe review, ingredient quality checks, " +
                     "or additional operator training. Recent yield at %.1f%%.".formatted(recentAvg * 100);
-            case "MEDIUM" -> "Monitor closely. Recent yield (%.1f%%) is below target (%.1f%%). " +
-                    "Review recent production logs for patterns.".formatted(recentAvg * 100, histAvg * 100);
+            case "MEDIUM" -> ("Monitor closely. Recent yield (%.1f%%) is below target (%.1f%%). " +
+                    "Review recent production logs for patterns.").formatted(recentAvg * 100, histAvg * 100);
             default -> "Quality within acceptable range. Continue standard monitoring.";
         };
     }

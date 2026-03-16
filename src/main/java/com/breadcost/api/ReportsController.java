@@ -28,9 +28,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Slf4j
 public class ReportsController {
 
+    private static final String CANCELLED_STATUS = "CANCELLED";
+
     private final OrderRepository orderRepository;
-    private final SaleRepository saleRepository;
-    private final ProductRepository productRepository;
     private final ProductionPlanRepository planRepository;
 
     // ─── REVENUE SUMMARY ─────────────────────────────────────────────────────
@@ -42,7 +42,7 @@ public class ReportsController {
             @RequestParam(defaultValue = "month") String period) {
 
         List<OrderEntity> orders = orderRepository.findByTenantId(tenantId).stream()
-                .filter(o -> !o.getStatus().equals("CANCELLED") && !o.getStatus().equals("DRAFT"))
+                .filter(o -> !o.getStatus().equals(CANCELLED_STATUS) && !o.getStatus().equals("DRAFT"))
                 .toList();
 
         Instant now = Instant.now();
@@ -86,7 +86,7 @@ public class ReportsController {
         Instant since = Instant.now().minus(java.time.Duration.ofDays(7));
         List<OrderEntity> recentOrders = orderRepository.findByTenantId(tenantId).stream()
                 .filter(o -> o.getCreatedAt() != null && o.getCreatedAt().isAfter(since))
-                .filter(o -> !o.getStatus().equals("CANCELLED"))
+                .filter(o -> !o.getStatus().equals(CANCELLED_STATUS))
                 .toList();
 
         Map<String, TopProduct> map = new LinkedHashMap<>();
@@ -181,7 +181,7 @@ public class ReportsController {
                 .count();
         BigDecimal todayValue = all.stream()
                 .filter(o -> o.getCreatedAt() != null && o.getCreatedAt().isAfter(startOfDay))
-                .filter(o -> !o.getStatus().equals("CANCELLED"))
+                .filter(o -> !o.getStatus().equals(CANCELLED_STATUS))
                 .map(o -> o.getTotalAmount() != null ? o.getTotalAmount() : BigDecimal.ZERO)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 

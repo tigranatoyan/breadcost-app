@@ -161,7 +161,7 @@ const ROLE_DEFAULT: Partial<Record<Role, string>> = {
   finance: '/reports',
 };
 
-export default function AuthShell({ children }: { children: React.ReactNode }) {
+export default function AuthShell({ children }: Readonly<{ children: React.ReactNode }>) {
   const router = useRouter();
   const pathname = usePathname();
   const { t, locale, setLocale } = useI18n();
@@ -240,8 +240,8 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
 
       {/* Navigation sections */}
       <nav className="flex-1 space-y-4 overflow-y-auto">
-        {filteredSections.map((section, si) => (
-          <div key={si}>
+        {filteredSections.map((section) => (
+          <div key={section.titleKey ?? section.items[0]?.href ?? 'nav'}>
             {section.titleKey && (
               <div className="mb-2 px-3 text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
                 {t(section.titleKey)}
@@ -251,7 +251,7 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
               {section.items.map((item) => {
                 const active = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'));
                 return (
-                  <Link key={item.href + si} href={item.href} className="block" onClick={() => setSidebarOpen(false)}>
+                  <Link key={item.href} href={item.href} className="block" onClick={() => setSidebarOpen(false)}>
                     <SidebarItem
                       icon={item.icon}
                       label={t(item.labelKey)}
@@ -368,7 +368,9 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
       <div className="mx-auto grid max-w-[1800px] gap-6 p-6 lg:grid-cols-[260px_minmax(0,1fr)]">
         {/* Mobile sidebar overlay */}
         {sidebarOpen && (
-          <div
+          <button
+            type="button"
+            aria-label="Close sidebar"
             className="fixed inset-0 z-30 bg-black/40 lg:hidden"
             onClick={() => setSidebarOpen(false)}
           />

@@ -3,10 +3,10 @@
 export default function GlobalError({
   error,
   reset,
-}: {
+}: Readonly<{
   error: Error & { digest?: string };
   reset: () => void;
-}) {
+}>) {
   return (
     <div className="flex min-h-[480px] items-center justify-center p-4">
       <div className="max-w-lg text-center">

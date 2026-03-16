@@ -53,10 +53,14 @@ test.describe('i18n Sweep', () => {
       // Pattern: lowercase.lowercase (e.g., "driver.refresh", "orders.status")
       // but must not match known safe patterns like product names, URLs, etc.
       const keyPattern = /\b[a-z]{2,}\.[a-z][a-zA-Z]{2,}\b/g;
-      const matches = allText.match(keyPattern) || [];
+      const matches: string[] = [];
+      let execResult: RegExpExecArray | null;
+      while ((execResult = keyPattern.exec(allText)) !== null) {
+        matches.push(execResult[0]);
+      }
       for (const match of matches) {
         // Exclude common false positives
-        if (match.includes('http') || match.match(/^\d/) || match === 'e.g'
+        if (match.includes('http') || /^\d/.exec(match) || match === 'e.g'
             || match.startsWith('next.') || match.startsWith('react.')
             || match.endsWith('.com') || match.endsWith('.js') || match.endsWith('.ts')
             || match.endsWith('.tsx') || match.endsWith('.css')

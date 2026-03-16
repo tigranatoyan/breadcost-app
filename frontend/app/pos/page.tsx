@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Alert } from '@/components/ui';
@@ -7,7 +7,7 @@ import { useT, useDateTimeFmt } from '@/lib/i18n';
 import { getUsername } from '@/lib/auth';
 import { Package } from 'lucide-react';
 
-// ─── types ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface Product {
   productId: string;
@@ -64,7 +64,7 @@ interface ReconcileResult {
   expectedCashInDrawer: number;
 }
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function fmt(n: number) {
   return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -74,7 +74,7 @@ function lineTotal(line: CartLine) {
   return line.qty * line.unitPrice;
 }
 
-// ─── quick-add popover ───────────────────────────────────────────────────────
+// â”€â”€â”€ quick-add popover â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface QuickAddProps {
   product: Product;
@@ -83,15 +83,15 @@ interface QuickAddProps {
   onCancel: () => void;
 }
 
-function QuickAdd({ product, deptName, onAdd, onCancel }: QuickAddProps) {
+function QuickAdd({ product, deptName, onAdd, onCancel }: Readonly<QuickAddProps>) {
   const t = useT();
   const [qty, setQty] = useState('1');
   const [price, setPrice] = useState('0.00');
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    const q = parseFloat(qty);
-    const p = parseFloat(price);
+    const q = Number.parseFloat(qty);
+    const p = Number.parseFloat(price);
     if (!q || q <= 0) return;
     onAdd({
       productId: product.productId,
@@ -112,6 +112,7 @@ function QuickAdd({ product, deptName, onAdd, onCancel }: QuickAddProps) {
           <label className="text-xs text-gray-500 mb-1 block">{t('orders.qty')} ({product.baseUom})</label>
           <input
             autoFocus
+            aria-label={t('orders.qty')}
             className="input w-full text-center text-lg font-bold"
             type="number"
             min={0.001}
@@ -123,6 +124,7 @@ function QuickAdd({ product, deptName, onAdd, onCancel }: QuickAddProps) {
         <div>
           <label className="text-xs text-gray-500 mb-1 block">{t('pos.unitPrice')}</label>
           <input
+            aria-label={t('pos.unitPrice')}
             className="input w-full text-center"
             type="number"
             min={0}
@@ -132,7 +134,7 @@ function QuickAdd({ product, deptName, onAdd, onCancel }: QuickAddProps) {
           />
         </div>
         <div className="text-xs text-right text-gray-500 mt-0.5">
-          {t('common.total')}: {fmt(parseFloat(qty || '0') * parseFloat(price || '0'))}
+          {t('common.total')}: {fmt(Number.parseFloat(qty || '0') * Number.parseFloat(price || '0'))}
         </div>
         <div className="flex gap-2 mt-auto pt-2">
           <Button variant="secondary" size="xs" type="button" className="flex-1" onClick={onCancel}>{t('common.cancel')}</Button>
@@ -143,7 +145,7 @@ function QuickAdd({ product, deptName, onAdd, onCancel }: QuickAddProps) {
   );
 }
 
-// ─── main component ───────────────────────────────────────────────────────────
+// â”€â”€â”€ main component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function POSPage() {
   const t = useT();
@@ -181,7 +183,7 @@ export default function POSPage() {
   const [eodLoading, setEodLoading] = useState(false);
   const eodRef = useRef<HTMLDivElement>(null);
 
-  // ─── load ─────────────────────────────────────────────────────────────────
+  // â”€â”€â”€ load â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const load = useCallback(async () => {
     try {
@@ -201,7 +203,7 @@ export default function POSPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  // ─── department map ───────────────────────────────────────────────────────
+  // â”€â”€â”€ department map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const deptMap = useMemo(() => {
     const m: Record<string, string> = {};
@@ -209,7 +211,7 @@ export default function POSPage() {
     return m;
   }, [departments]);
 
-  // ─── filtered products ────────────────────────────────────────────────────
+  // â”€â”€â”€ filtered products â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
@@ -220,7 +222,7 @@ export default function POSPage() {
     });
   }, [products, deptFilter, search]);
 
-  // ─── cart helpers ─────────────────────────────────────────────────────────
+  // â”€â”€â”€ cart helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const addLine = (line: CartLine) => {
     setCart((prev) => {
@@ -247,11 +249,11 @@ export default function POSPage() {
   const cartTotal = cart.reduce((s, l) => s + lineTotal(l), 0);
   const cartCount = cart.reduce((s, l) => s + l.qty, 0);
 
-  // ─── checkout ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€ checkout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const changeAmount = (() => {
     if (paymentMethod !== 'CASH') return null;
-    const received = parseFloat(cashReceived || '0');
+    const received = Number.parseFloat(cashReceived || '0');
     if (!received || received < cartTotal) return null;
     return received - cartTotal;
   })();
@@ -276,7 +278,7 @@ export default function POSPage() {
         })),
       };
       if (paymentMethod === 'CASH' && cashReceived) {
-        body.cashReceived = parseFloat(cashReceived);
+        body.cashReceived = Number.parseFloat(cashReceived);
       }
       if (paymentMethod === 'CARD' && cardReference.trim()) {
         body.cardReference = cardReference.trim();
@@ -310,9 +312,8 @@ export default function POSPage() {
     if (!receiptRef.current) return;
     const win = window.open('', '_blank', 'width=400,height=600');
     if (!win) return;
-    win.document.write('<html><head><title>Receipt</title><style>body{font-family:monospace;padding:20px;font-size:12px}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:4px 0}th{border-bottom:1px dashed #000}.right{text-align:right}.total{border-top:2px solid #000;font-weight:bold}</style></head><body>');
-    win.document.write(receiptRef.current.innerHTML);
-    win.document.write('</body></html>');
+    win.document.head.innerHTML = '<title>Receipt</title><style>body{font-family:monospace;padding:20px;font-size:12px}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:4px 0}th{border-bottom:1px dashed #000}.right{text-align:right}.total{border-top:2px solid #000;font-weight:bold}</style>';
+    win.document.body.innerHTML = receiptRef.current.innerHTML;
     win.document.close();
     win.print();
   };
@@ -338,15 +339,62 @@ export default function POSPage() {
     if (!eodRef.current) return;
     const win = window.open('', '_blank', 'width=400,height=500');
     if (!win) return;
-    win.document.write('<html><head><title>End of Day</title><style>body{font-family:monospace;padding:20px;font-size:12px}table{width:100%;border-collapse:collapse}td{padding:4px 0}.right{text-align:right}.total{border-top:2px solid #000;font-weight:bold}</style></head><body>');
-    win.document.write(eodRef.current.innerHTML);
-    win.document.write('</body></html>');
+    win.document.head.innerHTML = '<title>End of Day</title><style>body{font-family:monospace;padding:20px;font-size:12px}table{width:100%;border-collapse:collapse}td{padding:4px 0}.right{text-align:right}.total{border-top:2px solid #000;font-weight:bold}</style>';
+    win.document.body.innerHTML = eodRef.current.innerHTML;
     win.document.close();
     win.print();
   };
 
-  // ─── render ───────────────────────────────────────────────────────────────
+  // â”€â”€â”€ render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+  let productGridContent: React.ReactNode;
+  if (loading) {
+    productGridContent = <Spinner />;
+  } else if (filtered.length === 0) {
+    const noActiveProducts = products.filter((p) => p.status === 'ACTIVE').length === 0;
+    productGridContent = (
+      <div className="flex-1 flex items-center justify-center text-sm text-gray-400">
+        {noActiveProducts ? t('pos.noActiveProducts') : t('pos.noProductsMatch')}
+      </div>
+    );
+  } else {
+    productGridContent = (
+      <div className="overflow-y-auto flex-1 grid grid-cols-2 sm:grid-cols-3 gap-3 content-start">
+        {filtered.map((p) => {
+          const inCart = cart.find((l) => l.productId === p.productId);
+          return (
+            <div
+              key={p.productId}
+              className="relative rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow"
+            >
+              <button
+                className="w-full text-left p-4 rounded-xl"
+                onClick={() => setQuickAddId(p.productId)}
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 text-gray-400 mb-2"><Package className="h-5 w-5" /></div>
+                <div className="font-semibold text-sm leading-tight">{p.name}</div>
+                <div className="text-xs text-gray-400 mt-1">{deptMap[p.departmentId] ?? '\u2014'}</div>
+                <div className="text-xs text-gray-400 mt-0.5">{p.baseUom}</div>
+                {inCart && (
+                  <div className="mt-2 inline-block bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded-full font-medium">
+                    {t('pos.inCart', { qty: inCart.qty })}
+                  </div>
+                )}
+              </button>
+              {quickAddId === p.productId && (
+                <QuickAdd
+                  product={p}
+                  deptName={deptMap[p.departmentId] ?? ''}
+                  onAdd={addLine}
+                  onCancel={() => setQuickAddId(null)}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
   return (
     <div className="h-[calc(100vh-64px)] flex flex-col">
       <div className="mb-3 shrink-0">
@@ -362,12 +410,12 @@ export default function POSPage() {
       {success && (
         <div className="mb-3 bg-green-50 border border-green-200 text-green-800 rounded-xl px-4 py-3 text-sm flex items-center justify-between shrink-0">
           {success}
-          <button className="ml-4 text-green-600 hover:text-green-800 font-medium" onClick={() => setSuccess('')}>×</button>
+          <button className="ml-4 text-green-600 hover:text-green-800 font-medium" onClick={() => setSuccess('')}>Ã—</button>
         </div>
       )}
 
       <div className="flex gap-4 flex-1 min-h-0">
-        {/* ── Product Catalog ─────────────────────────────────────────────── */}
+        {/* â”€â”€ Product Catalog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Filter bar */}
           <div className="flex gap-2 mb-3 shrink-0">
@@ -389,56 +437,10 @@ export default function POSPage() {
           </div>
 
           {/* Grid */}
-          {loading ? (
-            <Spinner />
-          ) : filtered.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center text-sm text-gray-400">
-              {products.filter((p) => p.status === 'ACTIVE').length === 0
-                ? t('pos.noActiveProducts')
-                : t('pos.noProductsMatch')}
-            </div>
-          ) : (
-            <div className="overflow-y-auto flex-1 grid grid-cols-2 sm:grid-cols-3 gap-3 content-start">
-              {filtered.map((p) => {
-                const inCart = cart.find((l) => l.productId === p.productId);
-                return (
-                  <div
-                    key={p.productId}
-                    className="relative rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    {/* Product card */}
-                    <button
-                      className="w-full text-left p-4 rounded-xl"
-                      onClick={() => setQuickAddId(p.productId)}
-                    >
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 text-gray-400 mb-2"><Package className="h-5 w-5" /></div>
-                      <div className="font-semibold text-sm leading-tight">{p.name}</div>
-                      <div className="text-xs text-gray-400 mt-1">{deptMap[p.departmentId] ?? '—'}</div>
-                      <div className="text-xs text-gray-400 mt-0.5">{p.baseUom}</div>
-                      {inCart && (
-                        <div className="mt-2 inline-block bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded-full font-medium">
-                          {t('pos.inCart', { qty: inCart.qty })}
-                        </div>
-                      )}
-                    </button>
-
-                    {/* Quick-add overlay */}
-                    {quickAddId === p.productId && (
-                      <QuickAdd
-                        product={p}
-                        deptName={deptMap[p.departmentId] ?? ''}
-                        onAdd={addLine}
-                        onCancel={() => setQuickAddId(null)}
-                      />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          {productGridContent}
         </div>
 
-        {/* ── Cart ────────────────────────────────────────────────────────── */}
+        {/* â”€â”€ Cart â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <div className="w-80 shrink-0 flex flex-col bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
             <span className="font-semibold text-sm">{t('pos.cart')}</span>
@@ -464,13 +466,13 @@ export default function POSPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium truncate">{line.productName}</div>
-                      <div className="text-xs text-gray-400">{line.unitPrice.toFixed(2)} × </div>
+                      <div className="text-xs text-gray-400">{line.unitPrice.toFixed(2)} Ã— </div>
                     </div>
                     <button
                       className="text-gray-300 hover:text-red-500 text-xs mt-0.5 shrink-0"
                       onClick={() => removeLine(line.productId)}
                     >
-                      ✕
+                      âœ•
                     </button>
                   </div>
                   <div className="flex items-center gap-2 mt-2">
@@ -478,17 +480,18 @@ export default function POSPage() {
                       className="w-7 h-7 rounded-full border text-gray-600 hover:bg-gray-100 text-sm font-bold flex items-center justify-center"
                       onClick={() => updateQty(line.productId, +(line.qty - 1).toFixed(3))}
                     >
-                      −
+                      âˆ’
                     </button>
                     <input
+                      aria-label={t('orders.qty')}
                       className="w-14 border rounded text-center text-sm py-0.5"
                       type="number"
                       min={0.001}
                       step="0.001"
                       value={line.qty}
                       onChange={(e) => {
-                        const v = parseFloat(e.target.value);
-                        if (!isNaN(v)) updateQty(line.productId, v);
+                        const v = Number.parseFloat(e.target.value);
+                        if (!Number.isNaN(v)) updateQty(line.productId, v);
                       }}
                     />
                     <button
@@ -514,6 +517,7 @@ export default function POSPage() {
             <div>
               <label className="text-xs text-gray-500 mb-1 block">{t('pos.customerName')}</label>
               <input
+                aria-label={t('pos.customerName')}
                 className="input w-full"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
@@ -545,6 +549,7 @@ export default function POSPage() {
               <div>
                 <label className="text-xs text-gray-500 mb-1 block">{t('pos.cashReceived')}</label>
                 <input
+                  aria-label={t('pos.cashReceived')}
                   className="input w-full"
                   type="number"
                   min={0}
@@ -565,6 +570,7 @@ export default function POSPage() {
               <div>
                 <label className="text-xs text-gray-500 mb-1 block">{t('pos.terminalRef')} *</label>
                 <input
+                  aria-label={t('pos.terminalRef')}
                   className="input w-full"
                   placeholder={t('pos.terminalRefPlaceholder')}
                   value={cardReference}
@@ -577,6 +583,7 @@ export default function POSPage() {
             <div>
               <label className="text-xs text-gray-500 mb-1 block">{t('pos.notesOptional')}</label>
               <input
+                aria-label={t('pos.notesOptional')}
                 className="input w-full"
                 placeholder={t('pos.notesPaidCash')}
                 value={notes}
@@ -591,20 +598,20 @@ export default function POSPage() {
         </div>
       </div>
 
-      {/* ── Receipt Modal (BC-1601) ───────────────────────────────────── */}
+      {/* â”€â”€ Receipt Modal (BC-1601) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {receiptData && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col">
             <div className="px-6 py-4 border-b flex items-center justify-between">
               <h2 className="font-semibold text-lg">{t('pos.receiptTitle')}</h2>
-              <button className="text-gray-400 hover:text-gray-600 text-xl" onClick={resetAfterSale}>×</button>
+              <button className="text-gray-400 hover:text-gray-600 text-xl" onClick={resetAfterSale}>Ã—</button>
             </div>
             <div className="px-6 py-4 overflow-y-auto flex-1" ref={receiptRef}>
               <div style={{ textAlign: 'center', marginBottom: 16 }}>
                 <div style={{ fontWeight: 'bold', fontSize: 16 }}>BreadCost POS</div>
                 <div style={{ fontSize: 12 }}>{t('pos.receiptSaleId')}: #{receiptData.saleId.slice(0, 8).toUpperCase()}</div>
                 <div style={{ fontSize: 12 }}>{fmtDateTime(receiptData.completedAt)}</div>
-                <div style={{ fontSize: 12 }}>{t('pos.receiptCashier')}: {receiptData.cashierName || getUsername() || '—'}</div>
+                <div style={{ fontSize: 12 }}>{t('pos.receiptCashier')}: {receiptData.cashierName || getUsername() || 'â€”'}</div>
               </div>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
@@ -616,8 +623,8 @@ export default function POSPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {receiptData.lines.map((line, i) => (
-                    <tr key={i}>
+                  {receiptData.lines.map((line) => (
+                    <tr key={line.productName}>
                       <td style={{ padding: '3px 0' }}>{line.productName}</td>
                       <td style={{ textAlign: 'right', padding: '3px 0' }}>{line.quantity}</td>
                       <td style={{ textAlign: 'right', padding: '3px 0' }}>{fmt(line.unitPrice)}</td>
@@ -651,26 +658,26 @@ export default function POSPage() {
         </div>
       )}
 
-      {/* ── EOD Reconciliation Panel (BC-1603) ────────────────────────── */}
+      {/* â”€â”€ EOD Reconciliation Panel (BC-1603) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {eodData && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
             <div className="px-6 py-4 border-b flex items-center justify-between">
               <h2 className="font-semibold text-lg">{t('pos.eodTitle')}</h2>
-              <button className="text-gray-400 hover:text-gray-600 text-xl" onClick={() => setEodData(null)}>×</button>
+              <button className="text-gray-400 hover:text-gray-600 text-xl" onClick={() => setEodData(null)}>Ã—</button>
             </div>
             <div className="px-6 py-4" ref={eodRef}>
               <div style={{ textAlign: 'center', marginBottom: 16, fontWeight: 'bold' }}>
-                {t('pos.eodTitle')} — {eodData.date}
+                {t('pos.eodTitle')} â€” {eodData.date}
               </div>
               <table style={{ width: '100%', fontSize: 13 }}>
                 <tbody>
-                  <tr><td style={{ padding: '4px 0' }}>{t('pos.eodTotalTransactions')}</td><td style={{ textAlign: 'right' }}>{eodData.totalTransactions}</td></tr>
-                  <tr><td style={{ padding: '4px 0' }}>{t('pos.eodCashTotal')}</td><td style={{ textAlign: 'right' }}>{fmt(eodData.cashTotal)}</td></tr>
-                  <tr><td style={{ padding: '4px 0' }}>{t('pos.eodCardTotal')}</td><td style={{ textAlign: 'right' }}>{fmt(eodData.cardTotal)}</td></tr>
-                  <tr><td style={{ padding: '4px 0' }}>{t('pos.eodRefunds')}</td><td style={{ textAlign: 'right' }}>{fmt(eodData.refunds)}</td></tr>
-                  <tr style={{ borderTop: '2px solid #000', fontWeight: 'bold' }}><td style={{ padding: '6px 0' }}>{t('pos.eodNetSales')}</td><td style={{ textAlign: 'right' }}>{fmt(eodData.netSales)}</td></tr>
-                  <tr style={{ fontWeight: 'bold' }}><td style={{ padding: '4px 0' }}>{t('pos.eodExpectedCash')}</td><td style={{ textAlign: 'right' }}>{fmt(eodData.expectedCashInDrawer)}</td></tr>
+                  <tr><th scope="row" style={{ padding: '4px 0', fontWeight: 'normal', textAlign: 'left' }}>{t('pos.eodTotalTransactions')}</th><td style={{ textAlign: 'right' }}>{eodData.totalTransactions}</td></tr>
+                  <tr><th scope="row" style={{ padding: '4px 0', fontWeight: 'normal', textAlign: 'left' }}>{t('pos.eodCashTotal')}</th><td style={{ textAlign: 'right' }}>{fmt(eodData.cashTotal)}</td></tr>
+                  <tr><th scope="row" style={{ padding: '4px 0', fontWeight: 'normal', textAlign: 'left' }}>{t('pos.eodCardTotal')}</th><td style={{ textAlign: 'right' }}>{fmt(eodData.cardTotal)}</td></tr>
+                  <tr><th scope="row" style={{ padding: '4px 0', fontWeight: 'normal', textAlign: 'left' }}>{t('pos.eodRefunds')}</th><td style={{ textAlign: 'right' }}>{fmt(eodData.refunds)}</td></tr>
+                  <tr style={{ borderTop: '2px solid #000', fontWeight: 'bold' }}><th scope="row" style={{ padding: '6px 0', textAlign: 'left' }}>{t('pos.eodNetSales')}</th><td style={{ textAlign: 'right' }}>{fmt(eodData.netSales)}</td></tr>
+                  <tr style={{ fontWeight: 'bold' }}><th scope="row" style={{ padding: '4px 0', textAlign: 'left' }}>{t('pos.eodExpectedCash')}</th><td style={{ textAlign: 'right' }}>{fmt(eodData.expectedCashInDrawer)}</td></tr>
                 </tbody>
               </table>
             </div>

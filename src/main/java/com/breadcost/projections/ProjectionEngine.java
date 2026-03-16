@@ -36,7 +36,7 @@ public class ProjectionEngine implements EventStore.EventListener {
 
         try {
             // Update read models based on event
-            updateProjections(event, ledgerEntry);
+            updateProjections(event);
 
             // Update watermarks
             if (ledgerEntry.getEntryClass() == LedgerEntry.EntryClass.FINANCIAL) {
@@ -51,7 +51,7 @@ public class ProjectionEngine implements EventStore.EventListener {
         }
     }
 
-    private void updateProjections(StoredEvent event, LedgerEntry ledgerEntry) {
+    private void updateProjections(StoredEvent event) {
         // This would update various read models:
         // - BatchCostView
         // - InventoryValuationView

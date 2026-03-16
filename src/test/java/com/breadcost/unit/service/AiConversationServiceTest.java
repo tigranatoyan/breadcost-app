@@ -4,7 +4,6 @@ import com.breadcost.ai.*;
 import com.breadcost.customers.CustomerEntity;
 import com.breadcost.customers.CustomerRepository;
 import com.breadcost.masterdata.OrderService;
-import com.breadcost.masterdata.ProductEntity;
 import com.breadcost.masterdata.ProductRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

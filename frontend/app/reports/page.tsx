@@ -97,7 +97,7 @@ function fmtMoney(n: number) {
 const STATUS_ORDER = ['DRAFT', 'CONFIRMED', 'IN_PRODUCTION', 'READY', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'];
 
 function downloadCsv(filename: string, headers: string[], rows: string[][]) {
-  const escape = (v: string) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const escape = (v: string) => `"${String(v ?? '').replaceAll('"', '""')}"`;
   const csv = [headers.map(escape).join(','), ...rows.map((r) => r.map(escape).join(','))].join('\n');
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob);
@@ -121,7 +121,7 @@ function pct(part: number, total: number) {
   return Math.round((part / total) * 100);
 }
 
-function StatBox({ label, value, sub, color = 'text-gray-800' }: { label: string; value: string | number; sub?: string; color?: string }) {
+function StatBox({ label, value, sub, color = 'text-gray-800' }: Readonly<{ label: string; value: string | number; sub?: string; color?: string }>) {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
       <div className={`text-3xl font-bold ${color}`}>{value}</div>
@@ -133,7 +133,7 @@ function StatBox({ label, value, sub, color = 'text-gray-800' }: { label: string
 
 // ─── Orders Report ────────────────────────────────────────────────────────────
 
-function OrdersReport({ orders }: { orders: Order[] }) {
+function OrdersReport({ orders }: Readonly<{ orders: Order[] }>) {
   const t = useT();
   const fmtDate = useDateFmt();
   const total = orders.length;
@@ -275,7 +275,7 @@ function OrdersReport({ orders }: { orders: Order[] }) {
 
 // ─── Inventory Report ─────────────────────────────────────────────────────────
 
-function InventoryReport({ positions, items }: { positions: StockPosition[]; items: StockItem[] }) {
+function InventoryReport({ positions, items }: Readonly<{ positions: StockPosition[]; items: StockItem[] }>) {
   const t = useT();
   const itemMap: Record<string, StockItem> = {};
   items.forEach((i) => { itemMap[i.itemId] = i; });
@@ -322,7 +322,7 @@ function InventoryReport({ positions, items }: { positions: StockPosition[]; ite
               <div key={type} className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
                 <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium mb-2 ${TYPE_BADGE[type] ?? 'bg-gray-100 text-gray-600'}`}>{type}</span>
                 <div className="text-xl font-bold text-gray-800">{fmtMoney(data.value)}</div>
-                <div className="text-xs text-gray-400">{data.count} position{data.count !== 1 ? 's' : ''}</div>
+                <div className="text-xs text-gray-400">{data.count} position{data.count === 1 ? '' : 's'}</div>
               </div>
             ))}
           </div>
@@ -422,7 +422,7 @@ function InventoryReport({ positions, items }: { positions: StockPosition[]; ite
 
 // ─── Production Report ────────────────────────────────────────────────────────
 
-function ProductionReport({ plans }: { plans: Plan[] }) {
+function ProductionReport({ plans }: Readonly<{ plans: Plan[] }>) {
   const t = useT();
   const total = plans.length;
   const completed = plans.filter((p) => p.status === 'COMPLETED').length;
@@ -758,10 +758,11 @@ export default function ReportsPage() {
 
   // ── Material Consumption Report (BC-1803) ────────────────────────────────
   const materialConsumptionView = useMemo(() => {
-    const rows: { planDate: string; shift: string; product: string; batches: number; status: string }[] = [];
+    const rows: { rowKey: string; planDate: string; shift: string; product: string; batches: number; status: string }[] = [];
+    let idx = 0;
     for (const p of filteredPlans) {
       for (const wo of p.workOrders ?? []) {
-        rows.push({ planDate: p.planDate, shift: p.shift, product: wo.productName ?? '—', batches: wo.batchCount ?? 0, status: wo.status });
+        rows.push({ rowKey: `${p.planId}-mc-${idx++}`, planDate: p.planDate, shift: p.shift, product: wo.productName ?? '—', batches: wo.batchCount ?? 0, status: wo.status });
       }
     }
     return rows;
@@ -769,11 +770,12 @@ export default function ReportsPage() {
 
   // ── Cost Per Batch Report (BC-1804) ──────────────────────────────────────
   const costPerBatchView = useMemo(() => {
-    const rows: { planDate: string; product: string; batches: number; status: string }[] = [];
+    const rows: { rowKey: string; planDate: string; product: string; batches: number; status: string }[] = [];
+    let idx = 0;
     for (const p of filteredPlans) {
       for (const wo of p.workOrders ?? []) {
         if (wo.batchCount && wo.batchCount > 0) {
-          rows.push({ planDate: p.planDate, product: wo.productName ?? '—', batches: wo.batchCount, status: wo.status });
+          rows.push({ rowKey: `${p.planId}-cb-${idx++}`, planDate: p.planDate, product: wo.productName ?? '—', batches: wo.batchCount, status: wo.status });
         }
       }
     }
@@ -800,7 +802,7 @@ export default function ReportsPage() {
         action={
           <div className="flex gap-2">
             {csvExporters[tab] && (
-              <Button variant="secondary" size="sm" onClick={csvExporters[tab]!}>
+              <Button variant="secondary" size="sm" onClick={csvExporters[tab]}>
                 <Download className="h-4 w-4" /> {t('reports.exportCsv')}
               </Button>
             )}
@@ -819,11 +821,11 @@ export default function ReportsPage() {
 
       {/* BC-1801: Date range + department filter */}
       <div className="flex flex-wrap gap-3 mb-4 items-center">
-        <label className="text-xs text-gray-500">{t('reports.dateFrom')}:</label>
-        <input type="date" className="input w-40" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
-        <label className="text-xs text-gray-500">{t('reports.dateTo')}:</label>
-        <input type="date" className="input w-40" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-        <select className="input w-48" value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)}>
+        <label htmlFor="reports-date-from" className="text-xs text-gray-500">{t('reports.dateFrom')}:</label>
+        <input id="reports-date-from" type="date" className="input w-40" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+        <label htmlFor="reports-date-to" className="text-xs text-gray-500">{t('reports.dateTo')}:</label>
+        <input id="reports-date-to" type="date" className="input w-40" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+        <select id="reports-dept-filter" aria-label={t('reports.allDepartments')} className="input w-48" value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)}>
           <option value="ALL">{t('reports.allDepartments')}</option>
           {depts.map((d) => <option key={d.departmentId} value={d.departmentId}>{d.name}</option>)}
         </select>
@@ -878,8 +880,8 @@ export default function ReportsPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y">
-                      {materialConsumptionView.map((r, i) => (
-                        <tr key={i} className="hover:bg-gray-50">
+                      {materialConsumptionView.map((r) => (
+                        <tr key={r.rowKey} className="hover:bg-gray-50">
                           <td className="px-4 py-2.5">{r.planDate}</td>
                           <td className="px-4 py-2.5">{r.shift}</td>
                           <td className="px-4 py-2.5 font-medium">{r.product}</td>
@@ -910,8 +912,8 @@ export default function ReportsPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y">
-                      {costPerBatchView.map((r, i) => (
-                        <tr key={i} className="hover:bg-gray-50">
+                      {costPerBatchView.map((r) => (
+                        <tr key={r.rowKey} className="hover:bg-gray-50">
                           <td className="px-4 py-2.5">{r.planDate}</td>
                           <td className="px-4 py-2.5 font-medium">{r.product}</td>
                           <td className="px-4 py-2.5">{r.batches}</td>

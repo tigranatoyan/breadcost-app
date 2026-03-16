@@ -33,6 +33,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @PreAuthorize("hasAnyRole('Admin','Manager')")
 public class NotificationTemplateController {
 
+    private static final String TEMPLATE_NOT_FOUND = "Template not found: ";
+
     private final NotificationTemplateRepository templateRepository;
 
     // ── DTOs ─────────────────────────────────────────────────────────────────
@@ -73,7 +75,7 @@ public class NotificationTemplateController {
             @PathVariable("id") String templateId) {
 
         NotificationTemplateEntity template = templateRepository.findById(templateId)
-                .orElseThrow(() -> new NoSuchElementException("Template not found: " + templateId));
+                .orElseThrow(() -> new NoSuchElementException(TEMPLATE_NOT_FOUND + templateId));
         return ResponseEntity.ok(template);
     }
 
@@ -106,7 +108,7 @@ public class NotificationTemplateController {
             @RequestBody UpdateTemplateRequest req) {
 
         NotificationTemplateEntity template = templateRepository.findById(templateId)
-                .orElseThrow(() -> new NoSuchElementException("Template not found: " + templateId));
+                .orElseThrow(() -> new NoSuchElementException(TEMPLATE_NOT_FOUND + templateId));
 
         if (req.getSubject() != null)      template.setSubject(req.getSubject());
         if (req.getBodyTemplate() != null)  template.setBodyTemplate(req.getBodyTemplate());
@@ -120,7 +122,7 @@ public class NotificationTemplateController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTemplate(@PathVariable("id") String templateId) {
         NotificationTemplateEntity template = templateRepository.findById(templateId)
-                .orElseThrow(() -> new NoSuchElementException("Template not found: " + templateId));
+                .orElseThrow(() -> new NoSuchElementException(TEMPLATE_NOT_FOUND + templateId));
 
         template.setActive(false);
         templateRepository.save(template);
@@ -135,7 +137,7 @@ public class NotificationTemplateController {
             @RequestBody(required = false) PreviewRequest req) {
 
         NotificationTemplateEntity template = templateRepository.findById(templateId)
-                .orElseThrow(() -> new NoSuchElementException("Template not found: " + templateId));
+                .orElseThrow(() -> new NoSuchElementException(TEMPLATE_NOT_FOUND + templateId));
 
         Map<String, String> vars = (req != null && req.getVariables() != null)
                 ? req.getVariables()

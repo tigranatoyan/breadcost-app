@@ -1,8 +1,9 @@
 'use client';
-import { ReactNode, createContext, useContext, useState, useCallback, useRef } from 'react';
+import { ReactNode, createContext, useContext, useState, useCallback, useRef, useMemo } from 'react';
+import { useT } from '@/lib/i18n';
 
 /* ── Skeleton ──────────────────────────────────────────────────────── */
-export function Skeleton({ className = '' }: { className?: string }) {
+export function Skeleton({ className = '' }: Readonly<{ className?: string }>) {
   return <div className={`animate-pulse rounded-lg bg-gray-200 ${className}`} />;
 }
 
@@ -53,22 +54,22 @@ const ToastContext = createContext<ToastCtx>({
 
 export const useToast = () => useContext(ToastContext);
 
-export function ToastProvider({ children }: { children: ReactNode }) {
+export function ToastProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const nextId = useRef(0);
-
-  const toast = useCallback((message: string, type: ToastType = 'info') => {
-    const id = nextId.current++;
-    setToasts((prev) => [...prev, { id, message, type }]);
-    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000);
-  }, []);
-
-  const toastSuccess = useCallback((msg: string) => toast(msg, 'success'), [toast]);
-  const toastError = useCallback((msg: string) => toast(msg, 'error'), [toast]);
 
   const dismiss = useCallback((id: number) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
+
+  const toast = useCallback((message: string, type: ToastType = 'info') => {
+    const id = nextId.current++;
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => dismiss(id), 4000);
+  }, [dismiss]);
+
+  const toastSuccess = useCallback((msg: string) => toast(msg, 'success'), [toast]);
+  const toastError = useCallback((msg: string) => toast(msg, 'error'), [toast]);
 
   const colors: Record<ToastType, string> = {
     success: 'bg-green-600',
@@ -82,8 +83,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     info: 'ℹ',
   };
 
+  const contextValue = useMemo(() => ({ toast, toastSuccess, toastError }), [toast, toastSuccess, toastError]);
+
   return (
-    <ToastContext.Provider value={{ toast, toastSuccess, toastError }}>
+    <ToastContext.Provider value={contextValue}>
       {children}
       {/* Toast container — fixed bottom-right */}
       <div className="fixed bottom-4 right-4 z-[9999] flex flex-col-reverse gap-2 pointer-events-none">
@@ -109,7 +112,7 @@ interface PaginationProps {
   onPageChange: (_page: number) => void;
 }
 
-export function Pagination({ page, totalPages, onPageChange }: PaginationProps) {
+export function Pagination({ page, totalPages, onPageChange }: Readonly<PaginationProps>) {
   if (totalPages <= 1) return null;
   return (
     <div className="flex items-center justify-center gap-2 py-4 text-sm">
@@ -140,12 +143,12 @@ export function Modal({
   onClose,
   wide,
   children,
-}: {
+}: Readonly<{
   title: string;
   onClose: () => void;
   wide?: boolean;
   children: ReactNode;
-}) {
+}>) {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-start justify-center z-50 p-4 pt-12 overflow-y-auto">
       <div
@@ -175,13 +178,13 @@ export function ConfirmModal({
   cancelLabel = 'Cancel',
   onConfirm,
   onCancel,
-}: {
+}: Readonly<{
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
   onConfirm: () => void;
   onCancel: () => void;
-}) {
+}>) {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm">
@@ -256,7 +259,7 @@ export function Spinner() {
 }
 
 /* ── Alert ─────────────────────────────────────────────────────────── */
-export function Alert({ msg, onClose }: { msg: string; onClose: () => void }) {
+export function Alert({ msg, onClose }: Readonly<{ msg: string; onClose: () => void }>) {
   return (
     <div className="mb-4 flex items-start gap-2 bg-red-50 border border-red-200 text-red-800 rounded-lg px-4 py-3 text-sm">
       <span className="flex-1 break-words min-w-0">⚠ {msg}</span>
@@ -271,7 +274,7 @@ export function Alert({ msg, onClose }: { msg: string; onClose: () => void }) {
 }
 
 /* ── Success ───────────────────────────────────────────────────────── */
-export function Success({ msg, onClose }: { msg: string; onClose: () => void }) {
+export function Success({ msg, onClose }: Readonly<{ msg: string; onClose: () => void }>) {
   return (
     <div className="mb-4 flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 rounded-lg px-4 py-3 text-sm">
       <span className="flex-1">✓ {msg}</span>
@@ -304,11 +307,15 @@ const BADGE_COLORS: Record<string, string> = {
   DELIVERED: 'bg-emerald-100 text-emerald-700',
 };
 
-export function Badge({ status }: { status: string }) {
+export function Badge({ status }: Readonly<{ status: string }>) {
+  const t = useT();
   const cls = BADGE_COLORS[status] ?? 'bg-gray-100 text-gray-600';
+  const key = `statusLabels.${status}`;
+  const translated = t(key as any);
+  const label = translated === key ? status.replaceAll('_', ' ') : translated;
   return (
     <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${cls}`}>
-      {status.replace(/_/g, ' ')}
+      {label}
     </span>
   );
 }
@@ -318,11 +325,11 @@ export function Field({
   label,
   hint,
   children,
-}: {
+}: Readonly<{
   label: string;
   hint?: string;
   children: ReactNode;
-}) {
+}>) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
@@ -336,12 +343,14 @@ export function Field({
 export function Table({
   cols,
   rows,
+  rowKeys,
   empty = 'No records found',
-}: {
+}: Readonly<{
   cols: string[];
   rows: ReactNode[][];
+  rowKeys?: string[];
   empty?: string;
-}) {
+}>) {
   if (rows.length === 0) {
     return (
       <div className="text-center py-16 text-sm text-gray-400 border rounded-xl bg-white">
@@ -366,9 +375,9 @@ export function Table({
         </thead>
         <tbody className="divide-y divide-gray-100">
           {rows.map((row, i) => (
-            <tr key={i} className="hover:bg-gray-50 transition-colors">
+            <tr key={rowKeys?.[i] ?? `row-${i}`} className="hover:bg-gray-50 transition-colors">
               {row.map((cell, j) => (
-                <td key={j} className="px-4 py-3 text-gray-700 align-top">
+                <td key={`cell-${i}-${j}`} className="px-4 py-3 text-gray-700 align-top">
                   {cell}
                 </td>
               ))}

@@ -25,6 +25,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SubscriptionRequired("INVOICING")
 public class InvoiceController {
 
+    private static final String TENANT_ID_KEY = "tenantId";
+    private static final String CUSTOMER_ID_KEY = "customerId";
+    private static final String LINES_KEY = "lines";
+
     private final InvoiceService invoiceService;
 
     public InvoiceController(InvoiceService invoiceService) {
@@ -39,17 +43,17 @@ public class InvoiceController {
      */
     @PostMapping("/invoices")
     public ResponseEntity<Map<String, Object>> generateInvoice(@RequestBody Map<String, Object> body) {
-        String tenantId  = (String) body.get("tenantId");
-        String customerId = (String) body.get("customerId");
+        String tenantId  = (String) body.get(TENANT_ID_KEY);
+        String customerId = (String) body.get(CUSTOMER_ID_KEY);
         String orderId   = (String) body.get("orderId");
         String currency  = (String) body.getOrDefault("currency", "GBP");
         @SuppressWarnings("unchecked")
-        List<Map<String, Object>> lines = (List<Map<String, Object>>) body.get("lines");
+        List<Map<String, Object>> lines = (List<Map<String, Object>>) body.get(LINES_KEY);
 
         InvoiceEntity invoice = invoiceService.generateInvoice(tenantId, customerId, orderId, lines, currency);
         Map<String, Object> resp = new HashMap<>();
         resp.put("invoice", invoice);
-        resp.put("lines", invoiceService.getInvoiceLines(invoice.getInvoiceId()));
+        resp.put(LINES_KEY, invoiceService.getInvoiceLines(invoice.getInvoiceId()));
         return ResponseEntity.status(201).body(resp);
     }
 
@@ -86,7 +90,7 @@ public class InvoiceController {
         InvoiceEntity invoice = invoiceService.getInvoice(tenantId, id);
         Map<String, Object> resp = new HashMap<>();
         resp.put("invoice", invoice);
-        resp.put("lines", invoiceService.getInvoiceLines(id));
+        resp.put(LINES_KEY, invoiceService.getInvoiceLines(id));
         return ResponseEntity.ok(resp);
     }
 
@@ -99,7 +103,7 @@ public class InvoiceController {
     @PutMapping("/invoices/{id}/pay")
     public ResponseEntity<InvoiceEntity> markPaid(@PathVariable String id,
                                                    @RequestBody Map<String, Object> body) {
-        String tenantId  = (String) body.get("tenantId");
+        String tenantId  = (String) body.get(TENANT_ID_KEY);
         BigDecimal paidAmount = new BigDecimal(body.get("paidAmount").toString());
         String paidBy = (String) body.getOrDefault("paidBy", "system");
         return ResponseEntity.ok(invoiceService.markPaid(tenantId, id, paidAmount, paidBy));
@@ -124,7 +128,7 @@ public class InvoiceController {
     @PutMapping("/invoices/{id}/dispute")
     public ResponseEntity<InvoiceEntity> disputeInvoice(@PathVariable String id,
                                                          @RequestBody Map<String, Object> body) {
-        String tenantId = (String) body.get("tenantId");
+        String tenantId = (String) body.get(TENANT_ID_KEY);
         String reason = (String) body.get("reason");
         String disputedBy = (String) body.getOrDefault("disputedBy", "system");
         return ResponseEntity.ok(invoiceService.disputeInvoice(tenantId, id, reason, disputedBy));
@@ -137,7 +141,7 @@ public class InvoiceController {
     @PutMapping("/invoices/{id}/resolve")
     public ResponseEntity<InvoiceEntity> resolveDispute(@PathVariable String id,
                                                          @RequestBody Map<String, Object> body) {
-        String tenantId = (String) body.get("tenantId");
+        String tenantId = (String) body.get(TENANT_ID_KEY);
         String resolutionNotes = (String) body.get("resolutionNotes");
         BigDecimal creditNoteAmount = body.get("creditNoteAmount") != null
                 ? new BigDecimal(body.get("creditNoteAmount").toString()) : null;
@@ -153,7 +157,7 @@ public class InvoiceController {
     @PutMapping("/customers/{id}/payment-terms")
     public ResponseEntity<Object> updatePaymentTerms(@PathVariable String id,
                                                       @RequestBody Map<String, Object> body) {
-        String tenantId = (String) body.get("tenantId");
+        String tenantId = (String) body.get(TENANT_ID_KEY);
         int days = Integer.parseInt(body.get("paymentTermsDays").toString());
         return ResponseEntity.ok(invoiceService.updatePaymentTerms(tenantId, id, days));
     }
@@ -167,7 +171,7 @@ public class InvoiceController {
     @PutMapping("/customers/{id}/credit-limit")
     public ResponseEntity<Object> updateCreditLimit(@PathVariable String id,
                                                      @RequestBody Map<String, Object> body) {
-        String tenantId = (String) body.get("tenantId");
+        String tenantId = (String) body.get(TENANT_ID_KEY);
         BigDecimal limit = new BigDecimal(body.get("creditLimit").toString());
         return ResponseEntity.ok(invoiceService.updateCreditLimit(tenantId, id, limit));
     }
@@ -183,7 +187,7 @@ public class InvoiceController {
         boolean allowed = invoiceService.hasSufficientCredit(tenantId, id, orderAmount);
         Map<String, Object> resp = new HashMap<>();
         resp.put("allowed", allowed);
-        resp.put("customerId", id);
+        resp.put(CUSTOMER_ID_KEY, id);
         resp.put("orderAmount", orderAmount);
         return ResponseEntity.ok(resp);
     }
@@ -197,7 +201,7 @@ public class InvoiceController {
     @PostMapping("/customers/{id}/discount-rules")
     public ResponseEntity<CustomerDiscountRuleEntity> addDiscountRule(@PathVariable String id,
                                                                        @RequestBody Map<String, Object> body) {
-        String tenantId = (String) body.get("tenantId");
+        String tenantId = (String) body.get(TENANT_ID_KEY);
         String itemType = (String) body.getOrDefault("itemType", "PRODUCT");
         String itemId = (String) body.get("itemId");
         BigDecimal discountPct  = body.get("discountPct") != null
@@ -208,8 +212,8 @@ public class InvoiceController {
                 ? new BigDecimal(body.get("minQty").toString()) : BigDecimal.ONE;
         String notes = (String) body.get("notes");
 
-        CustomerDiscountRuleEntity rule = invoiceService.addDiscountRule(
-                tenantId, id, itemType, itemId, discountPct, fixedPrice, minQty, notes);
+        var req = new InvoiceService.DiscountRuleRequest(itemType, itemId, discountPct, fixedPrice, minQty, notes);
+        CustomerDiscountRuleEntity rule = invoiceService.addDiscountRule(tenantId, id, req);
         return ResponseEntity.status(201).body(rule);
     }
 
@@ -245,7 +249,7 @@ public class InvoiceController {
                                                                @RequestParam(defaultValue = "1") BigDecimal qty) {
         BigDecimal effective = invoiceService.computeEffectivePrice(tenantId, id, itemId, basePrice, qty);
         Map<String, Object> resp = new HashMap<>();
-        resp.put("customerId", id);
+        resp.put(CUSTOMER_ID_KEY, id);
         resp.put("itemId", itemId);
         resp.put("basePrice", basePrice);
         resp.put("effectivePrice", effective);

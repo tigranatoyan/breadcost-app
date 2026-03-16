@@ -80,38 +80,38 @@ class FinanceServiceTest {
     @Test
     void postingRule_receiveLot() {
         var result = svc.applyPostingRule("ReceiveLot");
-        assertEquals("INV_RM", result.debitAccount);
-        assertEquals("AP", result.creditAccount);
-        assertFalse(result.operational);
+        assertEquals("INV_RM", result.getDebitAccount());
+        assertEquals("AP", result.getCreditAccount());
+        assertFalse(result.isOperational());
     }
 
     @Test
     void postingRule_issueToBatch() {
         var result = svc.applyPostingRule("IssueToBatch");
-        assertEquals("WIP_MATERIAL", result.debitAccount);
-        assertEquals("INV_RM", result.creditAccount);
+        assertEquals("WIP_MATERIAL", result.getDebitAccount());
+        assertEquals("INV_RM", result.getCreditAccount());
     }
 
     @Test
     void postingRule_recognizeProduction() {
         var result = svc.applyPostingRule("RecognizeProduction");
-        assertEquals("INV_FG", result.debitAccount);
-        assertEquals("WIP_TOTAL", result.creditAccount);
+        assertEquals("INV_FG", result.getDebitAccount());
+        assertEquals("WIP_TOTAL", result.getCreditAccount());
     }
 
     @Test
     void postingRule_transfer_operational() {
         var result = svc.applyPostingRule("TransferInventory");
-        assertTrue(result.operational);
-        assertNull(result.debitAccount);
+        assertTrue(result.isOperational());
+        assertNull(result.getDebitAccount());
     }
 
     @Test
     void postingRule_unknown_emptyResult() {
         var result = svc.applyPostingRule("SomethingElse");
-        assertNull(result.debitAccount);
-        assertNull(result.creditAccount);
-        assertFalse(result.operational);
+        assertNull(result.getDebitAccount());
+        assertNull(result.getCreditAccount());
+        assertFalse(result.isOperational());
     }
 
     // ── totalRevenue ─────────────────────────────────────────────────────────
@@ -202,17 +202,17 @@ class FinanceServiceTest {
 
     @Test
     void deliveryRate_returnsPlaceholder() {
-        assertEquals(new BigDecimal("95.00"), svc.deliveryCompletionRate("t1", null, null));
+        assertEquals(new BigDecimal("95.00"), svc.deliveryCompletionRate());
     }
 
     @Test
     void stockTurnover_returnsPlaceholder() {
-        assertEquals(new BigDecimal("4.50"), svc.stockTurnover("t1", null, null));
+        assertEquals(new BigDecimal("4.50"), svc.stockTurnover());
     }
 
     @Test
     void productionEfficiency_returnsPlaceholder() {
-        assertEquals(new BigDecimal("92.00"), svc.productionEfficiency("t1", null, null));
+        assertEquals(new BigDecimal("92.00"), svc.productionEfficiency());
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────

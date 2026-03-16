@@ -22,6 +22,8 @@ import java.util.concurrent.atomic.AtomicLong;
 @Transactional
 public class InvoiceService {
 
+    private static final String CUSTOMER_NOT_FOUND = "Customer not found: ";
+
     private final InvoiceRepository invoiceRepo;
     private final InvoiceLineRepository invoiceLineRepo;
     private final CustomerRepository customerRepo;
@@ -61,7 +63,7 @@ public class InvoiceService {
 
         CustomerEntity customer = customerRepo.findById(customerId)
                 .filter(c -> c.getTenantId().equals(tenantId))
-                .orElseThrow(() -> new NoSuchElementException("Customer not found: " + customerId));
+                .orElseThrow(() -> new NoSuchElementException(CUSTOMER_NOT_FOUND + customerId));
 
         int paymentTerms = customer.getPaymentTermsDays();
         LocalDate issuedDate = LocalDate.now();
@@ -238,7 +240,7 @@ public class InvoiceService {
     public CustomerEntity updatePaymentTerms(String tenantId, String customerId, int paymentTermsDays) {
         CustomerEntity customer = customerRepo.findById(customerId)
                 .filter(c -> c.getTenantId().equals(tenantId))
-                .orElseThrow(() -> new NoSuchElementException("Customer not found: " + customerId));
+                .orElseThrow(() -> new NoSuchElementException(CUSTOMER_NOT_FOUND + customerId));
         customer.setPaymentTermsDays(paymentTermsDays);
         return customerRepo.save(customer);
     }
@@ -250,7 +252,7 @@ public class InvoiceService {
     public CustomerEntity updateCreditLimit(String tenantId, String customerId, BigDecimal creditLimit) {
         CustomerEntity customer = customerRepo.findById(customerId)
                 .filter(c -> c.getTenantId().equals(tenantId))
-                .orElseThrow(() -> new NoSuchElementException("Customer not found: " + customerId));
+                .orElseThrow(() -> new NoSuchElementException(CUSTOMER_NOT_FOUND + customerId));
         customer.setCreditLimit(creditLimit);
         return customerRepo.save(customer);
     }
@@ -277,21 +279,23 @@ public class InvoiceService {
      * Add a discount rule for a customer.
      * BC-1505
      */
+    public record DiscountRuleRequest(String itemType, String itemId,
+                                       BigDecimal discountPct, BigDecimal fixedPrice,
+                                       BigDecimal minQty, String notes) { }
+
     public CustomerDiscountRuleEntity addDiscountRule(String tenantId, String customerId,
-                                                       String itemType, String itemId,
-                                                       BigDecimal discountPct, BigDecimal fixedPrice,
-                                                       BigDecimal minQty, String notes) {
+                                                       DiscountRuleRequest req) {
         CustomerDiscountRuleEntity rule = CustomerDiscountRuleEntity.builder()
                 .ruleId(UUID.randomUUID().toString())
                 .tenantId(tenantId)
                 .customerId(customerId)
-                .itemType(CustomerDiscountRuleEntity.ItemType.valueOf(itemType))
-                .itemId(itemId)
-                .discountPct(discountPct != null ? discountPct : BigDecimal.ZERO)
-                .fixedPrice(fixedPrice)
-                .minQty(minQty != null ? minQty : BigDecimal.ONE)
+                .itemType(CustomerDiscountRuleEntity.ItemType.valueOf(req.itemType()))
+                .itemId(req.itemId())
+                .discountPct(req.discountPct() != null ? req.discountPct() : BigDecimal.ZERO)
+                .fixedPrice(req.fixedPrice())
+                .minQty(req.minQty() != null ? req.minQty() : BigDecimal.ONE)
                 .active(true)
-                .notes(notes)
+                .notes(req.notes())
                 .build();
         return discountRuleRepo.save(rule);
     }
@@ -442,7 +446,7 @@ public class InvoiceService {
     }
 
     private BigDecimal toBD(Object val) {
-        if (val instanceof BigDecimal) return (BigDecimal) val;
+        if (val instanceof BigDecimal bd) return bd;
         if (val instanceof Number) return new BigDecimal(val.toString());
         return new BigDecimal(val.toString());
     }

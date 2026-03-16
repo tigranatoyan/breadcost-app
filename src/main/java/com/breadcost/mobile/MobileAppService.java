@@ -80,6 +80,12 @@ public class MobileAppService {
     public PushNotificationEntity sendNotification(String tenantId, String customerId,
                                                     String title, String body,
                                                     String notificationType, String referenceId) {
+        return doSendNotification(tenantId, customerId, title, body, notificationType, referenceId);
+    }
+
+    private PushNotificationEntity doSendNotification(String tenantId, String customerId,
+                                                       String title, String body,
+                                                       String notificationType, String referenceId) {
         // BC-3004: Check customer push notification preference
         Optional<CustomerEntity> customerOpt = customerRepository
                 .findByTenantIdAndCustomerId(tenantId, customerId);
@@ -112,7 +118,7 @@ public class MobileAppService {
                                                            String orderId, String newStatus) {
         String title = "Order Update";
         String body = String.format("Your order %s is now %s", orderId, newStatus);
-        return sendNotification(tenantId, customerId, title, body, "ORDER_STATUS", orderId);
+        return doSendNotification(tenantId, customerId, title, body, "ORDER_STATUS", orderId);
     }
 
     public List<PushNotificationEntity> getNotifications(String tenantId, String customerId) {

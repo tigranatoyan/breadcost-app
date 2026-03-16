@@ -5,6 +5,7 @@ import { API_BASE } from '@/lib/api';
 import { User, MapPin, Bell, Lock, Plus, Trash2, Save, CheckCircle } from 'lucide-react';
 
 interface Address {
+  _key: string;
   label: string;
   line1: string;
   line2?: string;
@@ -27,13 +28,14 @@ interface Profile {
 
 async function custFetch<T>(path: string, opts?: RequestInit): Promise<T> {
   const token = getCustomerToken();
+  if (!token) throw new Error('Not authenticated');
   const res = await fetch(`${API_BASE}${path}`, {
     ...opts,
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
       Accept: 'application/json',
-      ...(opts?.headers ?? {}),
+      ...opts?.headers,
     },
   });
   if (!res.ok) throw new Error(`${res.status}`);
@@ -70,7 +72,7 @@ export default function CustomerProfilePage() {
       setProfile(p);
       setName(p.name);
       setPhone(p.phone ?? '');
-      setAddresses(p.addresses ?? []);
+      setAddresses((p.addresses ?? []).map(a => ({ ...a, _key: a._key || crypto.randomUUID() })));
       setWhatsapp(p.whatsappEnabled);
       setEmailNotif(p.emailEnabled);
       setPushNotif(p.pushEnabled);
@@ -102,7 +104,7 @@ export default function CustomerProfilePage() {
       setError('Maximum 5 addresses.');
       return;
     }
-    setAddresses([...addresses, { label: '', line1: '', city: '', countryCode: 'AM' }]);
+    setAddresses([...addresses, { _key: crypto.randomUUID(), label: '', line1: '', city: '', countryCode: 'AM' }]);
   };
 
   const removeAddress = (i: number) => {
@@ -165,23 +167,23 @@ export default function CustomerProfilePage() {
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="text-sm font-medium text-gray-700">Business Name</label>
-            <input value={name} onChange={(e) => setName(e.target.value)}
+            <label htmlFor="profile-business-name" className="text-sm font-medium text-gray-700">Business Name</label>
+            <input id="profile-business-name" value={name} onChange={(e) => setName(e.target.value)}
               className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700">Email</label>
-            <input value={profile?.email ?? ''} disabled
+            <label htmlFor="profile-email" className="text-sm font-medium text-gray-700">Email</label>
+            <input id="profile-email" value={profile?.email ?? ''} disabled
               className="mt-1 w-full rounded-lg border bg-gray-50 px-3 py-2 text-sm text-gray-500" />
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700">Contact Person</label>
-            <input value={name} onChange={(e) => setName(e.target.value)}
+            <label htmlFor="profile-contact" className="text-sm font-medium text-gray-700">Contact Person</label>
+            <input id="profile-contact" value={name} onChange={(e) => setName(e.target.value)}
               className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700">Phone</label>
-            <input value={phone} onChange={(e) => setPhone(e.target.value)}
+            <label htmlFor="profile-phone" className="text-sm font-medium text-gray-700">Phone</label>
+            <input id="profile-phone" value={phone} onChange={(e) => setPhone(e.target.value)}
               className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
           </div>
         </div>
@@ -206,23 +208,23 @@ export default function CustomerProfilePage() {
         ) : (
           <div className="space-y-3">
             {addresses.map((addr, i) => (
-              <div key={i} className="rounded-lg border p-3 space-y-2">
+              <div key={addr._key} className="rounded-lg border p-3 space-y-2">
                 <div className="flex items-center justify-between">
                   <input value={addr.label} onChange={(e) => updateAddr(i, 'label', e.target.value)}
-                    placeholder="Label (e.g. Office)" className="rounded border px-2 py-1 text-sm w-40" />
+                    placeholder="Label (e.g. Office)" aria-label="Address label" className="rounded border px-2 py-1 text-sm w-40" />
                   <button onClick={() => removeAddress(i)} className="text-red-400 hover:text-red-600">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <input value={addr.line1} onChange={(e) => updateAddr(i, 'line1', e.target.value)}
-                    placeholder="Address line 1" className="rounded border px-2 py-1 text-sm" />
+                    placeholder="Address line 1" aria-label="Address line 1" className="rounded border px-2 py-1 text-sm" />
                   <input value={addr.line2 ?? ''} onChange={(e) => updateAddr(i, 'line2', e.target.value)}
-                    placeholder="Address line 2" className="rounded border px-2 py-1 text-sm" />
+                    placeholder="Address line 2" aria-label="Address line 2" className="rounded border px-2 py-1 text-sm" />
                   <input value={addr.city} onChange={(e) => updateAddr(i, 'city', e.target.value)}
-                    placeholder="City" className="rounded border px-2 py-1 text-sm" />
+                    placeholder="City" aria-label="City" className="rounded border px-2 py-1 text-sm" />
                   <input value={addr.postalCode ?? ''} onChange={(e) => updateAddr(i, 'postalCode', e.target.value)}
-                    placeholder="Postal code" className="rounded border px-2 py-1 text-sm" />
+                    placeholder="Postal code" aria-label="Postal code" className="rounded border px-2 py-1 text-sm" />
                 </div>
               </div>
             ))}
@@ -272,18 +274,18 @@ export default function CustomerProfilePage() {
         </div>
         <div className="space-y-3 max-w-md">
           <div>
-            <label className="text-sm font-medium text-gray-700">Current Password</label>
-            <input type="password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)}
+            <label htmlFor="current-password" className="text-sm font-medium text-gray-700">Current Password</label>
+            <input id="current-password" type="password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)}
               className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700">New Password</label>
-            <input type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)}
+            <label htmlFor="new-password" className="text-sm font-medium text-gray-700">New Password</label>
+            <input id="new-password" type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)}
               className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700">Confirm New Password</label>
-            <input type="password" value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)}
+            <label htmlFor="confirm-password" className="text-sm font-medium text-gray-700">Confirm New Password</label>
+            <input id="confirm-password" type="password" value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)}
               className="mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
           </div>
           <button onClick={changePassword}

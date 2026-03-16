@@ -66,8 +66,8 @@ export default function OrderConfirmationPage() {
         <div className="rounded-2xl border border-gray-200 bg-white shadow-sm p-6 mb-8">
           <h2 className="font-semibold text-gray-900 mb-4">Order Summary</h2>
           <div className="divide-y divide-gray-100">
-            {order.lines?.map((line, i) => (
-              <div key={i} className="flex justify-between py-2 text-sm">
+            {order.lines?.map((line) => (
+              <div key={`${line.productName}-${line.qty}`} className="flex justify-between py-2 text-sm">
                 <span className="text-gray-700">
                   {line.productName} × {line.qty}
                 </span>

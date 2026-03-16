@@ -22,6 +22,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Slf4j
 @RequiredArgsConstructor
 public class ViewController {
+
+    private static final String MESSAGE = "message";
+
     private final InventoryProjection inventoryProjection;
 
     /**
@@ -36,7 +39,7 @@ public class ViewController {
         return ResponseEntity.ok(Map.of(
                 "batchId", batchId,
                 "status", "PLACEHOLDER",
-                "message", "BatchCostView projection not yet implemented"
+                MESSAGE, "BatchCostView projection not yet implemented"
         ));
     }
 
@@ -66,7 +69,7 @@ public class ViewController {
         log.info("API: GetWIPView - siteId={}", siteId);
         return ResponseEntity.ok(Map.of(
                 "siteId", siteId != null ? siteId : "ALL",
-                "message", "WIPView projection not yet implemented"
+                MESSAGE, "WIPView projection not yet implemented"
         ));
     }
 
@@ -80,7 +83,7 @@ public class ViewController {
         log.info("API: GetCOGSBridgeView - periodId={}", periodId);
         return ResponseEntity.ok(Map.of(
                 "periodId", periodId,
-                "message", "COGSBridgeView projection not yet implemented"
+                MESSAGE, "COGSBridgeView projection not yet implemented"
         ));
     }
 
@@ -95,7 +98,7 @@ public class ViewController {
         log.info("API: GetExceptionQueueView - status={}", status);
         return ResponseEntity.ok(Map.of(
                 "status", status != null ? status : "ALL",
-                "message", "ExceptionQueueView projection not yet implemented"
+                MESSAGE, "ExceptionQueueView projection not yet implemented"
         ));
     }
 }
