@@ -11,7 +11,7 @@ import { Sparkles } from 'lucide-react';
 const SITE_ID = 'MAIN';
 const REASON_CODES = ['WASTE', 'SPOILAGE', 'COUNT_CORRECTION', 'OTHER'] as const;
 
-// â”€â”€â”€ types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── types ────────────────────────────────────────────────────────────────────
 
 interface Item {
   itemId: string;
@@ -96,7 +96,7 @@ function computeItemSaveLabel(saving: boolean, editId: string | null, t: (k: str
   return t('common.create');
 }
 
-// â”€â”€â”€ main component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── main component ───────────────────────────────────────────────────────────
 
 export default function InventoryPage() {
   const t = useT();
@@ -171,7 +171,7 @@ export default function InventoryPage() {
   const [importSaving, setImportSaving] = useState(false);
   const [replenishCount, setReplenishCount] = useState(0);
 
-  // â”€â”€â”€ load â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── load ─────────────────────────────────────────────────────────────────
 
   const load = useCallback(async () => {
     try {
@@ -195,7 +195,7 @@ export default function InventoryPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  // â”€â”€â”€ item name lookup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── item name lookup ─────────────────────────────────────────────────────
 
   const itemMap = useMemo(() => {
     const m: Record<string, Item> = {};
@@ -203,19 +203,19 @@ export default function InventoryPage() {
     return m;
   }, [items]);
 
-  // â”€â”€â”€ filtered positions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── filtered positions ───────────────────────────────────────────────────
 
   const filteredPositions = useMemo(() => {
     return positions.filter((p) => matchesPositionFilter(p, itemMap, typeFilter, deptFilter, search, alertsOnly));
   }, [positions, itemMap, typeFilter, deptFilter, search, alertsOnly]);
 
-  // â”€â”€â”€ filtered items â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── filtered items ───────────────────────────────────────────────────────
 
   const filteredItems = useMemo(() => {
     return items.filter((i) => matchesItemFilter(i, typeFilter, search));
   }, [items, typeFilter, search]);
 
-  // â”€â”€â”€ alert count â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── alert count ─────────────────────────────────────────────────────────
 
   const alertCount = useMemo(() => {
     return positions.filter((p) => {
@@ -224,7 +224,7 @@ export default function InventoryPage() {
     }).length;
   }, [positions, itemMap]);
 
-  /* A1.6 â€” auto-plan from low-stock alerts */
+  /* A1.6 — auto-plan from low-stock alerts */
   const [autoPlanSaving, setAutoPlanSaving] = useState(false);
   const autoPlan = async () => {
     try {
@@ -234,7 +234,7 @@ export default function InventoryPage() {
     } catch (e) { setError(String(e)); } finally { setAutoPlanSaving(false); }
   };
 
-  // â”€â”€â”€ receive stock â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── receive stock ────────────────────────────────────────────────────────
 
   const openReceive = () => {
     setReceiveForm({
@@ -280,7 +280,7 @@ export default function InventoryPage() {
     }
   };
 
-  // â”€â”€â”€ transfer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── transfer ─────────────────────────────────────────────────────────────
 
   const openTransfer = (pos?: StockPosition) => {
     setTransferForm({
@@ -320,7 +320,7 @@ export default function InventoryPage() {
     }
   };
 
-  // â”€â”€â”€ item CRUD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── item CRUD ────────────────────────────────────────────────────────────
 
   const openAdjust = (pos?: StockPosition) => {
     setAdjustForm({
@@ -439,7 +439,7 @@ export default function InventoryPage() {
     }
   };
 
-  // â”€â”€â”€ render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── render ───────────────────────────────────────────────────────────────
 
   const itemSaveLabel = computeItemSaveLabel(itemSaving, editItemId, t);
 
@@ -495,7 +495,7 @@ export default function InventoryPage() {
       {success && (
         <div className="mb-4 px-4 py-2 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm flex items-center justify-between">
           {success}
-          <button className="ml-4 text-green-500 hover:text-green-700" onClick={() => setSuccess('')}>âœ•</button>
+          <button className="ml-4 text-green-500 hover:text-green-700" onClick={() => setSuccess('')}>✕</button>
         </div>
       )}
 
@@ -569,7 +569,7 @@ export default function InventoryPage() {
       {/* content */}
       {loading && <Spinner />}
       {!loading && tab === 'stock' && (
-        /* â”€â”€ Stock Levels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ── Stock Levels ─────────────────────────────────────────────── */
         filteredPositions.length === 0 ? (
           <div className="text-center py-16 text-sm text-gray-400 rounded-2xl border border-gray-200 bg-white">
             {positions.length === 0
@@ -598,14 +598,14 @@ export default function InventoryPage() {
                     <Fragment key={p.id}>
                       <tr className={`hover:bg-gray-50 cursor-pointer ${isAlert ? 'bg-red-50' : ''}`} tabIndex={0} onClick={() => setExpandedRow(isExpanded ? null : p.id)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpandedRow(isExpanded ? null : p.id); } }}>
                         <td className="px-4 py-3 font-medium">
-                          <span className="mr-1 text-gray-400 text-xs">{isExpanded ? 'â–¼' : 'â–¶'}</span>
+                          <span className="mr-1 text-gray-400 text-xs">{isExpanded ? '▼' : '▶'}</span>
                           {item?.name ?? p.itemId}
                           {isAlert && <span className="ml-2 text-red-500 text-xs">{t('inventory.low')}</span>}
                         </td>
-                        <td className="px-4 py-3">{item ? typeBadge(item.type) : 'â€”'}</td>
+                        <td className="px-4 py-3">{item ? typeBadge(item.type) : '—'}</td>
                         <td className="px-4 py-3 text-gray-600">{p.locationId}</td>
                         <td className="px-4 py-3 text-gray-400 text-xs font-mono">
-                          {p.lotId ? p.lotId.slice(0, 8) + 'â€¦' : 'â€”'}
+                          {p.lotId ? p.lotId.slice(0, 8) + '…' : '—'}
                         </td>
                         <td className="px-4 py-3 font-semibold">
                           {fmt(p.onHandQty, 3)} <span className="text-gray-400 font-normal text-xs">{p.uom}</span>
@@ -636,7 +636,7 @@ export default function InventoryPage() {
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                               <div>
                                 <span className="text-gray-400 text-xs block">{t('inventory.cols.lot')} ID</span>
-                                <span className="font-mono text-xs">{p.lotId || 'â€”'}</span>
+                                <span className="font-mono text-xs">{p.lotId || '—'}</span>
                               </div>
                               <div>
                                 <span className="text-gray-400 text-xs block">{t('inventory.cols.onHand')}</span>
@@ -677,7 +677,7 @@ export default function InventoryPage() {
         )
       )}
       {!loading && tab !== 'stock' && (
-        /* â”€â”€ Items Master Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+        /* ── Items Master Data ────────────────────────────────────────── */
         filteredItems.length === 0 ? (
           <div className="text-center py-16 text-sm text-gray-400 rounded-2xl border border-gray-200 bg-white">
             {items.length === 0
@@ -703,13 +703,13 @@ export default function InventoryPage() {
                     <td className="px-4 py-3">{typeBadge(item.type)}</td>
                     <td className="px-4 py-3 font-mono text-xs">{item.baseUom}</td>
                     <td className="px-4 py-3 text-gray-600">
-                      {item.minStockThreshold > 0 ? `${item.minStockThreshold} ${item.baseUom}` : 'â€”'}
+                      {item.minStockThreshold > 0 ? `${item.minStockThreshold} ${item.baseUom}` : '—'}
                     </td>
                     <td className="px-4 py-3">
                       <Badge status={item.active ? 'ACTIVE' : 'INACTIVE'} />
                     </td>
                     <td className="px-4 py-3 text-gray-400 text-xs max-w-xs truncate">
-                      {item.description ?? 'â€”'}
+                      {item.description ?? '—'}
                     </td>
                     <td className="px-4 py-3">
                       <button
@@ -727,7 +727,7 @@ export default function InventoryPage() {
         )
       )}
 
-      {/* â”€â”€â”€ Receive Stock Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Receive Stock Modal ────────────────────────────────────────────── */}
       {receiveOpen && (
         <Modal title={t('inventory.receiveTitle')} onClose={() => setReceiveOpen(false)}>
           <form onSubmit={submitReceive} className="space-y-4">
@@ -827,7 +827,7 @@ export default function InventoryPage() {
         </Modal>
       )}
 
-      {/* â”€â”€â”€ Transfer Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Transfer Modal ─────────────────────────────────────────────────── */}
       {transferOpen && (
         <Modal title={t('inventory.transferTitle')} onClose={() => setTransferOpen(false)}>
           <form onSubmit={submitTransfer} className="space-y-4">
@@ -898,7 +898,7 @@ export default function InventoryPage() {
         </Modal>
       )}
 
-      {/* â”€â”€â”€ Item Create / Edit Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Item Create / Edit Modal ───────────────────────────────────────── */}
       {itemOpen && (
         <Modal
           title={editItemId ? t('inventory.editItemTitle') : t('inventory.createItemTitle')}
@@ -968,7 +968,7 @@ export default function InventoryPage() {
         </Modal>
       )}
 
-      {/* â”€â”€â”€ CSV Import Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── CSV Import Modal ───────────────────────────────────────────────── */}
       {importOpen && (
         <Modal title={t('inventory.importCsvTitle')} onClose={() => setImportOpen(false)}>
           <div className="space-y-4">
@@ -991,7 +991,7 @@ export default function InventoryPage() {
         </Modal>
       )}
 
-      {/* â”€â”€â”€ Adjustment Modal (BC-1501) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Adjustment Modal (BC-1501) ─────────────────────────────────────── */}
       {adjustOpen && (
         <Modal title={t('inventory.adjustTitle')} onClose={() => setAdjustOpen(false)}>
           <form onSubmit={submitAdjust} className="space-y-4">

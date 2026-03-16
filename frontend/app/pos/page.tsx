@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Alert } from '@/components/ui';
@@ -7,7 +7,7 @@ import { useT, useDateTimeFmt } from '@/lib/i18n';
 import { getUsername } from '@/lib/auth';
 import { Package } from 'lucide-react';
 
-// â”€â”€â”€ types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── types ────────────────────────────────────────────────────────────────────
 
 interface Product {
   productId: string;
@@ -64,7 +64,7 @@ interface ReconcileResult {
   expectedCashInDrawer: number;
 }
 
-// â”€â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── helpers ──────────────────────────────────────────────────────────────────
 
 function fmt(n: number) {
   return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -74,7 +74,7 @@ function lineTotal(line: CartLine) {
   return line.qty * line.unitPrice;
 }
 
-// â”€â”€â”€ quick-add popover â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── quick-add popover ───────────────────────────────────────────────────────
 
 interface QuickAddProps {
   product: Product;
@@ -145,7 +145,7 @@ function QuickAdd({ product, deptName, onAdd, onCancel }: Readonly<QuickAddProps
   );
 }
 
-// â”€â”€â”€ main component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── main component ───────────────────────────────────────────────────────────
 
 export default function POSPage() {
   const t = useT();
@@ -183,7 +183,7 @@ export default function POSPage() {
   const [eodLoading, setEodLoading] = useState(false);
   const eodRef = useRef<HTMLDivElement>(null);
 
-  // â”€â”€â”€ load â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── load ─────────────────────────────────────────────────────────────────
 
   const load = useCallback(async () => {
     try {
@@ -203,7 +203,7 @@ export default function POSPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  // â”€â”€â”€ department map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── department map ───────────────────────────────────────────────────────
 
   const deptMap = useMemo(() => {
     const m: Record<string, string> = {};
@@ -211,7 +211,7 @@ export default function POSPage() {
     return m;
   }, [departments]);
 
-  // â”€â”€â”€ filtered products â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── filtered products ────────────────────────────────────────────────────
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
@@ -222,7 +222,7 @@ export default function POSPage() {
     });
   }, [products, deptFilter, search]);
 
-  // â”€â”€â”€ cart helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── cart helpers ─────────────────────────────────────────────────────────
 
   const addLine = (line: CartLine) => {
     setCart((prev) => {
@@ -249,7 +249,7 @@ export default function POSPage() {
   const cartTotal = cart.reduce((s, l) => s + lineTotal(l), 0);
   const cartCount = cart.reduce((s, l) => s + l.qty, 0);
 
-  // â”€â”€â”€ checkout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── checkout ─────────────────────────────────────────────────────────────
 
   const changeAmount = (() => {
     if (paymentMethod !== 'CASH') return null;
@@ -345,7 +345,7 @@ export default function POSPage() {
     win.print();
   };
 
-  // â”€â”€â”€ render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── render ───────────────────────────────────────────────────────────────
 
   let productGridContent: React.ReactNode;
   if (loading) {
@@ -415,7 +415,7 @@ export default function POSPage() {
       )}
 
       <div className="flex gap-4 flex-1 min-h-0">
-        {/* â”€â”€ Product Catalog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ── Product Catalog ─────────────────────────────────────────────── */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Filter bar */}
           <div className="flex gap-2 mb-3 shrink-0">
@@ -440,7 +440,7 @@ export default function POSPage() {
           {productGridContent}
         </div>
 
-        {/* â”€â”€ Cart â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ── Cart ────────────────────────────────────────────────────────── */}
         <div className="w-80 shrink-0 flex flex-col bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
             <span className="font-semibold text-sm">{t('pos.cart')}</span>
@@ -472,7 +472,7 @@ export default function POSPage() {
                       className="text-gray-300 hover:text-red-500 text-xs mt-0.5 shrink-0"
                       onClick={() => removeLine(line.productId)}
                     >
-                      âœ•
+                      ✕
                     </button>
                   </div>
                   <div className="flex items-center gap-2 mt-2">
@@ -480,7 +480,7 @@ export default function POSPage() {
                       className="w-7 h-7 rounded-full border text-gray-600 hover:bg-gray-100 text-sm font-bold flex items-center justify-center"
                       onClick={() => updateQty(line.productId, +(line.qty - 1).toFixed(3))}
                     >
-                      âˆ’
+                      −
                     </button>
                     <input
                       aria-label={t('orders.qty')}
@@ -598,7 +598,7 @@ export default function POSPage() {
         </div>
       </div>
 
-      {/* â”€â”€ Receipt Modal (BC-1601) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Receipt Modal (BC-1601) ───────────────────────────────────── */}
       {receiptData && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col">
@@ -611,7 +611,7 @@ export default function POSPage() {
                 <div style={{ fontWeight: 'bold', fontSize: 16 }}>BreadCost POS</div>
                 <div style={{ fontSize: 12 }}>{t('pos.receiptSaleId')}: #{receiptData.saleId.slice(0, 8).toUpperCase()}</div>
                 <div style={{ fontSize: 12 }}>{fmtDateTime(receiptData.completedAt)}</div>
-                <div style={{ fontSize: 12 }}>{t('pos.receiptCashier')}: {receiptData.cashierName || getUsername() || 'â€”'}</div>
+                <div style={{ fontSize: 12 }}>{t('pos.receiptCashier')}: {receiptData.cashierName || getUsername() || '—'}</div>
               </div>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
@@ -658,7 +658,7 @@ export default function POSPage() {
         </div>
       )}
 
-      {/* â”€â”€ EOD Reconciliation Panel (BC-1603) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── EOD Reconciliation Panel (BC-1603) ────────────────────────── */}
       {eodData && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
@@ -668,7 +668,7 @@ export default function POSPage() {
             </div>
             <div className="px-6 py-4" ref={eodRef}>
               <div style={{ textAlign: 'center', marginBottom: 16, fontWeight: 'bold' }}>
-                {t('pos.eodTitle')} â€” {eodData.date}
+                {t('pos.eodTitle')} — {eodData.date}
               </div>
               <table style={{ width: '100%', fontSize: 13 }}>
                 <tbody>

@@ -110,6 +110,7 @@ public class StockAlertService {
         }
 
         plan.setStatus(ProductionPlan.Status.GENERATED);
+        plan.setNotes("Auto-generated from confirmed orders");
         ProductionPlanEntity saved = planRepository.save(plan);
 
         log.info("Auto-created production plan {} with {} work orders for tenant {}",

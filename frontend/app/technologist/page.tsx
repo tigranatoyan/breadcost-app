@@ -66,7 +66,6 @@ function buildProductionBreakdown(plans: Plan[]): Record<string, { count: number
   }
   return result;
 }
-}
 
 // ─── main component ───────────────────────────────────────────────────────────
 export default function TechnologistPage() {

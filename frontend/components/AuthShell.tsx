@@ -167,15 +167,21 @@ export default function AuthShell({ children }: Readonly<{ children: React.React
   const { t, locale, setLocale } = useI18n();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [features, setFeatures] = useState<string[]>([]);
+  const [mounted, setMounted] = useState(false);
   const isCustomerRoute = pathname.startsWith('/customer/')  || pathname === '/customer';
   const isLoginRoute = pathname === '/login';
-  const authenticated = isLoggedIn();
+  const authenticated = mounted && isLoggedIn();
   const user = authenticated ? getUsername() : '';
   const role: Role = authenticated ? getRole() : 'viewer';
 
+  useEffect(() => { setMounted(true); }, []);
+
   useEffect(() => {
+    if (!mounted) return; // wait for client hydration before making auth decisions
     if (isCustomerRoute) return; // customer portal has its own auth
     if (!authenticated && !isLoginRoute) {
+      // Clear stale cookie to prevent redirect loop with middleware
+      document.cookie = 'bc_token=; path=/; max-age=0';
       router.replace('/login');
       return;
     }
@@ -191,7 +197,7 @@ export default function AuthShell({ children }: Readonly<{ children: React.React
     if (defaultRoute && (pathname === '/' || pathname === '/dashboard')) {
       router.replace(defaultRoute);
     }
-  }, [authenticated, isCustomerRoute, isLoginRoute, pathname, role, router]);
+  }, [mounted, authenticated, isCustomerRoute, isLoginRoute, pathname, role, router]);
 
   if (!authenticated && !isLoginRoute && !isCustomerRoute) {
     return (

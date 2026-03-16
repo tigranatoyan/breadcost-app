@@ -234,7 +234,7 @@ const en = {
   // ── Orders ─────────────────────────────────────────────────────────────────
   orders: {
     title: 'Orders',
-    newOrder: '+ New Order',
+    newOrder: 'New Order',
     searchCustomer: 'Search customer…',
     orderCount: '{count} order(s)',
     noOrders: 'No orders yet. Create the first one.',
@@ -287,7 +287,7 @@ const en = {
   products: {
     title: 'Products',
     eyebrow: 'Catalog',
-    newProduct: '+ New Product',
+    newProduct: 'New Product',
     noProducts: 'No products yet.',
     newProductTitle: 'New Product',
     department: 'Department',
@@ -321,7 +321,7 @@ const en = {
   recipes: {
     title: 'Recipes',
     subtitle: 'Select a product above to view its recipes.',
-    newRecipe: '+ New Recipe',
+    newRecipe: 'New Recipe',
     selectProduct: 'Select Product',
     chooseProduct: '-- choose a product --',
     noRecipes: 'No recipes for this product yet.',
@@ -400,7 +400,7 @@ const en = {
     title: 'Departments',
     eyebrow: 'Operations',
     subtitle: 'Lead times, warehouse mode, and status.',
-    newDepartment: '+ New Department',
+    newDepartment: 'New Department',
     noDepartments: 'No departments yet. Create one to get started.',
     newDepartmentTitle: 'New Department',
     namePlaceholder: 'e.g. Bakery',
@@ -624,7 +624,7 @@ const en = {
   productionPlans: {
     title: 'Production Plans',
     eyebrow: 'Production',
-    newPlan: '+ New Plan',
+    newPlan: 'New Plan',
     planCount: '{count} plan(s)',
     noPlans: 'No production plans yet.',
     noPlansMatch: 'No plans match the current filters.',

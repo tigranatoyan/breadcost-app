@@ -4,10 +4,11 @@ import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Modal, Alert, Badge, Field, PageSkeleton, Pagination, useToast } from '@/components/ui';
 import { SectionTitle, Button, InputField, SelectField } from '@/components/design-system';
 import { useT, useDateFmt, useDateTimeFmt } from '@/lib/i18n';
+import { getRole } from '@/lib/auth';
 import { Plus, Calendar, ChevronUp, ChevronDown, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
-// â”€â”€â”€ types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── types ────────────────────────────────────────────────────────────────────
 
 interface Product {
   productId: string;
@@ -53,21 +54,13 @@ type LineForm = {
   unitPrice: string;
 };
 
-// â”€â”€â”€ status helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── status helpers ───────────────────────────────────────────────────────────
 
 const ALL_STATUSES = ['DRAFT', 'CONFIRMED', 'IN_PRODUCTION', 'READY', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'];
 
-const STATUS_NEXT: Record<string, string | null> = {
-  CONFIRMED: 'IN_PRODUCTION',
-  // READY status auto-set by plan completion (BC-280)
-  // Delivery transitions managed on /deliveries + /driver pages (BC-259)
-};
+// Status transitions handled by production plans — no manual status advance from orders page
 
-const STATUS_NEXT_KEY: Record<string, string> = {
-  CONFIRMED: 'orders.startProduction',
-};
-
-// â”€â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── helpers ──────────────────────────────────────────────────────────────────
 
 function makeDefaultLine(products: Product[]): LineForm {
   const p = products[0];
@@ -83,7 +76,7 @@ function makeDefaultLine(products: Product[]): LineForm {
   };
 }
 
-// â”€â”€â”€ component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── component ────────────────────────────────────────────────────────────────
 
 export default function OrdersPage() {
   const t = useT();
@@ -136,7 +129,7 @@ export default function OrdersPage() {
   const [cancelReason, setCancelReason] = useState('');
   const [forecastCount, setForecastCount] = useState(0);
 
-  // â”€â”€â”€ load â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── load ────────────────────────────────────────────────────────────────────
 
   const load = useCallback(async (p = page) => {
     try {
@@ -168,7 +161,7 @@ export default function OrdersPage() {
     load(newPage);
   };
 
-  // â”€â”€â”€ filtered list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── filtered list ────────────────────────────────────────────────────────────
 
   const filtered = useMemo(() => {
     return orders.filter((o) => {
@@ -178,7 +171,7 @@ export default function OrdersPage() {
     });
   }, [orders, statusFilter, customerSearch]);
 
-  // â”€â”€â”€ create order â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── create order ─────────────────────────────────────────────────────────────
 
   const openForm = () => {
     setForm({
@@ -287,7 +280,7 @@ export default function OrdersPage() {
     }
   };
 
-  // â”€â”€â”€ actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── actions ──────────────────────────────────────────────────────────────────
 
   const doConfirm = async (orderId: string) => {
     try {
@@ -324,22 +317,7 @@ export default function OrdersPage() {
     }
   };
 
-  const doAdvanceStatus = async (orderId: string, targetStatus: string) => {
-    try {
-      setActionId(orderId);
-      const updated = await apiFetch<Order>(
-        `/v1/orders/${orderId}/status?tenantId=${TENANT_ID}&targetStatus=${targetStatus}`,
-        { method: 'POST' }
-      );
-      setOrders((prev) => prev.map((o) => (o.orderId === orderId ? updated : o)));
-    } catch (e) {
-      setError(String(e));
-    } finally {
-      setActionId('');
-    }
-  };
-
-  // â”€â”€â”€ render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── render ───────────────────────────────────────────────────────────────────
 
   let orderSaveLabel: string;
   if (saving) orderSaveLabel = t('common.saving');
@@ -434,26 +412,20 @@ export default function OrdersPage() {
                 {/* action buttons */}
                 <div className="flex gap-1 shrink-0">
                 >
-                  {/* DRAFT â†’ Edit */}
+                  {/* DRAFT → Edit */}
                   {o.status === 'DRAFT' && (
                     <Button variant="secondary" size="xs" disabled={actionId === o.orderId} onClick={() => openEdit(o)}>
                       {t('orders.editBtn')}
                     </Button>
                   )}
-                  {/* DRAFT â†’ Confirm */}
+                  {/* DRAFT → Confirm */}
                   {o.status === 'DRAFT' && (
                     <Button variant="primary" size="xs" disabled={actionId === o.orderId} onClick={() => doConfirm(o.orderId)}>
                       {t('orders.confirmBtn')}
                     </Button>
                   )}
-                  {/* Status advance */}
-                  {STATUS_NEXT[o.status] && (
-                    <Button variant="primary" size="xs" disabled={actionId === o.orderId} onClick={() => doAdvanceStatus(o.orderId, STATUS_NEXT[o.status]!)}>
-                      {t(STATUS_NEXT_KEY[o.status])}
-                    </Button>
-                  )}
-                  {/* Cancel */}
-                  {(o.status === 'DRAFT' || o.status === 'CONFIRMED') && (
+                  {/* Cancel — DRAFT: anyone; CONFIRMED: only admin/manager */}
+                  {(o.status === 'DRAFT' || (o.status === 'CONFIRMED' && ['admin', 'management'].includes(getRole()))) && (
                     <Button variant="danger" size="xs" disabled={actionId === o.orderId} onClick={() => openCancelDialog(o.orderId)}>
                       {t('orders.cancelBtn')}
                     </Button>
@@ -551,7 +523,7 @@ export default function OrdersPage() {
 
       {!loading && <Pagination page={page} totalPages={totalPages} onPageChange={changePage} />}
 
-      {/* â”€â”€â”€ Create / Edit Order Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Create / Edit Order Modal ──────────────────────────────────────── */}
       {open && (
         <Modal title={editTarget ? t('orders.editOrderTitle') : t('orders.newOrderTitle')} onClose={() => { setOpen(false); setEditTarget(null); }} wide>
           <form onSubmit={submit} className="space-y-4">
@@ -563,7 +535,7 @@ export default function OrdersPage() {
                   value={form.customerName}
                   onChange={(e) => setForm((f) => ({ ...f, customerName: e.target.value }))}
                 >
-                  <option value="">â€” {t('common.select')} â€”</option>
+                  <option value="">— {t('common.select')} —</option>
                   {customers.map(c => <option key={c.customerId} value={c.name}>{c.name}</option>)}
                 </select>
               </Field>
@@ -596,7 +568,7 @@ export default function OrdersPage() {
                   checked={form.forceRush}
                   onChange={(e) => setForm((f) => ({ ...f, forceRush: e.target.checked }))}
                 />
-                <span className="text-sm font-medium text-orange-800">âš¡ {t('orders.rushOrder')}</span>
+                <span className="text-sm font-medium text-orange-800">⚡ {t('orders.rushOrder')}</span>
               </label>
               {form.forceRush && (
                 <div className="flex items-center gap-2">
@@ -696,7 +668,7 @@ export default function OrdersPage() {
         </Modal>
       )}
 
-      {/* â”€â”€â”€ Cancel Reason Dialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Cancel Reason Dialog ───────────────────────────────────────────── */}
       {cancelTarget && (
         <Modal title={t('orders.cancelOrder')} onClose={() => setCancelTarget(null)}>
           <div className="space-y-4">

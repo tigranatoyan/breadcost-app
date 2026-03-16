@@ -378,7 +378,7 @@ export default function ProductionPlansPage() {
       );
       setSchedules((prev) => ({ ...prev, [planId]: data }));
     } catch {
-      // schedule may not be available yet â€” silently ignore
+      // schedule may not be available yet — silently ignore
     } finally {
       setLoadingSchedule('');
     }
@@ -483,7 +483,7 @@ export default function ProductionPlansPage() {
             planAction(p.planId, b.action);
           }}
         >
-          {busy ? 'â€¦' : b.label}
+          {busy ? '…' : b.label}
         </button>
       )),
       ...(p.status === 'DRAFT' || p.status === 'GENERATED'
@@ -510,19 +510,7 @@ export default function ProductionPlansPage() {
     return true;
   });
 
-  const [autoPlanLoading, setAutoPlanLoading] = useState(false);
-  const autoCreatePlan = async () => {
-    try {
-      setAutoPlanLoading(true);
-      await apiFetch(`/v1/inventory/auto-plan?tenantId=${TENANT_ID}`, { method: 'POST' });
-      setInfo(t('productionPlans.autoPlanCreated'));
-      load();
-    } catch (e) {
-      setError(String(e));
-    } finally {
-      setAutoPlanLoading(false);
-    }
-  };
+
 
   return (
     <div className="max-w-[1800px]">
@@ -532,12 +520,7 @@ export default function ProductionPlansPage() {
           title={t('productionPlans.title')}
           subtitle={t('productionPlans.subtitle')}
           action={
-            <div className="flex gap-2">
-              <Button variant="secondary" size="sm" disabled={autoPlanLoading} onClick={autoCreatePlan}>
-                {autoPlanLoading ? t('common.loading') : t('productionPlans.autoPlan')}
-              </Button>
-              <Button variant="primary" size="sm" onClick={() => setOpen(true)}><Plus className="h-4 w-4" /> {t('productionPlans.newPlan')}</Button>
-            </div>
+            <Button variant="primary" size="sm" onClick={() => setOpen(true)}><Plus className="h-4 w-4" /> {t('productionPlans.newPlan')}</Button>
           }
         />
       </div>
@@ -563,7 +546,7 @@ export default function ProductionPlansPage() {
             }}
             title={t('common.previousDay')}
           >
-            â—€
+            ◀
           </button>
           <InputField
             className="w-44"
@@ -580,7 +563,7 @@ export default function ProductionPlansPage() {
             }}
             title={t('common.nextDay')}
           >
-            â–¶
+            ▶
           </button>
           <button
             className="btn-xs bg-blue-100 text-blue-700 hover:bg-blue-200 px-2"

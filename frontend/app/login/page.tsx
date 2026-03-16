@@ -1,13 +1,11 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { setSession, UserInfo, getToken } from '@/lib/auth';
+import { setSession, UserInfo } from '@/lib/auth';
 import { API_BASE } from '@/lib/api';
 import { Button } from '@/components/design-system';
 import { useT } from '@/lib/i18n';
 
 export default function LoginPage() {
-  const router = useRouter();
   const t = useT();
   const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('admin');
@@ -15,8 +13,12 @@ export default function LoginPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (getToken()) router.replace('/dashboard');
-  }, [router]);
+    // If user reached /login it means middleware found no cookie.
+    // Any leftover localStorage token is stale — clear it.
+    localStorage.removeItem('bc_token');
+    localStorage.removeItem('bc_user');
+    document.cookie = 'bc_token=; path=/; max-age=0';
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +48,7 @@ export default function LoginPage() {
         primaryRole: data.primaryRole ?? (data.roles?.[0] ?? 'Viewer'),
       };
       setSession(data.token, userInfo);
-      router.push('/dashboard');
+      window.location.href = '/dashboard';
     } catch {
       setError(t('login.serverUnreachable'));
     } finally {

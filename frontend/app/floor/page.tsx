@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiFetch, TENANT_ID } from '@/lib/api';
 import { Spinner, Badge, Alert } from '@/components/ui';
@@ -6,7 +6,7 @@ import { SectionTitle, Button } from '@/components/design-system';
 import { useT, useI18n, BCP47 } from '@/lib/i18n';
 import { Clock3, Play, Check, X, Factory, ClipboardList, Wrench, Thermometer, AlertCircle, Zap, ShieldAlert } from 'lucide-react';
 
-// â”€â”€â”€ interfaces â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── interfaces ───────────────────────────────────────────────────────────────
 
 interface Ingredient {
   itemName: string;
@@ -67,7 +67,7 @@ interface QualityRisk {
   recommendation: string;
 }
 
-// â”€â”€â”€ step key helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── step key helper ─────────────────────────────────────────────────────────
 
 const stepKey = (woId: string, stepNum: number) => `step_${woId}_${stepNum}`;
 
@@ -80,7 +80,7 @@ function getConfirmed(woId: string, steps: TechnologyStep[]): Record<number, boo
   return out;
 }
 
-// â”€â”€â”€ shift colours â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── shift colours ────────────────────────────────────────────────────────────
 
 const shiftBg: Record<string, string> = {
   MORNING: 'bg-yellow-100 text-yellow-800 border-yellow-300',
@@ -95,7 +95,7 @@ const woStatusIcon: Record<string, React.ReactNode> = {
   CANCELLED: <X className="h-5 w-5 text-red-400" />,
 };
 
-// â”€â”€â”€ Work Order Detail Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Work Order Detail Panel ─────────────────────────────────────────────────
 
 function WOPanel({
   wo, planId, recipe, techSteps, stepsLoading,
@@ -170,7 +170,7 @@ function WOPanel({
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto p-5">
-          {/* â”€â”€ Technology Steps â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          {/* ── Technology Steps ─────────────────────────────── */}
           {tab === 'steps' && (
             <>
               {stepsLoading && (
@@ -212,7 +212,7 @@ function WOPanel({
                                 : 'border-gray-300 hover:border-green-400'
                             }`}
                           >
-                            {done && <span className="text-xs">âœ“</span>}
+                            {done && <span className="text-xs">✓</span>}
                           </button>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
@@ -251,7 +251,7 @@ function WOPanel({
             </>
           )}
 
-          {/* â”€â”€ Recipe / Ingredients â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          {/* ── Recipe / Ingredients ─────────────────────────── */}
           {tab === 'recipe' && (
             <>
               {!recipe ? (
@@ -301,7 +301,7 @@ function WOPanel({
                               : `${(ing.recipeQty * wo.batchCount).toFixed(1)} ${t(`units.${ing.recipeUom}` as any) || ing.recipeUom}`;
                             return (
                               <tr key={ing.itemName}>
-                                <td className="py-2 font-medium">{ing.itemName || 'â€”'}</td>
+                                <td className="py-2 font-medium">{ing.itemName || '—'}</td>
                                 <td className="py-2 text-right text-gray-500">{perBatch}</td>
                                 <td className="py-2 text-right font-semibold">{totalAmt}</td>
                               </tr>
@@ -385,7 +385,7 @@ function WOPanel({
   );
 }
 
-// â”€â”€â”€ main page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── main page ────────────────────────────────────────────────────────────────
 
 export default function FloorPage() {
   const t = useT();
@@ -423,7 +423,9 @@ export default function FloorPage() {
       setLoading(true);
       setError('');
       const all = await apiFetch<Plan[]>(`/v1/production-plans?tenantId=${TENANT_ID}`);
-      const relevant = all.filter((p) => p.planDate === viewDate || p.status === 'IN_PROGRESS');
+      // Only show plans that are approved or actively running — not DRAFT/GENERATED
+      const actionable = ['APPROVED', 'PUBLISHED', 'IN_PROGRESS'];
+      const relevant = all.filter((p) => actionable.includes(p.status) && (p.planDate === viewDate || p.status === 'IN_PROGRESS'));
       setPlans(relevant);
     } catch (e) {
       setError(String(e));
@@ -683,7 +685,7 @@ export default function FloorPage() {
                   {plan.shift}
                 </span>
                 <span className={`font-semibold ${isActive ? 'text-white' : 'text-gray-800'}`}>{plan.planDate}</span>
-                {isActive && <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">â–¶ IN PROGRESS</span>}
+                {isActive && <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">▶ IN PROGRESS</span>}
                 <div className="ml-auto flex items-center gap-3">
                   <span className={`text-sm ${isActive ? 'text-blue-100' : 'text-gray-500'}`}>
                     {t('floor.progress', {done: doneCount, total})}

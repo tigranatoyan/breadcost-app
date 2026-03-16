@@ -15,6 +15,7 @@ import com.breadcost.driver.DriverService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +27,6 @@ import java.time.ZonedDateTime;
 import java.util.*;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class OrderService {
 
@@ -43,6 +43,33 @@ public class OrderService {
     private final DeliveryRunOrderRepository deliveryRunOrderRepository;
     private final DeliveryRunRepository deliveryRunRepository;
     private final DriverService driverService;
+
+    private final StockAlertService stockAlertService;
+
+    public OrderService(
+            OrderRepository orderRepository,
+            DepartmentRepository departmentRepository,
+            RecipeRepository recipeRepository,
+            EventStore eventStore,
+            OrderStatusHistoryRepository orderStatusHistoryRepository,
+            MobileAppService mobileAppService,
+            EmailNotificationService emailNotificationService,
+            DeliveryRunOrderRepository deliveryRunOrderRepository,
+            DeliveryRunRepository deliveryRunRepository,
+            DriverService driverService,
+            @Lazy StockAlertService stockAlertService) {
+        this.orderRepository = orderRepository;
+        this.departmentRepository = departmentRepository;
+        this.recipeRepository = recipeRepository;
+        this.eventStore = eventStore;
+        this.orderStatusHistoryRepository = orderStatusHistoryRepository;
+        this.mobileAppService = mobileAppService;
+        this.emailNotificationService = emailNotificationService;
+        this.deliveryRunOrderRepository = deliveryRunOrderRepository;
+        this.deliveryRunRepository = deliveryRunRepository;
+        this.driverService = driverService;
+        this.stockAlertService = stockAlertService;
+    }
 
     /** Hour of day (0-23) after which new standard orders are blocked (default 22 = 10 PM) */
     @Value("${breadcost.order.cutoff-hour:22}")
@@ -195,6 +222,13 @@ public class OrderService {
                 .occurredAtUtc(now)
                 .idempotencyKey(UUID.randomUUID().toString())
                 .build(), LedgerEntry.EntryClass.OPERATIONAL);
+
+        // Auto-create production plan from confirmed orders
+        try {
+            stockAlertService.autoCreateProductionPlan(tenantId, entity.getSiteId(), confirmedByUserId);
+        } catch (Exception e) {
+            log.warn("Auto-plan creation failed for order {}: {}", orderId, e.getMessage());
+        }
 
         return saved;
     }

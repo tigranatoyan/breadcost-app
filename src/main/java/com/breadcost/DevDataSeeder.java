@@ -2,6 +2,8 @@ package com.breadcost;
 
 import com.breadcost.domain.Department;
 import com.breadcost.domain.Product;
+import com.breadcost.domain.Recipe;
+import com.breadcost.domain.RecipeIngredient;
 import com.breadcost.masterdata.*;
 import com.breadcost.reporting.ReportService;
 import com.breadcost.subscription.SubscriptionService;
@@ -12,6 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -31,6 +35,7 @@ public class DevDataSeeder implements CommandLineRunner {
     private final ItemRepository itemRepository;
     private final DepartmentRepository departmentRepository;
     private final ProductRepository productRepository;
+    private final RecipeRepository recipeRepository;
     private final PasswordEncoder passwordEncoder;
     private final TenantConfigRepository tenantConfigRepository;
     private final ReportService reportService;
@@ -46,6 +51,9 @@ public class DevDataSeeder implements CommandLineRunner {
 
         // Ensure demo tenant has ENTERPRISE tier for all features (idempotent)
         subscriptionService.assignTier(TENANT, "ENTERPRISE", "system", java.time.LocalDate.now(), null);
+
+        // Always seed recipes if missing (idempotent)
+        seedRecipesIfMissing();
 
         if (userRepository.findByUsername("admin").isPresent()) {
             log.info("Seed data already exists — skipping");
@@ -92,7 +100,20 @@ public class DevDataSeeder implements CommandLineRunner {
         seedProduct("PROD-CROISS",   "Croissant",       "DEPT-PASTRY", Product.SaleUnit.PIECE, 10000);
         seedProduct("PROD-CAKE",     "Birthday Cake",   "DEPT-CONFECT",Product.SaleUnit.PIECE, 85000);
 
-        log.info("Demo data seeded successfully: 7 users, 3 departments, 7 items, 5 products");
+        // ── Recipes (1 active recipe per product) ────────────────────
+        seedRecipe("RCP-WHITE",    "PROD-WHITE",    20, 6,
+                List.of(ing("ITEM-FLOUR", "Wheat Flour", 5.0), ing("ITEM-YEAST", "Dry Yeast", 0.1), ing("ITEM-SALT", "Table Salt", 0.1)));
+        seedRecipe("RCP-SOUR",     "PROD-SOUR",     15, 8,
+                List.of(ing("ITEM-FLOUR", "Wheat Flour", 6.0), ing("ITEM-SALT", "Table Salt", 0.12)));
+        seedRecipe("RCP-BAGUETTE", "PROD-BAGUETTE", 25, 5,
+                List.of(ing("ITEM-FLOUR", "Wheat Flour", 4.0), ing("ITEM-YEAST", "Dry Yeast", 0.08), ing("ITEM-SALT", "Table Salt", 0.08)));
+        seedRecipe("RCP-CROISS",   "PROD-CROISS",   30, 8,
+                List.of(ing("ITEM-FLOUR", "Wheat Flour", 3.0), ing("ITEM-BUTTER", "Butter", 2.0), ing("ITEM-EGGS", "Eggs", 0.5)));
+        seedRecipe("RCP-CAKE",     "PROD-CAKE",      5, 12,
+                List.of(ing("ITEM-FLOUR", "Wheat Flour", 2.0), ing("ITEM-SUGAR", "White Sugar", 1.5),
+                        ing("ITEM-BUTTER", "Butter", 1.0), ing("ITEM-EGGS", "Eggs", 1.0), ing("ITEM-MILK", "Whole Milk", 0.5)));
+
+        log.info("Demo data seeded successfully: 7 users, 3 departments, 7 items, 5 products, 5 recipes");
     }
 
     private void seedUser(String username, String displayName, String role) {
@@ -142,5 +163,61 @@ public class DevDataSeeder implements CommandLineRunner {
                 .vatRatePct(12.0)
                 .status(Product.ProductStatus.ACTIVE)
                 .build());
+    }
+
+    private RecipeIngredientEntity ing(String itemId, String itemName, double qty) {
+        return RecipeIngredientEntity.builder()
+                .ingredientLineId(UUID.randomUUID().toString())
+                .tenantId(TENANT)
+                .itemId(itemId)
+                .itemName(itemName)
+                .unitMode(RecipeIngredient.UnitMode.WEIGHT)
+                .recipeQty(BigDecimal.valueOf(qty))
+                .recipeUom("KG")
+                .purchasingUnitSize(BigDecimal.ONE)
+                .purchasingUom("KG")
+                .wasteFactor(BigDecimal.valueOf(0.05))
+                .build();
+    }
+
+    private void seedRecipe(String id, String productId, int batchSize, int leadTimeHours,
+                            List<RecipeIngredientEntity> ingredients) {
+        RecipeEntity recipe = RecipeEntity.builder()
+                .recipeId(id)
+                .tenantId(TENANT)
+                .productId(productId)
+                .versionNumber(1)
+                .status(Recipe.RecipeStatus.ACTIVE)
+                .batchSize(BigDecimal.valueOf(batchSize))
+                .batchSizeUom("PCS")
+                .expectedYield(BigDecimal.valueOf(batchSize))
+                .yieldUom("PCS")
+                .leadTimeHours(leadTimeHours)
+                .productionNotes("Standard recipe")
+                .createdBy("system")
+                .ingredients(new ArrayList<>())
+                .build();
+        ingredients.forEach(i -> {
+            i.setRecipeId(id);
+            recipe.getIngredients().add(i);
+        });
+        recipeRepository.save(recipe);
+    }
+
+    private void seedRecipesIfMissing() {
+        if (recipeRepository.findByTenantIdAndProductIdAndStatus(TENANT, "PROD-WHITE", Recipe.RecipeStatus.ACTIVE).isEmpty()) {
+            log.info("Seeding missing recipes for tenant: {}", TENANT);
+            seedRecipe("RCP-WHITE",    "PROD-WHITE",    20, 6,
+                    List.of(ing("ITEM-FLOUR", "Wheat Flour", 5.0), ing("ITEM-YEAST", "Dry Yeast", 0.1), ing("ITEM-SALT", "Table Salt", 0.1)));
+            seedRecipe("RCP-SOUR",     "PROD-SOUR",     15, 8,
+                    List.of(ing("ITEM-FLOUR", "Wheat Flour", 6.0), ing("ITEM-SALT", "Table Salt", 0.12)));
+            seedRecipe("RCP-BAGUETTE", "PROD-BAGUETTE", 25, 5,
+                    List.of(ing("ITEM-FLOUR", "Wheat Flour", 4.0), ing("ITEM-YEAST", "Dry Yeast", 0.08), ing("ITEM-SALT", "Table Salt", 0.08)));
+            seedRecipe("RCP-CROISS",   "PROD-CROISS",   30, 8,
+                    List.of(ing("ITEM-FLOUR", "Wheat Flour", 3.0), ing("ITEM-BUTTER", "Butter", 2.0), ing("ITEM-EGGS", "Eggs", 0.5)));
+            seedRecipe("RCP-CAKE",     "PROD-CAKE",      5, 12,
+                    List.of(ing("ITEM-FLOUR", "Wheat Flour", 2.0), ing("ITEM-SUGAR", "White Sugar", 1.5),
+                            ing("ITEM-BUTTER", "Butter", 1.0), ing("ITEM-EGGS", "Eggs", 1.0), ing("ITEM-MILK", "Whole Milk", 0.5)));
+        }
     }
 }
